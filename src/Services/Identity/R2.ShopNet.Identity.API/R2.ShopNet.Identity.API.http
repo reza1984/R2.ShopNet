@@ -1,0 +1,6 @@
+@R2.ShopNet.Identity.API_HostAddress = http://localhost:5294
+
+GET {{R2.ShopNet.Identity.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

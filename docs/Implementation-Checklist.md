@@ -36,60 +36,60 @@ This document provides a comprehensive task checklist for implementing the compl
 - [ ] Install Postman/Insomnia for API testing
 
 ### Repository & Project Structure
-- [ ] Create Git repository (GitHub/GitLab/Gitea)
-- [ ] Setup `.gitignore` for .NET and Angular
-- [ ] Create solution file: `R2.ShopNet.sln`
-- [ ] Setup folder structure following naming conventions
-- [ ] Create `README.md` with setup instructions
+- [x] Create Git repository (GitHub/GitLab/Gitea)
+- [x] Setup `.gitignore` for .NET and Angular
+- [x] Create solution file: `R2.ShopNet.sln`
+- [x] Setup folder structure following naming conventions
+- [x] Create `README.md` with setup instructions
 - [ ] Setup branch protection rules (main, develop)
 - [ ] Configure conventional commits
-- [ ] Setup `.editorconfig` for consistent code style
-- [ ] Create `CONTRIBUTING.md` guidelines
+- [x] Setup `.editorconfig` for consistent code style
+- [x] Create `CONTRIBUTING.md` guidelines
 - [ ] Setup issue templates and PR templates
 
 ### Infrastructure Setup (Self-Hosted)
-- [ ] Setup Consul 1.19 for service discovery (Docker container)
-  - [ ] Configure Consul server (single node for dev, 3 nodes for prod)
-  - [ ] Enable Consul UI on port 8500
-  - [ ] Configure Consul datacenter (shopnet-dc1)
-  - [ ] Setup Consul health checks
-  - [ ] Test Consul CLI and API access
-- [ ] Setup PostgreSQL 16 database server (Docker container)
-- [ ] Configure PostgreSQL connection pooling
-- [ ] Setup Redis 7.x cache server (Docker container)
-- [ ] Setup RabbitMQ 3.x message queue (Docker container)
-- [ ] Setup Elasticsearch 8.x for search (Docker container)
-- [ ] Setup MinIO for S3-compatible object storage (Docker container)
-- [ ] Create Docker Compose file for all infrastructure
-- [ ] Setup local Docker network for services
-- [ ] Configure health checks for all containers
-- [ ] Setup volume mounts for data persistence
-- [ ] Create backup scripts for PostgreSQL
-- [ ] Create backup scripts for Redis
-- [ ] Create backup scripts for Consul data
-- [ ] Document connection strings and credentials
+- [x] Setup Consul 1.19 for service discovery (Docker container)
+  - [x] Configure Consul server (single node for dev, 3 nodes for prod)
+  - [x] Enable Consul UI on port 8500
+  - [x] Configure Consul datacenter (shopnet-dc1)
+  - [x] Setup Consul health checks
+  - [x] Test Consul CLI and API access
+- [x] Setup PostgreSQL 16 database server (Docker container)
+- [x] Configure PostgreSQL connection pooling
+- [x] Setup Redis 7.x cache server (Docker container)
+- [x] Setup RabbitMQ 3.x message queue (Docker container)
+- [x] Setup Elasticsearch 8.x for search (Docker container)
+- [x] Setup MinIO for S3-compatible object storage (Docker container)
+- [x] Create Docker Compose file for all infrastructure
+- [x] Setup local Docker network for services
+- [x] Configure health checks for all containers
+- [x] Setup volume mounts for data persistence
+- [x] Create backup scripts for PostgreSQL
+- [x] Create backup scripts for Redis
+- [x] Create backup scripts for Consul data
+- [x] Document connection strings and credentials
 
 ### .NET Aspire Setup
-- [ ] Create Aspire AppHost project: `R2.ShopNet.AppHost`
-- [ ] Configure Aspire dashboard
-- [ ] Add Consul resource to Aspire
-- [ ] Add PostgreSQL resource to Aspire
-- [ ] Add Redis resource to Aspire
-- [ ] Add RabbitMQ resource to Aspire
-- [ ] Add Elasticsearch resource to Aspire
-- [ ] Configure OpenTelemetry in Aspire
-- [ ] Configure Aspire environment variables
-- [ ] Test Aspire orchestration locally
+- [x] Create Aspire AppHost project: `R2.ShopNet.AppHost`
+- [x] Configure Aspire dashboard
+- [x] Add Consul resource to Aspire
+- [x] Add PostgreSQL resource to Aspire
+- [x] Add Redis resource to Aspire
+- [x] Add RabbitMQ resource to Aspire
+- [x] Add Elasticsearch resource to Aspire
+- [x] Configure OpenTelemetry in Aspire
+- [x] Configure Aspire environment variables
+- [x] Test Aspire orchestration locally
 
 ### Consul Service Discovery Setup
-- [ ] Create `R2.ShopNet.Framework.ServiceDiscovery` project
-  - [ ] Install Consul NuGet package (1.7.14)
-  - [ ] Implement ConsulServiceRegistration (IHostedService)
-  - [ ] Implement IServiceDiscovery interface
-  - [ ] Implement ConsulServiceDiscovery class
-  - [ ] Implement ConsulConfigurationProvider
-  - [ ] Implement ConsulConfigurationWatcher (background service)
-  - [ ] Add health check interfaces
+- [x] Create `R2.ShopNet.Framework.ServiceDiscovery` project
+  - [x] Install Consul NuGet package (1.7.14)
+  - [x] Implement ConsulServiceRegistration (IHostedService)
+  - [x] Implement IServiceDiscovery interface
+  - [x] Implement ConsulServiceDiscovery class
+  - [x] Implement ConsulConfigurationProvider
+  - [x] Implement ConsulConfigurationWatcher (background service)
+  - [x] Add health check interfaces
 - [ ] Write unit tests for service discovery components
 - [ ] Document Consul configuration patterns
 
@@ -106,29 +106,29 @@ This document provides a comprehensive task checklist for implementing the compl
 - [ ] Configure deployment notifications (Slack/Teams/Email)
 
 ### Framework Libraries & Common Code
-- [ ] Create `R2.ShopNet.Framework.Common` project
-  - [ ] Result<T> pattern implementation
-  - [ ] Error handling types
-  - [ ] Common DTOs
-  - [ ] Constants and enums
-- [ ] Create `R2.ShopNet.Framework.CQRS` project
-  - [ ] ICommand<TResponse> interface
-  - [ ] IQuery<TResponse> interface
-  - [ ] ICommandHandler interface
-  - [ ] IQueryHandler interface
-  - [ ] CommandDispatcher implementation
-  - [ ] QueryDispatcher implementation
-- [ ] Create `R2.ShopNet.Framework.Validation` project
-  - [ ] IValidator<T> interface
-  - [ ] ValidationResult types
-  - [ ] Common validation attributes
-  - [ ] Validation pipeline behavior
-- [ ] Create `R2.ShopNet.Framework.Events` project
-  - [ ] IEvent interface
-  - [ ] IEventPublisher interface
-  - [ ] IEventHandler interface
-  - [ ] Event bus implementation (RabbitMQ)
-- [ ] Write unit tests for all framework libraries
+- [x] Create `R2.ShopNet.Framework.Common` project
+  - [x] Result<T> pattern implementation
+  - [x] Error handling types
+  - [x] Common DTOs
+  - [x] Constants and enums
+- [x] Create `R2.ShopNet.Framework.CQRS` project
+  - [x] ICommand<TResponse> interface
+  - [x] IQuery<TResponse> interface
+  - [x] ICommandHandler interface
+  - [x] IQueryHandler interface
+  - [x] CommandDispatcher implementation
+  - [x] QueryDispatcher implementation
+- [x] Create `R2.ShopNet.Framework.Validation` project
+  - [x] IValidator<T> interface
+  - [x] ValidationResult types
+  - [x] Common validation attributes
+  - [x] Validation pipeline behavior
+- [x] Create `R2.ShopNet.Framework.Events` project
+  - [x] IEvent interface
+  - [x] IEventPublisher interface
+  - [x] IEventHandler interface
+  - [x] Event bus implementation (RabbitMQ)
+- [x] Write unit tests for all framework libraries
 - [ ] Create NuGet packages for framework libraries (optional)
 
 ---

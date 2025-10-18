@@ -1,0 +1,223 @@
+version: '3.8'
+
+services:
+  # Consul - Service Discovery
+  consul:
+    image: hashicorp/consul:1.19
+    container_name: shopnet-consul
+    command: agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+    ports:
+      - "8500:8500"     # HTTP API and UI
+      - "8600:8600/udp" # DNS
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+      - CONSUL_CLIENT_INTERFACE=eth0
+    volumes:
+      - consul-data:/consul/data
+      - consul-config:/consul/config
+    networks:
+      - shopnet
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL - Primary Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: shopnet-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=shopnet
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    networks:
+      - shopnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - Cache
+  redis:
+    image: redis:7-alpine
+    container_name: shopnet-redis
+    command: redis-server --appendonly yes --requirepass redis123
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - shopnet
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis123", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ - Message Queue
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: shopnet-rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - shopnet
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Elasticsearch - Search Engine
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: shopnet-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - shopnet
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Kibana - Elasticsearch UI (Optional)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: shopnet-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - shopnet
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # MinIO - S3-Compatible Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: shopnet-minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    ports:
+      - "9000:9000" # API
+      - "9001:9001" # Console
+    volumes:
+      - minio-data:/data
+    networks:
+      - shopnet
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Create MinIO bucket
+  minio-setup:
+    image: minio/mc:latest
+    container_name: shopnet-minio-setup
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 10;
+      /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc mb myminio/product-images --ignore-existing;
+      /usr/bin/mc mb myminio/documents --ignore-existing;
+      /usr/bin/mc anonymous set download myminio/product-images;
+      exit 0;
+      "
+    networks:
+      - shopnet
+
+  # Seq - Structured Logging (Optional)
+  seq:
+    image: datalust/seq:latest
+    container_name: shopnet-seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "5341:5341" # Ingestion
+      - "8081:80"   # UI
+    volumes:
+      - seq-data:/data
+    networks:
+      - shopnet
+
+  # Jaeger - Distributed Tracing (Optional)
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: shopnet-jaeger
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "5775:5775/udp" # Zipkin compact
+      - "6831:6831/udp" # Jaeger compact
+      - "6832:6832/udp" # Jaeger binary
+      - "5778:5778"     # Serve configs
+      - "16686:16686"   # UI
+      - "14268:14268"   # Collector HTTP
+      - "14250:14250"   # Collector gRPC
+      - "9411:9411"     # Zipkin
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+    networks:
+      - shopnet
+
+networks:
+  shopnet:
+    driver: bridge
+    name: shopnet-network
+
+volumes:
+  consul-data:
+    name: shopnet-consul-data
+  consul-config:
+    name: shopnet-consul-config
+  postgres-data:
+    name: shopnet-postgres-data
+  redis-data:
+    name: shopnet-redis-data
+  rabbitmq-data:
+    name: shopnet-rabbitmq-data
+  elasticsearch-data:
+    name: shopnet-elasticsearch-data
+  minio-data:
+    name: shopnet-minio-data
+  seq-data:
+    name: shopnet-seq-data
