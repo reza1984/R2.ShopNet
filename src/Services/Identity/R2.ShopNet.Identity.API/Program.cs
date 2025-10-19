@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenIddict.Abstractions;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.Configuration;
 using R2.ShopNet.Framework.Configuration.Integration;
@@ -101,6 +102,52 @@ try
     // Register Identity configuration initializer (seeds and initializes on startup)
     builder.Services.AddKeyValueConfigurationInitializer<IdentityConfigurationInitializer>();
 
+    // Configure OpenIddict
+    builder.Services.AddOpenIddict()
+        // Register the OpenIddict core components
+        .AddCore(options =>
+        {
+            // Configure OpenIddict to use the Entity Framework Core stores and models
+            options.UseEntityFrameworkCore()
+                   .UseDbContext<IdentityDbContext>()
+                   .ReplaceDefaultEntities<Guid>();
+        })
+        // Register the OpenIddict server components
+        .AddServer(options =>
+        {
+            // Enable the token endpoint (required for Resource Owner Password flow)
+            options.SetTokenEndpointUris("/connect/token");
+
+            // Enable the Resource Owner Password Credentials flow (for login in Angular)
+            options.AllowPasswordFlow()
+                   .AllowRefreshTokenFlow();
+
+            // Accept anonymous clients (clients without a client_secret)
+            options.AcceptAnonymousClients();
+
+            // Register the signing and encryption credentials
+            options.AddDevelopmentEncryptionCertificate()
+                   .AddDevelopmentSigningCertificate();
+
+            // Register the ASP.NET Core host and configure options
+            options.UseAspNetCore()
+                   .EnableTokenEndpointPassthrough()
+                   .DisableTransportSecurityRequirement(); // Only for development!
+
+            // Configure token lifetimes
+            options.SetAccessTokenLifetime(TimeSpan.FromHours(1))
+                   .SetRefreshTokenLifetime(TimeSpan.FromDays(14));
+        })
+        // Register the OpenIddict validation components
+        .AddValidation(options =>
+        {
+            // Import the configuration from the local OpenIddict server instance
+            options.UseLocalServer();
+
+            // Register the ASP.NET Core host
+            options.UseAspNetCore();
+        });
+
     // Register Services - JWT configuration will be loaded from Consul
     var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-256-bit-secret-key-here-change-in-production!!";
     var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "R2.ShopNet.Identity";
@@ -163,7 +210,7 @@ try
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
         var logger = services.GetRequiredService<ILogger<DatabaseSeeder>>();
-        
+
         try
         {
             Log.Information("Applying database migrations...");
@@ -174,6 +221,14 @@ try
             var seeder = new DatabaseSeeder(userManager, roleManager, logger);
             await seeder.SeedAsync();
             Log.Information("Database seeding completed successfully");
+
+            Log.Information("Seeding OpenIddict clients and scopes...");
+            var applicationManager = services.GetRequiredService<IOpenIddictApplicationManager>();
+            var scopeManager = services.GetRequiredService<IOpenIddictScopeManager>();
+            var openIddictLogger = services.GetRequiredService<ILogger<OpenIddictSeeder>>();
+            var openIddictSeeder = new OpenIddictSeeder(applicationManager, scopeManager, openIddictLogger);
+            await openIddictSeeder.SeedAsync();
+            Log.Information("OpenIddict seeding completed successfully");
         }
         catch (Exception ex)
         {
@@ -198,6 +253,7 @@ try
 
     app.UseCors("AllowAll");
 
+    app.UseAuthentication();
     app.UseAuthorization();
 
     app.MapControllers();

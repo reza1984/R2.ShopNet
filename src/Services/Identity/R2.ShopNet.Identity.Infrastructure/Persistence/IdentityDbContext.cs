@@ -58,6 +58,9 @@ public class IdentityDbContext : IdentityDbContext<ApplicationUser, ApplicationR
             entity.ToTable("UserTokens");
         });
 
+        // Configure OpenIddict entities
+        modelBuilder.UseOpenIddict<Guid>();
+
         // Apply custom configurations from this assembly
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(IdentityDbContext).Assembly);
     }

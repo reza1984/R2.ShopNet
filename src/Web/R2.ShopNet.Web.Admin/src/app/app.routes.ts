@@ -2,11 +2,21 @@ import { Routes } from '@angular/router';
 import { AppLayoutComponent } from './layout/app-layout/app-layout.component';
 import { UserListComponent } from './features/users/user-list/user-list.component';
 import { UserEditComponent } from './features/users/user-edit/user-edit.component';
+import { authGuard, publicGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
+  // Public routes (no authentication required)
+  {
+    path: 'login',
+    loadComponent: () => import('./pages/auth/login/login.component').then(m => m.LoginComponent),
+    canActivate: [publicGuard]
+  },
+
+  // Protected routes (authentication required)
   {
     path: '',
     component: AppLayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
@@ -19,5 +29,7 @@ export const routes: Routes = [
       { path: 'settings', loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent) },
     ]
   },
-  { path: '**', redirectTo: '' }
+
+  // Fallback route
+  { path: '**', redirectTo: '/login' }
 ];

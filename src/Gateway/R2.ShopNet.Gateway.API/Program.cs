@@ -87,8 +87,7 @@ try
         });
     });
 
-    // Add JWT Authentication (optional - uncomment when Identity Service is ready)
-    /*
+    // Add JWT Authentication with OpenIddict validation
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
@@ -96,18 +95,27 @@ try
             options.Authority = authConfig["Authority"];
             options.Audience = authConfig["Audience"];
             options.RequireHttpsMetadata = authConfig.GetValue<bool>("RequireHttpsMetadata", true);
-            
+
             options.TokenValidationParameters = new()
             {
                 ValidateIssuer = true,
-                ValidateAudience = true,
+                ValidateAudience = false, // OpenIddict doesn't always include audience
                 ValidateLifetime = true,
-                ValidateIssuerSigningKey = true
+                ValidateIssuerSigningKey = true,
+                ClockSkew = TimeSpan.Zero
             };
+
+            // For development: accept self-signed certificates
+            if (builder.Environment.IsDevelopment())
+            {
+                options.BackchannelHttpHandler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
+            }
         });
 
     builder.Services.AddAuthorization();
-    */
 
     // Add Rate Limiting
     builder.Services.AddRateLimiter(options =>
@@ -173,9 +181,9 @@ try
 
     app.UseCors();
 
-    // Uncomment when authentication is configured
-    // app.UseAuthentication();
-    // app.UseAuthorization();
+    // Enable authentication and authorization
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     app.UseRateLimiter();
 

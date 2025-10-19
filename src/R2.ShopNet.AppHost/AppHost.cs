@@ -84,6 +84,7 @@ var jaeger = builder.AddContainer("jaeger", "jaegertracing/all-in-one", "latest"
 var identityDb = postgres.AddDatabase("identitydb");
 
 // Identity Service
+// Uses launchSettings.json for port configuration (http: 5002)
 var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("identity-service")
     .WithReference(identityDb)
     .WithReference(rabbitmq)
@@ -92,6 +93,7 @@ var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("iden
     .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379");
 
 // API Gateway (YARP with Consul service discovery)
+// Uses launchSettings.json for port configuration (https: 5000, http: 5001)
 // The gateway acts as a single entry point for all client applications
 var gateway = builder.AddProject<Projects.R2_ShopNet_Gateway_API>("api-gateway")
     .WithReference(identityService)  // For health checks and testing
@@ -104,7 +106,7 @@ var gateway = builder.AddProject<Projects.R2_ShopNet_Gateway_API>("api-gateway")
 // Angular environment config uses compile-time values in environment.ts files, not runtime environment variables
 // For production, clients should connect through the API Gateway
 var adminPortal = builder.AddExecutable("admin-portal", "npm", "../Web/R2.ShopNet.Web.Admin", "run", "start")
-    .WithHttpEndpoint(targetPort: 8080, name: "web")
+    .WithHttpEndpoint(targetPort: 4200, name: "web")
     .WithExternalHttpEndpoints()
     .WithEnvironment("NODE_ENV", "development");
 
