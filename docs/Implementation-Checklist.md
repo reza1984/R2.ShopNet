@@ -19,6 +19,21 @@ This document provides a comprehensive task checklist for implementing the compl
 
 ---
 
+## Important Notes
+- Use .Net/Angular cli for project scaffolding.
+- use .NET 9 for all backend services.
+- All microservices must use Consul for service discovery and health monitoring.
+- All services must implement structured logging with Serilog.
+- All services must use the CQRS pattern.
+- All services must implement unit and integration tests with at least 80% code coverage.
+- All services must use PostgreSQL as the primary database.
+- All services must use RabbitMQ for event-driven communication.
+- All services must be containerized using Docker.
+- All services must be orchestrated using .NET Aspire.
+- All frontend applications must use Angular 20 with standalone components and zoneless change detection.
+- All frontend applications must implement responsive design using Tailwind CSS.
+- All frontend applications must use Signals for state management.
+
 ## Phase 0: Project Setup & Infrastructure
 **Duration**: 2-3 weeks
 **Team**: Full team

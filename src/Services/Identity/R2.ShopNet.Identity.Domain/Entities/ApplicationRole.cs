@@ -1,27 +1,19 @@
-using Microsoft.AspNetCore.Identity;
+using R2.ShopNet.Framework.Identity.Entities;
 
 namespace R2.ShopNet.Identity.Domain.Entities;
 
 /// <summary>
-/// Application role for ASP.NET Core Identity integration.
+/// Identity service-specific role entity.
+/// Inherits from framework ApplicationRole with GUIDv7 support.
 /// </summary>
-public class ApplicationRole : IdentityRole<Guid>
+public class ApplicationRole : Framework.Identity.Entities.ApplicationRole
 {
-    public string? Description { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
     public ApplicationRole() : base()
     {
-        Id = Guid.NewGuid();
-        CreatedAt = DateTime.UtcNow;
     }
 
-    public ApplicationRole(string roleName, string? description = null) : base(roleName)
+    public ApplicationRole(string roleName, string? description = null)
+        : base(roleName, description)
     {
-        Id = Guid.NewGuid();
-        Name = roleName;
-        NormalizedName = roleName.ToUpperInvariant();
-        Description = description;
-        CreatedAt = DateTime.UtcNow;
     }
 }

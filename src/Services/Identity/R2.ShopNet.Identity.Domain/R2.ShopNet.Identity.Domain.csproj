@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../Framework/R2.ShopNet.Framework.Common/R2.ShopNet.Framework.Common.csproj" />
     <ProjectReference Include="../../../Framework/R2.ShopNet.Framework.Events/R2.ShopNet.Framework.Events.csproj" />
+    <ProjectReference Include="../../../Framework/R2.ShopNet.Framework.Identity/R2.ShopNet.Framework.Identity.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,37 +2,23 @@ namespace R2.ShopNet.Framework.Common;
 
 /// <summary>
 /// Base class for all domain entities.
+/// Provides identity using GUID Version 7 (time-ordered UUIDs).
 /// </summary>
 public abstract class BaseEntity
 {
+    /// <summary>
+    /// Unique identifier for the entity using GUID Version 7 (RFC 9562).
+    /// </summary>
     public Guid Id { get; protected set; }
-    public DateTime CreatedAt { get; protected set; }
-    public DateTime? UpdatedAt { get; protected set; }
-    public bool IsDeleted { get; protected set; }
 
     protected BaseEntity()
     {
-        Id = Guid.NewGuid();
-        CreatedAt = DateTime.UtcNow;
-        IsDeleted = false;
+        Id = Guid.CreateVersion7();
     }
 
     protected BaseEntity(Guid id)
     {
         Id = id;
-        CreatedAt = DateTime.UtcNow;
-        IsDeleted = false;
-    }
-
-    public void MarkAsDeleted()
-    {
-        IsDeleted = true;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    protected void Update()
-    {
-        UpdatedAt = DateTime.UtcNow;
     }
 
     public override bool Equals(object? obj)
