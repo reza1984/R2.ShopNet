@@ -1,56 +1,125 @@
-<div class="user-edit-container">
-  <div class="header">
-    <button mat-icon-button routerLink="/users">
-      <mat-icon>arrow_back</mat-icon>
+<div class="space-y-6">
+  <!-- Header with Back Button -->
+  <div class="flex items-center gap-4">
+    <button
+      routerLink="/users"
+      class="flex size-10 items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800"
+      title="Back to users"
+    >
+      <span class="material-symbols-rounded text-xl">arrow_back</span>
     </button>
-    <h1>Edit User</h1>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Edit User</h1>
+      @if (user()) {
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ user()?.email }}</p>
+      }
+    </div>
   </div>
 
+  <!-- Loading State -->
   @if (loading()) {
-    <div class="loading-container">
-      <mat-spinner></mat-spinner>
+    <div class="flex items-center justify-center rounded-lg border border-gray-200 bg-white py-20 dark:border-gray-800 dark:bg-gray-900">
+      <div class="text-center">
+        <div class="inline-block size-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
+        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">Loading user...</p>
+      </div>
     </div>
-  } @else if (user()) {
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>User Information</mat-card-title>
-        <mat-card-subtitle>{{ user()?.email }}</mat-card-subtitle>
-      </mat-card-header>
-      
-      <mat-card-content>
-        <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>First Name</mat-label>
-              <input matInput formControlName="firstName" placeholder="Enter first name">
-            </mat-form-field>
+  }
 
-            <mat-form-field appearance="outline">
-              <mat-label>Last Name</mat-label>
-              <input matInput formControlName="lastName" placeholder="Enter last name">
-            </mat-form-field>
+  <!-- User Form -->
+  @else if (user()) {
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+      <!-- User Information Card -->
+      <div class="rounded-lg border border-gray-200 bg-white shadow-theme-sm dark:border-gray-800 dark:bg-gray-900">
+        <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">User Information</h2>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Update the user's profile details</p>
+        </div>
+
+        <div class="space-y-6 p-6">
+          <!-- Name Fields Row -->
+          <div class="grid gap-6 md:grid-cols-2">
+            <!-- First Name -->
+            <div>
+              <label for="firstName" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                First Name
+              </label>
+              <input
+                type="text"
+                id="firstName"
+                formControlName="firstName"
+                placeholder="Enter first name"
+                class="h-11 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500 dark:focus:border-brand-700"
+              />
+            </div>
+
+            <!-- Last Name -->
+            <div>
+              <label for="lastName" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Last Name
+              </label>
+              <input
+                type="text"
+                id="lastName"
+                formControlName="lastName"
+                placeholder="Enter last name"
+                class="h-11 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500 dark:focus:border-brand-700"
+              />
+            </div>
           </div>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Phone Number</mat-label>
-            <input matInput formControlName="phoneNumber" placeholder="Enter phone number">
-          </mat-form-field>
-
-          <div class="form-actions">
-            <button mat-button type="button" (click)="onCancel()">Cancel</button>
-            <button mat-raised-button 
-                    color="primary" 
-                    type="submit"
-                    [disabled]="userForm.invalid || saving()">
-              @if (saving()) {
-                <mat-spinner diameter="20"></mat-spinner>
-              } @else {
-                Save Changes
-              }
-            </button>
+          <!-- Phone Number -->
+          <div>
+            <label for="phoneNumber" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="phoneNumber"
+              formControlName="phoneNumber"
+              placeholder="Enter phone number"
+              class="h-11 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500 dark:focus:border-brand-700"
+            />
           </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
+
+          <!-- Email (Read-only) -->
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Email Address
+            </label>
+            <div class="flex h-11 items-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400">
+              {{ user()?.email }}
+            </div>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Email cannot be changed</p>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-gray-800">
+          <button
+            type="button"
+            (click)="onCancel()"
+            class="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="userForm.invalid || saving()"
+            [class.opacity-50]="userForm.invalid || saving()"
+            [class.cursor-not-allowed]="userForm.invalid || saving()"
+            class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 disabled:hover:bg-brand-500 dark:bg-brand-600 dark:hover:bg-brand-700"
+          >
+            @if (saving()) {
+              <div class="inline-block size-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+              <span>Saving...</span>
+            } @else {
+              <span class="material-symbols-rounded text-lg">save</span>
+              <span>Save Changes</span>
+            }
+          </button>
+        </div>
+      </div>
+    </form>
   }
 </div>

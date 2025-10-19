@@ -1,0 +1,114 @@
+<!-- Example: Using Material Icons in User List Component -->
+
+<!-- BEFORE: Using SVG -->
+<button
+  [routerLink]="['/users', user.id, 'edit']"
+  class="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+  title="Edit user"
+>
+  <svg class="size-5" viewBox="0 0 20 20" fill="none">
+    <path d="M14.1667 2.49993C14.3856..." stroke="currentColor"/>
+  </svg>
+</button>
+
+<!-- AFTER: Using Material Icons (Option 1 - Direct) -->
+<button
+  [routerLink]="['/users', user.id, 'edit']"
+  class="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+  title="Edit user"
+>
+  <span class="material-symbols-rounded text-xl">edit</span>
+</button>
+
+<!-- AFTER: Using Material Icons (Option 2 - Component) -->
+<button
+  [routerLink]="['/users', user.id, 'edit']"
+  class="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+  title="Edit user"
+>
+  <app-icon name="edit" [size]="20"></app-icon>
+</button>
+
+<!-- ========================================= -->
+<!-- Header Actions with Icons -->
+<!-- ========================================= -->
+
+<!-- Export Button -->
+<button class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5">
+  <span class="material-symbols-rounded text-xl">download</span>
+  Export
+</button>
+
+<!-- Add User Button -->
+<button class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-white">
+  <span class="material-symbols-rounded text-xl">add</span>
+  Add User
+</button>
+
+<!-- Search Icon -->
+<div class="relative">
+  <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+    search
+  </span>
+  <input type="text" class="pl-10" placeholder="Search...">
+</div>
+
+<!-- Filter Buttons -->
+<button class="flex items-center gap-2">
+  <span class="material-symbols-rounded">filter_list</span>
+  All Users
+</button>
+
+<!-- Delete Action -->
+<button class="rounded-lg p-2 text-error-600 hover:bg-error-50">
+  <span class="material-symbols-rounded text-xl">delete</span>
+</button>
+
+<!-- Status Icons -->
+<span class="inline-flex items-center gap-1.5">
+  <span class="material-symbols-rounded material-symbols-filled text-success-500 text-sm">
+    check_circle
+  </span>
+  Active
+</span>
+
+<span class="inline-flex items-center gap-1.5">
+  <span class="material-symbols-rounded text-gray-500 text-sm">
+    cancel
+  </span>
+  Inactive
+</span>
+
+<!-- ========================================= -->
+<!-- Sidebar Menu Items -->
+<!-- ========================================= -->
+
+<a class="flex items-center gap-3">
+  <span class="material-symbols-rounded">dashboard</span>
+  Dashboard
+</a>
+
+<a class="flex items-center gap-3">
+  <span class="material-symbols-rounded">group</span>
+  Users
+</a>
+
+<a class="flex items-center gap-3">
+  <span class="material-symbols-rounded">inventory_2</span>
+  Products
+</a>
+
+<a class="flex items-center gap-3">
+  <span class="material-symbols-rounded">receipt_long</span>
+  Orders
+</a>
+
+<a class="flex items-center gap-3">
+  <span class="material-symbols-rounded">analytics</span>
+  Analytics
+</a>
+
+<a class="flex items-center gap-3">
+  <span class="material-symbols-rounded">settings</span>
+  Settings
+</a>
