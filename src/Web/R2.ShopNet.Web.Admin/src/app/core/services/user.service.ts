@@ -8,7 +8,7 @@ import { User, PagedResult, UpdateUserRequest } from '../models/user.model';
   providedIn: 'root'
 })
 export class UserService {
-  private readonly apiUrl = `${environment.identityApiUrl}/users`;
+  private readonly apiUrl = `${environment.apiUrl}/api/identity/users`;
   
   // Signals for state management
   private usersSignal = signal<User[]>([]);

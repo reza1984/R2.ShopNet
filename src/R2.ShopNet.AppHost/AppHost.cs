@@ -8,13 +8,15 @@ var consul = builder.AddContainer("consul", "hashicorp/consul", "1.19")
     .WithEnvironment("CONSUL_BIND_INTERFACE", "eth0")
     .WithEnvironment("CONSUL_CLIENT_INTERFACE", "eth0")
     .WithVolume("consul-data", "/consul/data")
-    .WithVolume("consul-config", "/consul/config");
+    .WithVolume("consul-config", "/consul/config")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 var postgres = builder.AddPostgres("postgres")
     .WithImage("postgres", "16-alpine")
     .WithEnvironment("POSTGRES_PASSWORD", "postgres")
     .WithVolume("postgres-data", "/var/lib/postgresql/data")
-    .WithBindMount("../../scripts", "/docker-entrypoint-initdb.d");
+    .WithBindMount("../../scripts", "/docker-entrypoint-initdb.d")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 // pgAdmin for PostgreSQL administration
 var pgAdmin = builder.AddContainer("pgadmin", "dpage/pgadmin4", "latest")
@@ -24,18 +26,21 @@ var pgAdmin = builder.AddContainer("pgadmin", "dpage/pgadmin4", "latest")
     .WithEnvironment("PGADMIN_CONFIG_SERVER_MODE", "False")
     .WithEnvironment("PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED", "False")
     .WithReference(postgres)
-    .WithVolume("pgadmin-data", "/var/lib/pgadmin");
+    .WithVolume("pgadmin-data", "/var/lib/pgadmin")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 var redis = builder.AddRedis("redis")
     .WithImage("redis", "7-alpine")
     .WithRedisCommander()
-    .WithVolume("redis-data", "/data");
+    .WithVolume("redis-data", "/data")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 var rabbitmq = builder.AddRabbitMQ("rabbitmq")
     .WithManagementPlugin()
     .WithEnvironment("RABBITMQ_DEFAULT_USER", "guest")
     .WithEnvironment("RABBITMQ_DEFAULT_PASS", "guest")
-    .WithVolume("rabbitmq-data", "/var/lib/rabbitmq");
+    .WithVolume("rabbitmq-data", "/var/lib/rabbitmq")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 var elasticsearch = builder.AddContainer("elasticsearch", "docker.elastic.co/elasticsearch/elasticsearch", "8.11.0")
     .WithHttpEndpoint(port: 9200, targetPort: 9200, name: "api")
@@ -44,7 +49,8 @@ var elasticsearch = builder.AddContainer("elasticsearch", "docker.elastic.co/ela
     .WithEnvironment("xpack.security.enabled", "false")
     .WithEnvironment("ES_JAVA_OPTS", "-Xms512m -Xmx512m")
     .WithEnvironment("bootstrap.memory_lock", "true")
-    .WithVolume("elasticsearch-data", "/usr/share/elasticsearch/data");
+    .WithVolume("elasticsearch-data", "/usr/share/elasticsearch/data")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 var minio = builder.AddContainer("minio", "minio/minio", "latest")
     .WithHttpEndpoint(port: 9000, targetPort: 9000, name: "api")
@@ -52,7 +58,8 @@ var minio = builder.AddContainer("minio", "minio/minio", "latest")
     .WithArgs("server", "/data", "--console-address", ":9001")
     .WithEnvironment("MINIO_ROOT_USER", "minioadmin")
     .WithEnvironment("MINIO_ROOT_PASSWORD", "minioadmin")
-    .WithVolume("minio-data", "/data");
+    .WithVolume("minio-data", "/data")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 // Observability Resources
 var seq = builder.AddContainer("seq", "datalust/seq", "latest")
@@ -60,7 +67,8 @@ var seq = builder.AddContainer("seq", "datalust/seq", "latest")
     .WithHttpEndpoint(port: 8081, targetPort: 80, name: "web")
     .WithEnvironment("ACCEPT_EULA", "Y")
     .WithEnvironment("SEQ_FIRSTRUN_ADMINPASSWORD", "admin123")
-    .WithVolume("seq-data", "/data");
+    .WithVolume("seq-data", "/data")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 var jaeger = builder.AddContainer("jaeger", "jaegertracing/all-in-one", "latest")
     .WithHttpEndpoint(port: 16686, targetPort: 16686, name: "ui")
@@ -69,7 +77,8 @@ var jaeger = builder.AddContainer("jaeger", "jaegertracing/all-in-one", "latest"
     .WithEndpoint(port: 4317, targetPort: 4317, name: "otlp-grpc")
     .WithHttpEndpoint(port: 4318, targetPort: 4318, name: "otlp")
     .WithEnvironment("COLLECTOR_ZIPKIN_HOST_PORT", ":9411")
-    .WithEnvironment("COLLECTOR_OTLP_ENABLED", "true");
+    .WithEnvironment("COLLECTOR_OTLP_ENABLED", "true")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 // Create Identity database
 var identityDb = postgres.AddDatabase("identitydb");
@@ -79,15 +88,23 @@ var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("iden
     .WithReference(identityDb)
     .WithReference(rabbitmq)
     .WithReference(redis)
-    .WithEnvironment("Consul__KeyValue__Address", "http://consul:8500")
-    .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379")
-    .WithHttpsEndpoint(targetPort: 5002);
+    .WithEnvironment("Consul__KeyValue__Address", "http://localhost:8500")  // Use localhost since Identity Service runs outside Docker
+    .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379");
+
+// API Gateway (YARP with Consul service discovery)
+// The gateway acts as a single entry point for all client applications
+var gateway = builder.AddProject<Projects.R2_ShopNet_Gateway_API>("api-gateway")
+    .WithReference(identityService)  // For health checks and testing
+    .WithEnvironment("Consul__Address", "http://localhost:8500")  // Use localhost since Gateway runs outside Docker
+    .WaitFor(identityService)
+    .WithExternalHttpEndpoints();
 
 // Admin Portal (Angular 20)
 // Note: Ensure Node.js is in PATH. If using nvm, run Aspire from terminal with nvm environment.
 // Angular environment config uses compile-time values in environment.ts files, not runtime environment variables
-var adminPortal = builder.AddNodeApp("admin-portal", "../Web/R2.ShopNet.Web.Admin", "start")
-    .WithHttpEndpoint(port: 4200, env: "PORT")
+// For production, clients should connect through the API Gateway
+var adminPortal = builder.AddExecutable("admin-portal", "npm", "../Web/R2.ShopNet.Web.Admin", "run", "start")
+    .WithHttpEndpoint(targetPort: 8080, name: "web")
     .WithExternalHttpEndpoints()
     .WithEnvironment("NODE_ENV", "development");
 

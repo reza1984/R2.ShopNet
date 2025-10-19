@@ -10,6 +10,7 @@ public class ConsulOptions
     public string ServiceId { get; set; } = string.Empty;
     public string ServiceAddress { get; set; } = "localhost";
     public int ServicePort { get; set; }
+    public string HealthCheckUrl { get; set; } = string.Empty;
     public string[] Tags { get; set; } = Array.Empty<string>();
     public int HealthCheckIntervalSeconds { get; set; } = 10;
     public int HealthCheckTimeoutSeconds { get; set; } = 5;

@@ -25,6 +25,10 @@ public class ConsulServiceRegistration : IHostedService
             ? $"{_options.ServiceName}-{Guid.NewGuid()}"
             : _options.ServiceId;
 
+        var healthCheckUrl = !string.IsNullOrEmpty(_options.HealthCheckUrl) 
+            ? _options.HealthCheckUrl 
+            : $"http://{_options.ServiceAddress}:{_options.ServicePort}/health";
+
         var registration = new AgentServiceRegistration
         {
             ID = _registrationId,
@@ -34,7 +38,7 @@ public class ConsulServiceRegistration : IHostedService
             Tags = _options.Tags,
             Check = new AgentServiceCheck
             {
-                HTTP = $"http://{_options.ServiceAddress}:{_options.ServicePort}/health",
+                HTTP = healthCheckUrl,
                 Interval = TimeSpan.FromSeconds(_options.HealthCheckIntervalSeconds),
                 Timeout = TimeSpan.FromSeconds(_options.HealthCheckTimeoutSeconds),
                 DeregisterCriticalServiceAfter = TimeSpan.FromMinutes(_options.DeregisterCriticalServiceAfterMinutes)
