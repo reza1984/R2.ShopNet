@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Identity.Infrast
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.AppHost", "src\R2.ShopNet.AppHost\R2.ShopNet.AppHost.csproj", "{7A7116C8-11B2-4F52-8A5E-FAE025516148}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Framework.Configuration", "src\Framework\R2.ShopNet.Framework.Configuration\R2.ShopNet.Framework.Configuration.csproj", "{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -161,6 +163,18 @@ Global
 		{7A7116C8-11B2-4F52-8A5E-FAE025516148}.Release|x64.Build.0 = Release|Any CPU
 		{7A7116C8-11B2-4F52-8A5E-FAE025516148}.Release|x86.ActiveCfg = Release|Any CPU
 		{7A7116C8-11B2-4F52-8A5E-FAE025516148}.Release|x86.Build.0 = Release|Any CPU
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}.Debug|x64.Build.0 = Debug|Any CPU
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}.Debug|x86.Build.0 = Debug|Any CPU
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}.Release|x64.ActiveCfg = Release|Any CPU
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}.Release|x64.Build.0 = Release|Any CPU
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}.Release|x86.ActiveCfg = Release|Any CPU
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,5 +193,6 @@ Global
 		{4F1FD788-F4F5-4246-8647-FE610DD997C2} = {1BFC9479-12BF-35C3-06B8-42D89D95092B}
 		{65D298FD-2C05-4CE6-8C80-C46BD338432E} = {1BFC9479-12BF-35C3-06B8-42D89D95092B}
 		{7A7116C8-11B2-4F52-8A5E-FAE025516148} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{E7C806AD-CB98-495A-85FD-1F3D994BAC5D} = {E0AD1809-C64F-3D39-45E0-E424261CE16D}
 	EndGlobalSection
 EndGlobal

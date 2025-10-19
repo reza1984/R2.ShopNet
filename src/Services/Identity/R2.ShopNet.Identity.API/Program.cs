@@ -1,41 +1,192 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using R2.ShopNet.Framework.Common;
+using R2.ShopNet.Framework.Configuration;
+using R2.ShopNet.Framework.Configuration.Integration;
+using R2.ShopNet.Framework.CQRS;
+using R2.ShopNet.Framework.Events;
+using R2.ShopNet.Framework.ServiceDiscovery;
+using R2.ShopNet.Identity.API.Services;
+using R2.ShopNet.Identity.Application.Commands.LoginUser;
+using R2.ShopNet.Identity.Application.Commands.RegisterUser;
+using R2.ShopNet.Identity.Application.Services;
+using R2.ShopNet.Identity.Domain.Entities;
+using R2.ShopNet.Identity.Infrastructure.Events;
+using R2.ShopNet.Identity.Infrastructure.Persistence;
+using R2.ShopNet.Identity.Infrastructure.Seed;
+using R2.ShopNet.Identity.Infrastructure.Services;
+using Serilog;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/identity-service-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+try
 {
-    app.MapOpenApi();
+    Log.Information("Starting Identity Service");
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    // Add key-value store (Consul) as configuration source
+    // This integrates Consul KV directly into IConfiguration
+    builder.Configuration.AddKeyValueConfiguration("identity/");
+
+    // Add Serilog
+    builder.Host.UseSerilog();
+
+    // Add services to the container
+    builder.Services.AddControllers();
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc("v1", new()
+        {
+            Title = "R2.ShopNet Identity Service API",
+            Version = "v1",
+            Description = "Authentication and user management service"
+        });
+    });
+
+    // Configure Database
+    var connectionString = builder.Configuration.GetConnectionString("IdentityDb")
+        ?? "Host=localhost;Port=5432;Database=r2shopnet_identity;Username=postgres;Password=postgres";
+
+    builder.Services.AddDbContext<IdentityDbContext>(options =>
+        options.UseNpgsql(connectionString));
+
+    // Configure ASP.NET Core Identity
+    builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+    {
+        // Password settings
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = true;
+        options.Password.RequiredLength = 8;
+        options.Password.RequiredUniqueChars = 1;
+
+        // Lockout settings
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.AllowedForNewUsers = true;
+
+        // User settings
+        options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+        options.User.RequireUniqueEmail = true;
+
+        // Sign-in settings
+        options.SignIn.RequireConfirmedEmail = false; // Set to true in production
+        options.SignIn.RequireConfirmedPhoneNumber = false;
+    })
+    .AddEntityFrameworkStores<IdentityDbContext>()
+    .AddDefaultTokenProviders();
+
+    // Register Consul KV Store for Configuration
+    builder.Services.AddConsulKeyValueStore(builder.Configuration);
+    builder.Services.AddConfigurationManager();
+
+    // Register key-value configuration providers in DI
+    builder.Services.AddKeyValueConfigurationServices(builder.Configuration as IConfigurationRoot 
+        ?? throw new InvalidOperationException("Configuration must be IConfigurationRoot"));
+
+    // Register Identity configuration initializer (seeds and initializes on startup)
+    builder.Services.AddKeyValueConfigurationInitializer<IdentityConfigurationInitializer>();
+
+    // Register Services - JWT configuration will be loaded from Consul
+    var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-256-bit-secret-key-here-change-in-production!!";
+    var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "R2.ShopNet.Identity";
+    var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "R2.ShopNet";
+
+    builder.Services.AddScoped<ITokenService>(sp =>
+    {
+        var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
+        return new TokenService(userManager, jwtSecret, jwtIssuer, jwtAudience, expirationMinutes: 60);
+    });
+
+    // Register CQRS
+    builder.Services.AddScoped<ICommandDispatcher, CommandDispatcher>();
+    builder.Services.AddScoped<ICommandHandler<RegisterUserCommand, Result<RegisterUserResponse>>,
+        RegisterUserCommandHandler>();
+    builder.Services.AddScoped<ICommandHandler<LoginUserCommand, Result<LoginUserResponse>>,
+        LoginUserCommandHandler>();
+
+    // Register Event Publisher (placeholder for now)
+    builder.Services.AddSingleton<IEventPublisher, InMemoryEventPublisher>();
+
+    // Configure CORS
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAll", policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
+    });
+
+    // Configure Consul Service Discovery
+    builder.Services.AddConsulServiceDiscovery(builder.Configuration);
+
+    var app = builder.Build();
+
+    // Apply database migrations and seed data automatically on startup
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var dbContext = services.GetRequiredService<IdentityDbContext>();
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
+        var logger = services.GetRequiredService<ILogger<DatabaseSeeder>>();
+        
+        try
+        {
+            Log.Information("Applying database migrations...");
+            dbContext.Database.Migrate();
+            Log.Information("Database migrations applied successfully");
+
+            Log.Information("Seeding database with initial data...");
+            var seeder = new DatabaseSeeder(userManager, roleManager, logger);
+            await seeder.SeedAsync();
+            Log.Information("Database seeding completed successfully");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error during database initialization");
+            throw;
+        }
+    }
+
+    // Configuration initialization is handled by ConsulConfigurationInitializer hosted service
+    // It will seed Consul KV store on first run and initialize all Consul providers
+
+    // Configure the HTTP request pipeline
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseSerilogRequestLogging();
+
+    app.UseHttpsRedirection();
+
+    app.UseCors("AllowAll");
+
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    Log.Information("Identity Service started successfully");
+
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
+catch (Exception ex)
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
+    Log.Fatal(ex, "Identity Service terminated unexpectedly");
+}
+finally
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    Log.CloseAndFlush();
 }

@@ -18,4 +18,8 @@
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.13.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Services\Identity\R2.ShopNet.Identity.API\R2.ShopNet.Identity.API.csproj" />
+  </ItemGroup>
+
 </Project>

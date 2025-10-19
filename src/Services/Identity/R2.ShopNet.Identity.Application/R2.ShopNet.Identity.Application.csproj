@@ -1,9 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Framework\R2.ShopNet.Framework.Common\R2.ShopNet.Framework.Common.csproj" />
+    <ProjectReference Include="..\..\..\Framework\R2.ShopNet.Framework.CQRS\R2.ShopNet.Framework.CQRS.csproj" />
+    <ProjectReference Include="..\..\..\Framework\R2.ShopNet.Framework.Validation\R2.ShopNet.Framework.Validation.csproj" />
+    <ProjectReference Include="..\..\..\Framework\R2.ShopNet.Framework.Events\R2.ShopNet.Framework.Events.csproj" />
+    <ProjectReference Include="..\R2.ShopNet.Identity.Domain\R2.ShopNet.Identity.Domain.csproj" />
+  </ItemGroup>
 
 </Project>

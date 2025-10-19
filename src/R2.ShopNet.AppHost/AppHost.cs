@@ -38,7 +38,7 @@ var rabbitmq = builder.AddRabbitMQ("rabbitmq")
     .WithVolume("rabbitmq-data", "/var/lib/rabbitmq");
 
 var elasticsearch = builder.AddContainer("elasticsearch", "docker.elastic.co/elasticsearch/elasticsearch", "8.11.0")
-    .WithHttpEndpoint(port: 9200, targetPort: 9200, name: "http")
+    .WithHttpEndpoint(port: 9200, targetPort: 9200, name: "api")
     .WithEndpoint(port: 9300, targetPort: 9300, name: "transport")
     .WithEnvironment("discovery.type", "single-node")
     .WithEnvironment("xpack.security.enabled", "false")
@@ -57,26 +57,30 @@ var minio = builder.AddContainer("minio", "minio/minio", "latest")
 // Observability Resources
 var seq = builder.AddContainer("seq", "datalust/seq", "latest")
     .WithHttpEndpoint(port: 5341, targetPort: 5341, name: "ingestion")
-    .WithHttpEndpoint(port: 8081, targetPort: 80, name: "ui")
+    .WithHttpEndpoint(port: 8081, targetPort: 80, name: "web")
     .WithEnvironment("ACCEPT_EULA", "Y")
     .WithEnvironment("SEQ_FIRSTRUN_ADMINPASSWORD", "admin123")
     .WithVolume("seq-data", "/data");
 
 var jaeger = builder.AddContainer("jaeger", "jaegertracing/all-in-one", "latest")
     .WithHttpEndpoint(port: 16686, targetPort: 16686, name: "ui")
-    .WithHttpEndpoint(port: 14268, targetPort: 14268, name: "collector-http")
-    .WithEndpoint(port: 14250, targetPort: 14250, name: "collector-grpc")
+    .WithHttpEndpoint(port: 14268, targetPort: 14268, name: "collector")
+    .WithEndpoint(port: 14250, targetPort: 14250, name: "grpc")
     .WithEndpoint(port: 4317, targetPort: 4317, name: "otlp-grpc")
-    .WithHttpEndpoint(port: 4318, targetPort: 4318, name: "otlp-http")
+    .WithHttpEndpoint(port: 4318, targetPort: 4318, name: "otlp")
     .WithEnvironment("COLLECTOR_ZIPKIN_HOST_PORT", ":9411")
     .WithEnvironment("COLLECTOR_OTLP_ENABLED", "true");
 
-// TODO: Add microservices when they are implemented
-// Databases will be created by Entity Framework migrations in each microservice
-// var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("identity-api")
-//     .WithReference(postgres)
-//     .WithReference(consul)
-//     .WithReference(redis)
-//     .WithReference(rabbitmq);
+// Create Identity database
+var identityDb = postgres.AddDatabase("identitydb");
+
+// Identity Service
+var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("identity-service")
+    .WithReference(identityDb)
+    .WithReference(rabbitmq)
+    .WithReference(redis)
+    .WithEnvironment("Consul__KeyValue__Address", "http://consul:8500")
+    .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379")
+    .WithHttpsEndpoint(targetPort: 5002);
 
 builder.Build().Run();

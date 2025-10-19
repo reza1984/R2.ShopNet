@@ -80,6 +80,7 @@ This document provides a comprehensive task checklist for implementing the compl
 - [x] Configure OpenTelemetry in Aspire
 - [x] Configure Aspire environment variables
 - [x] Test Aspire orchestration locally
+- [x] Integrate Identity Service with Aspire AppHost
 
 ### Consul Service Discovery Setup
 - [x] Create `R2.ShopNet.Framework.ServiceDiscovery` project
@@ -146,36 +147,34 @@ This document provides a comprehensive task checklist for implementing the compl
 - Test registration in Consul UI (http://localhost:8500)
 
 ### Identity Service (R2.ShopNet.Identity)
-- [ ] Create solution structure (API, Application, Domain, Infrastructure)
-- [ ] Setup Consul integration
-  - [ ] Add Consul NuGet package reference
-  - [ ] Register Consul client in DI
-  - [ ] Add ConsulServiceRegistration hosted service
-  - [ ] Configure service name: "identity-service"
-  - [ ] Setup /health endpoint
-  - [ ] Configure health check interval (10s)
-- [ ] Setup OpenIddict authentication
-  - [ ] Configure OAuth 2.0 flows
-  - [ ] Configure OpenID Connect
-  - [ ] Setup JWT token generation
-  - [ ] Configure refresh tokens
-  - [ ] Setup development certificates
-- [ ] Implement User entity and aggregates
-- [ ] Implement user registration command
-- [ ] Implement user login command
-- [ ] Implement password reset functionality
-- [ ] Implement email confirmation
+- [x] Create solution structure (API, Application, Domain, Infrastructure)
+- [x] Setup Consul integration
+  - [x] Add Consul NuGet package reference
+  - [x] Register Consul client in DI
+  - [x] Add ConsulServiceRegistration hosted service
+  - [x] Configure service name: "identity-service"
+  - [x] Setup /health endpoint
+  - [x] Configure health check interval (10s)
+- [x] Setup JWT authentication (using TokenService instead of OpenIddict)
+  - [x] Configure JWT token generation
+  - [x] Configure refresh tokens
+  - [x] Setup token validation
+- [x] Implement User entity and aggregates
+- [x] Implement user registration command
+- [x] Implement user login command
+- [x] Implement password reset functionality (domain methods ready)
+- [x] Implement email confirmation (domain methods ready)
 - [ ] Implement two-factor authentication (optional)
-- [ ] Setup EF Core DbContext
-- [ ] Create database migrations
-- [ ] Implement user repository
-- [ ] Add Serilog structured logging
+- [x] Setup EF Core DbContext
+- [x] Create database migrations
+- [x] Implement user repository
+- [x] Add Serilog structured logging
 - [ ] Write unit tests (80%+ coverage)
 - [ ] Write integration tests (Testcontainers)
-- [ ] Setup API documentation (Swagger)
-- [ ] Configure CORS policies
-- [ ] Test service registration in Consul UI
-- [ ] Test health check monitoring
+- [x] Setup API documentation (Swagger)
+- [x] Configure CORS policies
+- [x] Test service registration in Consul UI
+- [x] Test health check monitoring
 - [ ] Deploy to dev environment
 
 ### Authorization Service (R2.ShopNet.Authorization)
