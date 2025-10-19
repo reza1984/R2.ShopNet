@@ -83,4 +83,12 @@ var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("iden
     .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379")
     .WithHttpsEndpoint(targetPort: 5002);
 
+// Admin Portal (Angular 20)
+// Note: Ensure Node.js is in PATH. If using nvm, run Aspire from terminal with nvm environment.
+// Angular environment config uses compile-time values in environment.ts files, not runtime environment variables
+var adminPortal = builder.AddNodeApp("admin-portal", "../Web/R2.ShopNet.Web.Admin", "start")
+    .WithHttpEndpoint(port: 4200, env: "PORT")
+    .WithExternalHttpEndpoints()
+    .WithEnvironment("NODE_ENV", "development");
+
 builder.Build().Run();
