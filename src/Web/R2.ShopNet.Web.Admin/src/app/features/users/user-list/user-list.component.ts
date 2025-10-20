@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../core/services/user.service';
 import { User } from '../../../core/models/user.model';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-user-list',
@@ -11,7 +12,8 @@ import { User } from '../../../core/models/user.model';
   imports: [
     CommonModule,
     RouterModule,
-    FormsModule
+    FormsModule,
+    IconComponent
   ],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss']

@@ -17,7 +17,7 @@ type IconStyle = 'material' | 'symbols-outlined' | 'symbols-rounded' | 'symbols-
   `,
   styles: [`
     :host {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
     }

@@ -9,11 +9,13 @@ import {
   OnDestroy,
   HostListener
 } from '@angular/core';
+import { IconComponent } from '../../icon/icon.component';
 
 @Component({
   selector: 'app-modal',
   imports: [
     CommonModule,
+    IconComponent,
   ],
   templateUrl: './modal.component.html',
   styles: ``

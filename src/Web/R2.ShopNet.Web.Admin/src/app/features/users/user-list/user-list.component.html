@@ -12,18 +12,14 @@
         (click)="exportUsers()"
         class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
       >
-        <svg class="size-5" viewBox="0 0 20 20" fill="none">
-          <path d="M6 10L10 14L14 10M10 3V13.5M3 17H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <app-icon name="download" [size]="20" color="currentColor" />
         Export
       </button>
       <button
         routerLink="/users/create"
         class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-700"
       >
-        <svg class="size-5" viewBox="0 0 20 20" fill="none">
-          <path d="M10 5V15M5 10H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <app-icon name="add" [size]="20" color="currentColor" />
         Add User
       </button>
     </div>
@@ -35,9 +31,9 @@
       <!-- Search -->
       <div class="flex-1 max-w-md">
         <div class="relative">
-          <svg class="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-gray-400" viewBox="0 0 20 20" fill="none">
-            <path d="M17.5 17.5L13.875 13.875M15.8333 9.16667C15.8333 12.8486 12.8486 15.8333 9.16667 15.8333C5.48477 15.8333 2.5 12.8486 2.5 9.16667C2.5 5.48477 5.48477 2.5 9.16667 2.5C12.8486 2.5 15.8333 5.48477 15.8333 9.16667Z" stroke="currentColor" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <app-icon name="search" [size]="20" color="currentColor" />
+          </span>
           <input
             type="text"
             [(ngModel)]="searchTerm"
