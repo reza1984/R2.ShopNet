@@ -7,6 +7,7 @@ import { ButtonComponent } from '../../../shared/components/forms/button/button.
 import { InputFieldComponent } from '../../../shared/components/forms/input-field/input-field.component';
 import { CheckboxComponent } from '../../../shared/components/forms/checkbox/checkbox.component';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { AuthPageLayoutComponent } from '../auth-page-layout/auth-page-layout.component';
 
 @Component({
   selector: 'app-login',
@@ -18,7 +19,8 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
     ButtonComponent,
     InputFieldComponent,
     CheckboxComponent,
-    IconComponent
+    IconComponent,
+    AuthPageLayoutComponent
   ],
   templateUrl: './login.component.html'
 })
@@ -39,8 +41,8 @@ export class LoginComponent implements OnInit {
 
     // Initialize reactive form
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      email: ['admin@shopnet.com', [Validators.required, Validators.email]],
+      password: ['Admin@123', [Validators.required, Validators.minLength(6)]],
       rememberMe: [false]
     });
 

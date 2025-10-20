@@ -8,7 +8,7 @@ export const routes: Routes = [
   // Public routes (no authentication required)
   {
     path: 'login',
-    loadComponent: () => import('./pages/auth/login/login.component').then(m => m.LoginComponent),
+    loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent),
     canActivate: [publicGuard]
   },
 

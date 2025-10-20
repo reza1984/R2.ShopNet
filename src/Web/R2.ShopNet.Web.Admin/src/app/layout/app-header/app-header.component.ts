@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { IconComponent } from '../../shared/components/icon/icon.component';
+import { UserDropdownComponent } from './user-dropdown/user-dropdown.component';
 
 @Component({
   selector: 'app-header',
@@ -14,6 +15,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
     CommonModule,
     RouterModule,
     IconComponent,
+    UserDropdownComponent,
   ],
   templateUrl: './app-header.component.html',
 })

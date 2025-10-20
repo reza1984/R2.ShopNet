@@ -66,32 +66,52 @@ public class OpenIddictSeeder
     private async Task SeedClientsAsync()
     {
         // Admin Web Application Client
-        if (await _applicationManager.FindByClientIdAsync("admin-web") is null)
+        var adminWebApp = await _applicationManager.FindByClientIdAsync("admin-web");
+        var adminWebDescriptor = new OpenIddictApplicationDescriptor
         {
-            await _applicationManager.CreateAsync(new OpenIddictApplicationDescriptor
+            ClientId = "admin-web",
+            DisplayName = "R2.ShopNet Admin Web Application",
+            ClientType = ClientTypes.Public, // Public client (SPA) - no client secret
+            ConsentType = ConsentTypes.Implicit, // No consent required
+            Permissions =
             {
-                ClientId = "admin-web",
-                DisplayName = "R2.ShopNet Admin Web Application",
-                ClientType = ClientTypes.Public, // Public client (SPA) - no client secret
-                ConsentType = ConsentTypes.Implicit, // No consent required
-                Permissions =
-                {
-                    Permissions.Endpoints.Token,
-                    Permissions.GrantTypes.Password,
-                    Permissions.GrantTypes.RefreshToken,
-                    Permissions.Scopes.Email,
-                    Permissions.Scopes.Profile,
-                    Permissions.Scopes.Roles,
-                    Permissions.Prefixes.Scope + "api",
-                    Permissions.Prefixes.Scope + "admin"
-                },
-                Requirements =
-                {
-                    Requirements.Features.ProofKeyForCodeExchange
-                }
-            });
+                Permissions.Endpoints.Token,
+                Permissions.GrantTypes.Password,
+                Permissions.GrantTypes.RefreshToken,
+                Permissions.Scopes.Email,
+                Permissions.Scopes.Profile,
+                Permissions.Scopes.Roles,
+                Permissions.Prefixes.Scope + "api",
+                Permissions.Prefixes.Scope + "admin"
+            },
+            Requirements =
+            {
+                Requirements.Features.ProofKeyForCodeExchange
+            },
+            // TODO: In the future, support dynamic app registration and configuration
+            PostLogoutRedirectUris =
+            {
+                new Uri("http://localhost:4200/login"),
+                new Uri("https://admin.shopnet.com/login"),
+                new Uri("https://customer.shopnet.com/logout-callback")
+            }
+        };
 
+        _logger.LogInformation("Registering/updating admin-web client with PostLogoutRedirectUris:");
+        foreach (var uri in adminWebDescriptor.PostLogoutRedirectUris)
+        {
+            _logger.LogInformation("  - {PostLogoutRedirectUri}", uri);
+        }
+
+        if (adminWebApp is null)
+        {
+            await _applicationManager.CreateAsync(adminWebDescriptor);
             _logger.LogInformation("Created client: admin-web");
+        }
+        else
+        {
+            await _applicationManager.UpdateAsync(adminWebApp, adminWebDescriptor);
+            _logger.LogInformation("Updated client: admin-web");
         }
 
         // Customer Web Application Client (for future use)

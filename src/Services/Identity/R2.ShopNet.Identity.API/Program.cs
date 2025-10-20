@@ -117,6 +117,8 @@ try
         {
             // Enable the token endpoint (required for Resource Owner Password flow)
             options.SetTokenEndpointUris("/connect/token");
+            // Enable the OIDC logout endpoint
+            options.SetLogoutEndpointUris("/connect/endsession");
 
             // Enable the Resource Owner Password Credentials flow (for login in Angular)
             options.AllowPasswordFlow()
@@ -132,6 +134,7 @@ try
             // Register the ASP.NET Core host and configure options
             options.UseAspNetCore()
                    .EnableTokenEndpointPassthrough()
+                   .EnableLogoutEndpointPassthrough()
                    .DisableTransportSecurityRequirement(); // Only for development!
 
             // Configure token lifetimes

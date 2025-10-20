@@ -56,6 +56,25 @@ public class AuthorizationController : ControllerBase
         });
     }
 
+    [HttpGet("~/connect/endsession")]
+    [HttpPost("~/connect/endsession")]
+    public async Task<IActionResult> Logout()
+    {
+        var request = HttpContext.GetOpenIddictServerRequest() ??
+            throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+
+        // Sign out the user from the application
+        await _signInManager.SignOutAsync();
+
+        // Return a SignOutResult that will redirect to post_logout_redirect_uri
+        return SignOut(
+            authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+            properties: new AuthenticationProperties
+            {
+                RedirectUri = request.PostLogoutRedirectUri
+            });
+    }
+
     private async Task<IActionResult> HandlePasswordFlowAsync(OpenIddictRequest request)
     {
         // Find user by username (email)

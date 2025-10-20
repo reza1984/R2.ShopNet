@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { LoginRequest, LoginResponse, AuthState, UserInfo } from '../models/auth.model';
 import { environment } from '../../../environments/environment.development';
+import { TokenStorageService } from './token-storage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,18 +14,14 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly tokenStorage = inject(TokenStorageService);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
   // Use direct Identity service URL for token endpoint (to avoid Aspire port conflict)
   // For production, this should go through the gateway
   private readonly apiUrl = environment.apiUrl;
   private readonly tokenEndpoint = `${this.apiUrl}/connect/token`;
-
-  // Storage keys
-  private readonly ACCESS_TOKEN_KEY = 'access_token';
-  private readonly REFRESH_TOKEN_KEY = 'refresh_token';
-  private readonly TOKEN_EXPIRY_KEY = 'token_expiry';
-  private readonly USER_INFO_KEY = 'user_info';
+  private readonly endSessionEndpoint = `${this.apiUrl}/connect/endsession`;
 
   // Auth state signals
   private authState = signal<AuthState>({
@@ -35,28 +32,26 @@ export class AuthService {
     user: null
   });
 
+  // Store id_token for logout (OIDC requires this for proper logout)
+  private idToken: string | null = null;
+
   // Public computed signals
   public isAuthenticated = computed(() => this.authState().isAuthenticated);
   public currentUser = computed(() => this.authState().user);
   public accessToken = computed(() => this.authState().accessToken);
 
   constructor() {
-    console.log('🚀 [AuthService] Initializing AuthService...');
-    console.log('🌍 [AuthService] Platform:', this.isBrowser ? 'Browser' : 'Server');
-    console.log('🔗 [AuthService] API URL:', this.apiUrl);
-    console.log('🔗 [AuthService] Token Endpoint:', this.tokenEndpoint);
+    // Migrate old localStorage tokens (one-time security upgrade)
+    this.tokenStorage.migrateFromLocalStorage();
+
+    // Load auth state from secure storage
     this.loadAuthStateFromStorage();
-    console.log('🔐 [AuthService] Initial auth state - Authenticated:', this.isAuthenticated());
   }
 
   /**
    * Login with username and password
    */
   login(username: string, password: string): Observable<LoginResponse> {
-    console.log('🔐 [AuthService] Starting login process...');
-    console.log('📧 [AuthService] Username:', username);
-    console.log('🌐 [AuthService] Token endpoint:', this.tokenEndpoint);
-
     const body = new URLSearchParams();
     body.set('username', username);
     body.set('password', password);
@@ -64,22 +59,14 @@ export class AuthService {
     body.set('client_id', 'admin-web');
     body.set('scope', 'openid profile email roles api admin offline_access');
 
-    console.log('📦 [AuthService] Request body:', body.toString());
-
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded'
     });
 
-    console.log('📤 [AuthService] Sending POST request to token endpoint...');
 
     return this.http.post<LoginResponse>(this.tokenEndpoint, body.toString(), { headers }).pipe(
       tap(response => {
-        console.log('✅ [AuthService] Login successful! Response:', response);
-        console.log('🎫 [AuthService] Access token received:', response.access_token ? 'YES' : 'NO');
-        console.log('🔄 [AuthService] Refresh token received:', response.refresh_token ? 'YES' : 'NO');
-        console.log('⏱️  [AuthService] Token expires in:', response.expires_in, 'seconds');
         this.handleLoginSuccess(response);
-        console.log('💾 [AuthService] Auth state updated. Authenticated:', this.isAuthenticated());
       }),
       catchError(error => {
         console.error('❌ [AuthService] Login failed!');
@@ -127,17 +114,19 @@ export class AuthService {
 
   /**
    * Logout and clear all auth data
+   * 
+   * Note: For SPAs using token-based auth (no cookies), we don't need to call
+   * the OIDC /connect/endsession endpoint. Just clear local tokens and redirect.
+   * 
+   * Future enhancement: Call a custom /api/auth/revoke endpoint to revoke refresh tokens
    */
   logout(): void {
-    // Clear storage (only in browser)
+    // Clear secure storage and state
+    this.tokenStorage.clearAll();
     if (this.isBrowser) {
-      localStorage.removeItem(this.ACCESS_TOKEN_KEY);
-      localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-      localStorage.removeItem(this.TOKEN_EXPIRY_KEY);
-      localStorage.removeItem(this.USER_INFO_KEY);
+      localStorage.removeItem('r2_id_token');
     }
-
-    // Reset state
+    this.idToken = null;
     this.authState.set({
       isAuthenticated: false,
       accessToken: null,
@@ -146,7 +135,7 @@ export class AuthService {
       user: null
     });
 
-    // Redirect to login
+    // Redirect to login page
     this.router.navigate(['/login']);
   }
 
@@ -177,16 +166,25 @@ export class AuthService {
     // Parse the id_token (contains user claims), not the access_token (which is encrypted)
     const userInfo = response.id_token ? this.parseJwtToken(response.id_token) : null;
 
-    // Save to localStorage (only in browser)
-    if (this.isBrowser) {
-      localStorage.setItem(this.ACCESS_TOKEN_KEY, response.access_token);
-      if (response.refresh_token) {
-        localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refresh_token);
+    // Store id_token for logout
+    this.idToken = response.id_token || null;
+
+    // Save to localStorage (SSO - shared across all tabs)
+    this.tokenStorage.setAccessToken(response.access_token);
+    this.tokenStorage.setTokenExpiry(tokenExpiry);
+
+    if (response.refresh_token) {
+      this.tokenStorage.setRefreshToken(response.refresh_token);
+    }
+
+    if (response.id_token) {
+      if (this.isBrowser) {
+        localStorage.setItem('r2_id_token', response.id_token);
       }
-      localStorage.setItem(this.TOKEN_EXPIRY_KEY, tokenExpiry.toISOString());
-      if (userInfo) {
-        localStorage.setItem(this.USER_INFO_KEY, JSON.stringify(userInfo));
-      }
+    }
+
+    if (userInfo) {
+      this.tokenStorage.setUserInfo(userInfo);
     }
 
     // Update state
@@ -197,70 +195,55 @@ export class AuthService {
       tokenExpiry: tokenExpiry,
       user: userInfo
     });
+
   }
 
   /**
-   * Load auth state from localStorage on app init
+   * Load auth state from secure storage on app init
    */
   private loadAuthStateFromStorage(): void {
-    console.log('💾 [AuthService] Loading auth state from storage...');
 
-    // Only access localStorage in browser environment
+    // Only access storage in browser environment
     if (!this.isBrowser) {
-      console.log('⚠️  [AuthService] Not in browser, skipping localStorage');
       return;
     }
 
-    const accessToken = localStorage.getItem(this.ACCESS_TOKEN_KEY);
-    const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
-    const tokenExpiryStr = localStorage.getItem(this.TOKEN_EXPIRY_KEY);
-    const userInfoStr = localStorage.getItem(this.USER_INFO_KEY);
+    const accessToken = this.tokenStorage.getAccessToken();
+    const refreshToken = this.tokenStorage.getRefreshToken();
+    const tokenExpiry = this.tokenStorage.getTokenExpiry();
+    const userInfo = this.tokenStorage.getUserInfo();
+    const idToken = this.isBrowser ? localStorage.getItem('r2_id_token') : null;
 
-    console.log('🔍 [AuthService] Tokens found in localStorage:', {
-      accessToken: accessToken ? 'YES' : 'NO',
-      refreshToken: refreshToken ? 'YES' : 'NO',
-      tokenExpiry: tokenExpiryStr ? 'YES' : 'NO',
-      userInfo: userInfoStr ? 'YES' : 'NO'
-    });
+    // Store id_token in memory for logout
+    this.idToken = idToken;
 
-    // Restore session if we have at least an access token and expiry
-    if (accessToken && tokenExpiryStr) {
-      const tokenExpiry = new Date(tokenExpiryStr);
-      const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
-
-      console.log('⏰ [AuthService] Token expiry:', tokenExpiry);
-      console.log('⏰ [AuthService] Current time:', new Date());
-      console.log('✅ [AuthService] Token valid:', new Date() < tokenExpiry);
-
-      // Always restore auth state if we have tokens (even if expired)
-      // This prevents redirect to login on page refresh
-      console.log('✅ [AuthService] Restoring authenticated session');
+    // Restore session if we have access token and expiry (SSO mode)
+    if (accessToken && tokenExpiry) {
       this.authState.set({
         isAuthenticated: true,
         accessToken,
-        refreshToken: refreshToken || null,
+        refreshToken,
         tokenExpiry,
         user: userInfo
       });
 
-      // If token is expired and we have a refresh token, try to refresh
+      // Check if token is expired and try to refresh
       if (new Date() >= tokenExpiry && refreshToken) {
-        console.log('⏰ [AuthService] Token expired, attempting refresh in background...');
         this.refreshToken().subscribe({
           next: () => {
             console.log('✅ [AuthService] Token refreshed successfully');
           },
           error: () => {
             console.log('❌ [AuthService] Token refresh failed, logging out');
-            // Refresh failed, clear everything
             this.logout();
           }
         });
       } else if (new Date() >= tokenExpiry && !refreshToken) {
-        console.log('⚠️  [AuthService] Token expired but no refresh token available. User will need to re-login.');
+        console.log('⏰ [AuthService] Token expired and no refresh token, logging out');
+        this.logout();
       }
     } else {
-      console.log('ℹ️  [AuthService] No valid tokens found in storage');
+      console.log('ℹ️  [AuthService] No valid session data found in localStorage');
     }
   }
 
@@ -271,13 +254,12 @@ export class AuthService {
     try {
       const base64Url = token.split('.')[1];
       if (!base64Url) {
-        console.error('Invalid JWT token format');
         return null;
       }
 
       // Convert base64url to base64
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      
+
       // Decode base64 string to UTF-8 string
       // Using a safer method that handles Unicode characters properly
       const jsonPayload = decodeURIComponent(
