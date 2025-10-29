@@ -2,7 +2,6 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, ElementRef, QueryList, ViewChildren, ChangeDetectorRef, PLATFORM_ID, inject } from '@angular/core';
 import { SidebarService } from '../../core/services/sidebar.service';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { SafeHtmlPipe } from '../../core/pipes/safe-html.pipe';
 import { combineLatest, Subscription } from 'rxjs';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 
@@ -20,7 +19,6 @@ type NavItem = {
   imports: [
     CommonModule,
     RouterModule,
-    SafeHtmlPipe,
     IconComponent,
   ],
   templateUrl: './app-sidebar.component.html',

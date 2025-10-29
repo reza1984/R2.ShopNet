@@ -73,18 +73,37 @@ try
         .AddCheck<ConsulHealthCheck>("consul");
 
     // Add CORS
-    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
-        ?? new[] { "http://localhost:4200" };
-    
     builder.Services.AddCors(options =>
     {
-        options.AddDefaultPolicy(policy =>
+        if (builder.Environment.IsDevelopment())
         {
-            policy.WithOrigins(allowedOrigins)
+            // In development, allow all localhost origins (for Aspire dynamic ports)
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.SetIsOriginAllowed(origin =>
+                {
+                    var uri = new Uri(origin);
+                    return uri.Host == "localhost" || uri.Host == "127.0.0.1";
+                })
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
-        });
+            });
+        }
+        else
+        {
+            // In production, use configured allowed origins
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                ?? Array.Empty<string>();
+
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.WithOrigins(allowedOrigins)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+        }
     });
 
     // Add JWT Authentication with OpenIddict validation
