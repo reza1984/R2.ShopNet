@@ -764,14 +764,16 @@ ng generate component features/[feature]/[component] --standalone --skip-tests
 ## Important Notes
 
 1. **Always follow OpenSpec workflow** for significant changes (see [openspec/AGENTS.md](openspec/AGENTS.md))
-2. **Use .NET Aspire** to run the entire application - it orchestrates all microservices, infrastructure, and provides a dashboard
-3. **Use source generator** for CQRS handlers (add `[GenerateHandler]` attribute)
-4. **Use signals** in Angular - avoid zone.js pollution
-5. **Security**: Store tokens in memory or secure storage, not localStorage (except for SSO)
-6. **CORS**: Configure properly for Angular dev server (ports 4200-4203)
-7. **Database**: Always use migrations for schema changes
-8. **Service Discovery**: Register all services with Consul
-9. **API Gateway**: All external requests go through YARP gateway
+2. **Always use .NET CLI** (`dotnet new`) to create .NET projects, libraries, and solution items - never manually create projects
+3. **Always use Angular CLI** (`ng generate` or `ng g`) to create Angular components, services, guards, interceptors, and other artifacts - never manually create these files
+4. **Use .NET Aspire** to run the entire application - it orchestrates all microservices, infrastructure, and provides a dashboard
+5. **Use source generator** for CQRS handlers (add `[GenerateHandler]` attribute)
+6. **Use signals** in Angular - avoid zone.js pollution
+7. **Security**: Store tokens in memory or secure storage, not localStorage (except for SSO)
+8. **CORS**: Configure properly for Angular dev server (ports 4200-4203)
+9. **Database**: Always use migrations for schema changes
+10. **Service Discovery**: Register all services with Consul
+11. **API Gateway**: All external requests go through YARP gateway
 
 ---
 

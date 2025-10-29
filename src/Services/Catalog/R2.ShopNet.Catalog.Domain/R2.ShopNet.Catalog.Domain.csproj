@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../Framework/R2.ShopNet.Framework.Common/R2.ShopNet.Framework.Common.csproj" />
+    <ProjectReference Include="../../../Framework/R2.ShopNet.Framework.Events/R2.ShopNet.Framework.Events.csproj" />
+  </ItemGroup>
+
+</Project>

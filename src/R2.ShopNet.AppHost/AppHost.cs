@@ -87,8 +87,9 @@ var maildev = builder.AddContainer("maildev", "maildev/maildev", "latest")
     .WithEndpoint(port: 1025, targetPort: 1025, name: "smtp")
     .WithLifetime(ContainerLifetime.Persistent);
 
-// Create Identity database
+// Create databases
 var identityDb = postgres.AddDatabase("identitydb");
+var catalogDb = postgres.AddDatabase("catalogdb");
 
 // Identity Service
 // Uses launchSettings.json for port configuration (http: 5002)
@@ -99,13 +100,24 @@ var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("iden
     .WithEnvironment("Consul__KeyValue__Address", "http://localhost:8500")  // Use localhost since Identity Service runs outside Docker
     .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379");
 
+// Catalog Service
+// Uses launchSettings.json for port configuration (http: 5003)
+var catalogService = builder.AddProject<Projects.R2_ShopNet_Catalog_API>("catalog-service")
+    .WithReference(catalogDb)
+    .WithReference(rabbitmq)
+    .WithReference(redis)
+    .WithEnvironment("Consul__KeyValue__Address", "http://localhost:8500")  // Use localhost since Catalog Service runs outside Docker
+    .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379");
+
 // API Gateway (YARP with Consul service discovery)
 // Uses launchSettings.json for port configuration (https: 5000, http: 5001)
 // The gateway acts as a single entry point for all client applications
 var gateway = builder.AddProject<Projects.R2_ShopNet_Gateway_API>("api-gateway")
     .WithReference(identityService)  // For health checks and testing
+    .WithReference(catalogService)   // For health checks and testing
     .WithEnvironment("Consul__Address", "http://localhost:8500")  // Use localhost since Gateway runs outside Docker
     .WaitFor(identityService)
+    .WaitFor(catalogService)
     .WithExternalHttpEndpoints();
 
 // Admin Portal (Angular 20)
