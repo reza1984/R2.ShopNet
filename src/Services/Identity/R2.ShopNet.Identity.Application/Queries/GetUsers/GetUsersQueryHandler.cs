@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
+using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Identity.Application.DTOs;
 using R2.ShopNet.Identity.Domain.Entities;
 
@@ -10,6 +11,8 @@ namespace R2.ShopNet.Identity.Application.Queries.GetUsers;
 /// <summary>
 /// Handler for getting paginated list of users.
 /// </summary>
+[GenerateHandler]
+
 public class GetUsersQueryHandler : IQueryHandler<GetUsersQuery, Result<PagedResult<UserDto>>>
 {
     private readonly UserManager<ApplicationUser> _userManager;

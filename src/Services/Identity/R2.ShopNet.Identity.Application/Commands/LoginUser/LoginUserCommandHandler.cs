@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
+using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Identity.Application.Services;
 using R2.ShopNet.Identity.Domain.Entities;
 
@@ -9,6 +10,7 @@ namespace R2.ShopNet.Identity.Application.Commands.LoginUser;
 /// <summary>
 /// Handler for user login command using ASP.NET Core Identity.
 /// </summary>
+[GenerateHandler]
 public class LoginUserCommandHandler : ICommandHandler<LoginUserCommand, Result<LoginUserResponse>>
 {
     private readonly UserManager<ApplicationUser> _userManager;

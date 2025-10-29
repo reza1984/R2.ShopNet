@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
+using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Identity.Domain.Entities;
 
 namespace R2.ShopNet.Identity.Application.Commands.UpdateUser;
@@ -8,6 +9,8 @@ namespace R2.ShopNet.Identity.Application.Commands.UpdateUser;
 /// <summary>
 /// Handler for updating user information.
 /// </summary>
+[GenerateHandler]
+
 public class UpdateUserCommandHandler : ICommandHandler<UpdateUserCommand, Result<bool>>
 {
     private readonly UserManager<ApplicationUser> _userManager;

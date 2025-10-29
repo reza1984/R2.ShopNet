@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
+using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Framework.Events;
 using R2.ShopNet.Identity.Domain.Entities;
 using R2.ShopNet.Identity.Domain.Events;
@@ -10,6 +11,7 @@ namespace R2.ShopNet.Identity.Application.Commands.RegisterUser;
 /// <summary>
 /// Handler for user registration command using ASP.NET Core Identity.
 /// </summary>
+[GenerateHandler]
 public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, Result<RegisterUserResponse>>
 {
     private readonly UserManager<ApplicationUser> _userManager;

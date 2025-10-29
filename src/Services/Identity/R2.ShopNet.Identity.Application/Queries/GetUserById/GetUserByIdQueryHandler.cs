@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
+using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Identity.Application.DTOs;
 using R2.ShopNet.Identity.Domain.Entities;
 
@@ -9,6 +10,8 @@ namespace R2.ShopNet.Identity.Application.Queries.GetUserById;
 /// <summary>
 /// Handler for getting a user by ID.
 /// </summary>
+[GenerateHandler]
+
 public class GetUserByIdQueryHandler : IQueryHandler<GetUserByIdQuery, Result<UserDto>>
 {
     private readonly UserManager<ApplicationUser> _userManager;

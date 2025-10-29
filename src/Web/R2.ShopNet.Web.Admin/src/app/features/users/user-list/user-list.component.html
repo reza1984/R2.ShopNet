@@ -98,9 +98,7 @@
           (click)="bulkDelete()"
           class="inline-flex items-center gap-2 rounded-lg bg-error-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-error-600"
         >
-          <svg class="size-4" viewBox="0 0 20 20" fill="none">
-            <path d="M8.33333 9.16667V14.1667M11.6667 9.16667V14.1667M3.33333 5.83333H16.6667M15.8333 5.83333L15.1107 15.9517C15.0485 16.8117 14.3241 17.5 13.4617 17.5H6.53829C5.67595 17.5 4.95147 16.8117 4.88933 15.9517L4.16667 5.83333M12.5 5.83333V3.33333C12.5 2.8731 12.1269 2.5 11.6667 2.5H8.33333C7.8731 2.5 7.5 2.8731 7.5 3.33333V5.83333" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <app-icon name="delete" [size]="16" color="currentColor" />
           Delete Selected
         </button>
       </div>
@@ -117,9 +115,9 @@
     </div>
   } @else if (filteredUsers.length === 0) {
     <div class="flex flex-col items-center justify-center rounded-lg border border-gray-200 bg-white py-20 dark:border-gray-800 dark:bg-gray-900">
-      <svg class="size-12 text-gray-400" viewBox="0 0 24 24" fill="none">
-        <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <span class="text-gray-400">
+        <app-icon name="person_off" [size]="48" color="currentColor" />
+      </span>
       <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">No users found</h3>
       <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Try adjusting your search or filters</p>
     </div>
@@ -227,9 +225,7 @@
                       class="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                       title="Edit user"
                     >
-                      <svg class="size-5" viewBox="0 0 20 20" fill="none">
-                        <path d="M14.1667 2.49993C14.3856 2.28106 14.6454 2.10744 14.9314 1.98899C15.2173 1.87054 15.5238 1.80957 15.8334 1.80957C16.1429 1.80957 16.4494 1.87054 16.7353 1.98899C17.0213 2.10744 17.2811 2.28106 17.5 2.49993C17.7189 2.7188 17.8925 2.97863 18.011 3.2646C18.1294 3.55057 18.1904 3.85706 18.1904 4.16659C18.1904 4.47612 18.1294 4.78262 18.011 5.06859C17.8925 5.35455 17.7189 5.61439 17.5 5.83326L6.25002 17.0833L1.66669 18.3333L2.91669 13.7499L14.1667 2.49993Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
+                      <app-icon name="edit" [size]="20" color="currentColor" />
                     </button>
                     <button
                       (click)="toggleUserStatus(user)"
@@ -241,15 +237,9 @@
                       [title]="user.isActive ? 'Deactivate user' : 'Activate user'"
                     >
                       @if (user.isActive) {
-                        <svg class="size-5" viewBox="0 0 20 20" fill="none">
-                          <path d="M10 18.3334C14.6024 18.3334 18.3334 14.6024 18.3334 10.0001C18.3334 5.39771 14.6024 1.66675 10 1.66675C5.39765 1.66675 1.66669 5.39771 1.66669 10.0001C1.66669 14.6024 5.39765 18.3334 10 18.3334Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                          <path d="M10 13.3334V10.0001M10 6.66675H10.0084" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+                        <app-icon name="block" [size]="20" color="currentColor" />
                       } @else {
-                        <svg class="size-5" viewBox="0 0 20 20" fill="none">
-                          <path d="M10 18.3334C14.6024 18.3334 18.3334 14.6024 18.3334 10.0001C18.3334 5.39771 14.6024 1.66675 10 1.66675C5.39765 1.66675 1.66669 5.39771 1.66669 10.0001C1.66669 14.6024 5.39765 18.3334 10 18.3334Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                          <path d="M13.3334 7.5L8.75002 12.0833L6.66669 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+                        <app-icon name="check_circle" [size]="20" color="currentColor" />
                       }
                     </button>
                     <button
@@ -257,9 +247,7 @@
                       class="rounded-lg p-2 text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-950"
                       title="Delete user"
                     >
-                      <svg class="size-5" viewBox="0 0 20 20" fill="none">
-                        <path d="M8.33333 9.16667V14.1667M11.6667 9.16667V14.1667M3.33333 5.83333H16.6667M15.8333 5.83333L15.1107 15.9517C15.0485 16.8117 14.3241 17.5 13.4617 17.5H6.53829C5.67595 17.5 4.95147 16.8117 4.88933 15.9517L4.16667 5.83333M12.5 5.83333V3.33333C12.5 2.8731 12.1269 2.5 11.6667 2.5H8.33333C7.8731 2.5 7.5 2.8731 7.5 3.33333V5.83333" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
+                      <app-icon name="delete" [size]="20" color="currentColor" />
                     </button>
                   </div>
                 </td>
@@ -293,9 +281,7 @@
             [class.cursor-not-allowed]="userService.currentPage() === 1"
             class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:hover:bg-white dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:disabled:hover:bg-gray-900"
           >
-            <svg class="size-5" viewBox="0 0 20 20" fill="none">
-              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <app-icon name="chevron_left" [size]="20" color="currentColor" />
             Previous
           </button>
 
@@ -326,9 +312,7 @@
             class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:hover:bg-white dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:disabled:hover:bg-gray-900"
           >
             Next
-            <svg class="size-5" viewBox="0 0 20 20" fill="none">
-              <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <app-icon name="chevron_right" [size]="20" color="currentColor" />
           </button>
         </div>
       </div>

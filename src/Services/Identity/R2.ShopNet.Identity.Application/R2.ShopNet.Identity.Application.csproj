@@ -17,6 +17,10 @@
     <ProjectReference Include="..\..\..\Framework\R2.ShopNet.Framework.Validation\R2.ShopNet.Framework.Validation.csproj" />
     <ProjectReference Include="..\..\..\Framework\R2.ShopNet.Framework.Events\R2.ShopNet.Framework.Events.csproj" />
     <ProjectReference Include="..\R2.ShopNet.Identity.Domain\R2.ShopNet.Identity.Domain.csproj" />
+    <!-- Source Generator for automatic CQRS handler registration -->
+    <ProjectReference Include="..\..\..\Framework\R2.ShopNet.Framework.CQRS.SourceGenerator\R2.ShopNet.Framework.CQRS.SourceGenerator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

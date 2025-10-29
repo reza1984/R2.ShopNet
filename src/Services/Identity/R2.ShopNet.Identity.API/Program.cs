@@ -5,20 +5,15 @@ using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.Configuration;
 using R2.ShopNet.Framework.Configuration.Integration;
 using R2.ShopNet.Framework.CQRS;
+using R2.ShopNet.Framework.CQRS.DependencyInjection;
+using R2.ShopNet.Framework.CQRS.Generated;
 using R2.ShopNet.Framework.Events;
+using R2.ShopNet.Identity.Application.Commands.LoginUser;
 using R2.ShopNet.Framework.ServiceDiscovery;
 using R2.ShopNet.Identity.API.Services;
-using R2.ShopNet.Identity.Application.Commands.ActivateUser;
-using R2.ShopNet.Identity.Application.Commands.DeactivateUser;
-using R2.ShopNet.Identity.Application.Commands.DeleteUser;
-using R2.ShopNet.Identity.Application.Commands.LoginUser;
-using R2.ShopNet.Identity.Application.Commands.RegisterUser;
-using R2.ShopNet.Identity.Application.Commands.UpdateUser;
-using R2.ShopNet.Identity.Application.DTOs;
-using R2.ShopNet.Identity.Application.Queries.GetUserById;
-using R2.ShopNet.Identity.Application.Queries.GetUsers;
 using R2.ShopNet.Identity.Application.Services;
 using R2.ShopNet.Identity.Domain.Entities;
+using R2.ShopNet.Identity.Infrastructure.Configuration;
 using R2.ShopNet.Identity.Infrastructure.Events;
 using R2.ShopNet.Identity.Infrastructure.Persistence;
 using R2.ShopNet.Identity.Infrastructure.Seed;
@@ -162,32 +157,17 @@ try
         return new TokenService(userManager, jwtSecret, jwtIssuer, jwtAudience, expirationMinutes: 60);
     });
 
-    // Register CQRS
-    builder.Services.AddScoped<ICommandDispatcher, CommandDispatcher>();
-    builder.Services.AddScoped<IQueryDispatcher, QueryDispatcher>();
-    
-    // Register Command Handlers
-    builder.Services.AddScoped<ICommandHandler<RegisterUserCommand, Result<RegisterUserResponse>>,
-        RegisterUserCommandHandler>();
-    builder.Services.AddScoped<ICommandHandler<LoginUserCommand, Result<LoginUserResponse>>,
-        LoginUserCommandHandler>();
-    builder.Services.AddScoped<ICommandHandler<UpdateUserCommand, Result<bool>>,
-        UpdateUserCommandHandler>();
-    builder.Services.AddScoped<ICommandHandler<DeleteUserCommand, Result<bool>>,
-        DeleteUserCommandHandler>();
-    builder.Services.AddScoped<ICommandHandler<ActivateUserCommand, Result<bool>>,
-        ActivateUserCommandHandler>();
-    builder.Services.AddScoped<ICommandHandler<DeactivateUserCommand, Result<bool>>,
-        DeactivateUserCommandHandler>();
-    
-    // Register Query Handlers
-    builder.Services.AddScoped<IQueryHandler<GetUsersQuery, Result<PagedResult<UserDto>>>,
-        GetUsersQueryHandler>();
-    builder.Services.AddScoped<IQueryHandler<GetUserByIdQuery, Result<UserDto>>,
-        GetUserByIdQueryHandler>();
+    // Register CQRS Handlers automatically using reflection (similar to MediatR)
+    // This scans the Application assembly at startup and registers all command/query handlers
+    // For long-running services like this, reflection-based registration is recommended
+    builder.Services.AddCQRSHandlersFromAssemblyContaining<LoginUserCommandHandler>();  
 
     // Register Event Publisher (placeholder for now)
     builder.Services.AddSingleton<IEventPublisher, InMemoryEventPublisher>();
+
+    // Configure Email Service
+    builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection(EmailSettings.SectionName));
+    builder.Services.AddScoped<IEmailService, EmailService>();
 
     // Configure CORS
     builder.Services.AddCors(options =>

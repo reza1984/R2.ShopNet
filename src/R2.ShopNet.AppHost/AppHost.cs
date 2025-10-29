@@ -80,6 +80,13 @@ var jaeger = builder.AddContainer("jaeger", "jaegertracing/all-in-one", "latest"
     .WithEnvironment("COLLECTOR_OTLP_ENABLED", "true")
     .WithLifetime(ContainerLifetime.Persistent);
 
+// MailDev - SMTP server for development and testing
+// Web UI: http://localhost:1080, SMTP: localhost:1025
+var maildev = builder.AddContainer("maildev", "maildev/maildev", "latest")
+    .WithHttpEndpoint(port: 1080, targetPort: 1080, name: "web")
+    .WithEndpoint(port: 1025, targetPort: 1025, name: "smtp")
+    .WithLifetime(ContainerLifetime.Persistent);
+
 // Create Identity database
 var identityDb = postgres.AddDatabase("identitydb");
 

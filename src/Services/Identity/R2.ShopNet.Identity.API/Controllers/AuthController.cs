@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Identity.Application.Commands.LoginUser;
 using R2.ShopNet.Identity.Application.Commands.RegisterUser;
+using R2.ShopNet.Identity.Application.Commands.ForgotPassword;
+using R2.ShopNet.Identity.Application.Commands.ResetPassword;
 
 namespace R2.ShopNet.Identity.API.Controllers;
 
@@ -81,6 +83,66 @@ public class AuthController : ControllerBase
         }
 
         _logger.LogInformation("User {UserId} logged in successfully", result.Value.UserId);
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Request password reset link via email.
+    /// </summary>
+    /// <param name="command">Forgot password request with email</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success message (always returns success to prevent email enumeration)</returns>
+    /// <response code="200">Password reset request processed</response>
+    /// <response code="400">Invalid email format</response>
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(typeof(ForgotPasswordResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ForgotPassword(
+        [FromBody] ForgotPasswordCommand command,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Password reset requested for email: {Email}", command.Email);
+
+        var result = await _commandDispatcher.Dispatch(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            _logger.LogWarning("Password reset request failed for {Email}: {Error}",
+                command.Email, result.Error.Message);
+            return BadRequest(new { error = result.Error.Code, message = result.Error.Message });
+        }
+
+        _logger.LogInformation("Password reset request processed for email: {Email}", command.Email);
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Reset user password using reset token.
+    /// </summary>
+    /// <param name="command">Reset password request with token and new password</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success message if password reset successful</returns>
+    /// <response code="200">Password reset successful</response>
+    /// <response code="400">Invalid token, password validation failed, or user not found</response>
+    [HttpPost("reset-password")]
+    [ProducesResponseType(typeof(ResetPasswordResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordCommand command,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Password reset attempt for email: {Email}", command.Email);
+
+        var result = await _commandDispatcher.Dispatch(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            _logger.LogWarning("Password reset failed for {Email}: {Error}",
+                command.Email, result.Error.Message);
+            return BadRequest(new { error = result.Error.Code, message = result.Error.Message });
+        }
+
+        _logger.LogInformation("Password reset successful for email: {Email}", command.Email);
         return Ok(result.Value);
     }
 }

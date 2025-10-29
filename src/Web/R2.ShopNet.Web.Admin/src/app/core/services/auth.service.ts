@@ -22,6 +22,7 @@ export class AuthService {
   private readonly apiUrl = environment.apiUrl;
   private readonly tokenEndpoint = `${this.apiUrl}/connect/token`;
   private readonly endSessionEndpoint = `${this.apiUrl}/connect/endsession`;
+  private readonly authApiEndpoint = `${this.apiUrl}/api/auth`;
 
   // Auth state signals
   private authState = signal<AuthState>({
@@ -284,5 +285,40 @@ export class AuthService {
       console.error('Failed to parse JWT token:', error);
       return null;
     }
+  }
+
+  /**
+   * Request password reset link via email
+   */
+  forgotPassword(email: string): Observable<{ message: string; email: string }> {
+    return this.http.post<{ message: string; email: string }>(
+      `${this.authApiEndpoint}/forgot-password`,
+      { email }
+    ).pipe(
+      catchError(error => {
+        console.error('❌ [AuthService] Forgot password request failed', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Reset password with token
+   */
+  resetPassword(
+    email: string,
+    token: string,
+    newPassword: string,
+    confirmPassword: string
+  ): Observable<{ message: string; email: string }> {
+    return this.http.post<{ message: string; email: string }>(
+      `${this.authApiEndpoint}/reset-password`,
+      { email, token, newPassword, confirmPassword }
+    ).pipe(
+      catchError(error => {
+        console.error('❌ [AuthService] Reset password failed', error);
+        return throwError(() => error);
+      })
+    );
   }
 }

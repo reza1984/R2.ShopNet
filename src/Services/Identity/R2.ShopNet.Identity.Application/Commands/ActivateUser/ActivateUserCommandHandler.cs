@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
+using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Identity.Domain.Entities;
 
 namespace R2.ShopNet.Identity.Application.Commands.ActivateUser;
@@ -8,6 +9,8 @@ namespace R2.ShopNet.Identity.Application.Commands.ActivateUser;
 /// <summary>
 /// Handler for activating a user account.
 /// </summary>
+[GenerateHandler]
+
 public class ActivateUserCommandHandler : ICommandHandler<ActivateUserCommand, Result<bool>>
 {
     private readonly UserManager<ApplicationUser> _userManager;

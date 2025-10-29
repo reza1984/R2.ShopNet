@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
+using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Identity.Domain.Entities;
 
 namespace R2.ShopNet.Identity.Application.Commands.DeleteUser;
@@ -8,6 +9,8 @@ namespace R2.ShopNet.Identity.Application.Commands.DeleteUser;
 /// <summary>
 /// Handler for soft deleting a user.
 /// </summary>
+[GenerateHandler]
+
 public class DeleteUserCommandHandler : ICommandHandler<DeleteUserCommand, Result<bool>>
 {
     private readonly UserManager<ApplicationUser> _userManager;
