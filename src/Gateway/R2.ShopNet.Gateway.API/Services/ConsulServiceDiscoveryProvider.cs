@@ -46,9 +46,9 @@ public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisp
         try
         {
             var routes = new List<RouteConfig>();
-            var clusters = new List<ClusterConfig>();
+            var clusterDict = new Dictionary<string, ClusterConfig>();
 
-            _logger.LogInformation("Refreshing configuration from Consul at {ConsulAddress}", 
+            _logger.LogInformation("Refreshing configuration from Consul at {ConsulAddress}",
                 _consulOptions.CurrentValue.Address);
 
             // Query Consul for each configured service
@@ -57,48 +57,51 @@ public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisp
                 try
                 {
                     var instances = await GetHealthyServiceInstancesAsync(serviceMapping.ServiceName);
-                    
+
                     if (instances.Count > 0)
                     {
-                        // Create YARP cluster with Consul-discovered destinations
-                        var destinations = new Dictionary<string, DestinationConfig>();
-                        
-                        for (int i = 0; i < instances.Count; i++)
+                        // Create YARP cluster with Consul-discovered destinations (only if not already created)
+                        if (!clusterDict.ContainsKey(serviceMapping.ClusterId))
                         {
-                            var instance = instances[i];
-                            var destinationId = $"{serviceMapping.ClusterId}-{i}";
-                            
-                            // Use http:// for local development (services behind Aspire proxy)
-                            var scheme = instance.Address.StartsWith("localhost") || instance.Address.StartsWith("127.0.0.1") 
-                                ? "http" 
-                                : "https";
-                            
-                            destinations[destinationId] = new DestinationConfig
-                            {
-                                Address = $"{scheme}://{instance.Address}:{instance.Port}"
-                            };
+                            var destinations = new Dictionary<string, DestinationConfig>();
 
-                            _logger.LogDebug("Added destination {DestinationId}: {Address}", 
-                                destinationId, destinations[destinationId].Address);
-                        }
-
-                        clusters.Add(new ClusterConfig
-                        {
-                            ClusterId = serviceMapping.ClusterId,
-                            Destinations = destinations,
-                            LoadBalancingPolicy = "RoundRobin",
-                            HealthCheck = new HealthCheckConfig
+                            for (int i = 0; i < instances.Count; i++)
                             {
-                                Active = new ActiveHealthCheckConfig
+                                var instance = instances[i];
+                                var destinationId = $"{serviceMapping.ClusterId}-{i}";
+
+                                // Use http:// for local development (services behind Aspire proxy)
+                                var scheme = instance.Address.StartsWith("localhost") || instance.Address.StartsWith("127.0.0.1")
+                                    ? "http"
+                                    : "https";
+
+                                destinations[destinationId] = new DestinationConfig
                                 {
-                                    Enabled = true,
-                                    Interval = TimeSpan.FromSeconds(30),
-                                    Timeout = TimeSpan.FromSeconds(10),
-                                    Policy = "ConsecutiveFailures",
-                                    Path = "/health"
-                                }
+                                    Address = $"{scheme}://{instance.Address}:{instance.Port}"
+                                };
+
+                                _logger.LogDebug("Added destination {DestinationId}: {Address}",
+                                    destinationId, destinations[destinationId].Address);
                             }
-                        });
+
+                            clusterDict[serviceMapping.ClusterId] = new ClusterConfig
+                            {
+                                ClusterId = serviceMapping.ClusterId,
+                                Destinations = destinations,
+                                LoadBalancingPolicy = "RoundRobin",
+                                HealthCheck = new HealthCheckConfig
+                                {
+                                    Active = new ActiveHealthCheckConfig
+                                    {
+                                        Enabled = true,
+                                        Interval = TimeSpan.FromSeconds(30),
+                                        Timeout = TimeSpan.FromSeconds(10),
+                                        Policy = "ConsecutiveFailures",
+                                        Path = "/health"
+                                    }
+                                }
+                            };
+                        }
 
                         // Create route for this service
                         var route = new RouteConfig
@@ -131,7 +134,7 @@ public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisp
                             serviceMapping.ServiceName);
                         
                         // Add static fallback route for identity service
-                        if (serviceMapping.ServiceName == "identity-service")
+                        if (serviceMapping.ServiceName == "identity-service" && !clusterDict.ContainsKey(serviceMapping.ClusterId))
                         {
                             var fallbackDestinations = new Dictionary<string, DestinationConfig>
                             {
@@ -141,12 +144,12 @@ public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisp
                                 }
                             };
 
-                            clusters.Add(new ClusterConfig
+                            clusterDict[serviceMapping.ClusterId] = new ClusterConfig
                             {
                                 ClusterId = serviceMapping.ClusterId,
                                 Destinations = fallbackDestinations,
                                 LoadBalancingPolicy = "RoundRobin"
-                            });
+                            };
 
                             var fallbackRoute = new RouteConfig
                             {
@@ -167,7 +170,7 @@ public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisp
                             }
 
                             routes.Add(fallbackRoute);
-                            
+
                             _logger.LogInformation("Added static fallback route {RouteId} -> {ClusterId}",
                                 serviceMapping.RouteId, serviceMapping.ClusterId);
                         }
@@ -175,15 +178,19 @@ public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisp
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to configure service {ServiceName}", 
+                    _logger.LogError(ex, "Failed to configure service {ServiceName}",
                         serviceMapping.ServiceName);
                 }
             }
 
+            var clusters = clusterDict.Values.ToList();
+
+            // Signal the old config's change token before creating new config
+            var oldConfig = _config;
             _config = new InMemoryConfig(routes, clusters);
-            _changeTokenSource.SignalChange();
-            
-            _logger.LogInformation("Configuration refreshed: {RouteCount} routes, {ClusterCount} clusters", 
+            (oldConfig as InMemoryConfig)?.SignalChange();
+
+            _logger.LogInformation("Configuration refreshed: {RouteCount} routes, {ClusterCount} clusters",
                 routes.Count, clusters.Count);
         }
         catch (Exception ex)
@@ -283,5 +290,10 @@ public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisp
         public IReadOnlyList<RouteConfig> Routes { get; }
         public IReadOnlyList<ClusterConfig> Clusters { get; }
         public IChangeToken ChangeToken { get; }
+
+        public void SignalChange()
+        {
+            _cts.Cancel();
+        }
     }
 }

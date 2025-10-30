@@ -118,7 +118,7 @@ var catalogService = builder.AddProject<Projects.R2_ShopNet_Catalog_API>("catalo
 //   - http: http://localhost:5001
 //   - https: https://localhost:5000
 // The gateway acts as a single entry point for all client applications
-var gateway = builder.AddProject<Projects.R2_ShopNet_Gateway_API>("api-gateway")
+var gateway = builder.AddProject<Projects.R2_ShopNet_Gateway_API>("api-gateway", "https")
     .WithReference(identityService)  // For health checks and testing
     .WithReference(catalogService)   // For health checks and testing
     .WithEnvironment("Consul__Address", "http://localhost:8500")  // Use localhost since Gateway runs outside Docker

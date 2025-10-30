@@ -49,21 +49,13 @@ try
         client.Timeout = TimeSpan.FromSeconds(10);
     });
 
-    // Add YARP reverse proxy
-    // In Development, use static config from appsettings.Development.json
-    // In Production, use Consul service discovery
-    if (builder.Environment.IsProduction())
-    {
-        // Add Consul service discovery provider
-        builder.Services.AddSingleton<IProxyConfigProvider, ConsulServiceDiscoveryProvider>();
-        builder.Services.AddReverseProxy();
-    }
-    else
-    {
-        // Use static configuration for development (with Aspire service discovery)
-        builder.Services.AddReverseProxy()
-            .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
-    }
+    // Add YARP reverse proxy with Consul service discovery
+    // Register Consul service discovery provider BEFORE AddReverseProxy
+    builder.Services.AddSingleton<ConsulServiceDiscoveryProvider>();
+    builder.Services.AddSingleton<IProxyConfigProvider>(sp => sp.GetRequiredService<ConsulServiceDiscoveryProvider>());
+
+    // Add YARP - it will use our IProxyConfigProvider
+    builder.Services.AddReverseProxy();
 
     // Add Consul registration service
     builder.Services.AddHostedService<ConsulRegistrationService>();
