@@ -29,6 +29,7 @@ try
     builder.Host.UseSerilog();
 
     // Add services to the container
+    builder.Services.AddHealthChecks();
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
@@ -87,9 +88,11 @@ try
     app.UseHttpsRedirection();
     app.UseCors("AllowAll");
     app.UseAuthorization();
+    app.MapHealthChecks("/health");
     app.MapControllers();
+    
+    // Health check endpoint
 
-    // Service discovery registration will happen automatically via the AddConsulServiceDiscovery extension
 
     // Run database migrations
     using (var scope = app.Services.CreateScope())

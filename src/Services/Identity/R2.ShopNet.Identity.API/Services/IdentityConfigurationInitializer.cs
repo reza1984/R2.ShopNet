@@ -83,7 +83,7 @@ public class IdentityConfigurationInitializer : KeyValueConfigurationInitializer
                 cancellationToken);
 
             await _kvStore.SetAsync("identity/consul/servicePort",
-                _configuration["Consul:ServicePort"] ?? "5001",
+                _configuration["Consul:ServicePort"] ?? "5002",
                 cancellationToken);
 
             // Seed Redis configuration

@@ -47,7 +47,7 @@ bld/
 # .NET Core
 project.fragment.lock.json
 artifacts/
-**/Properties/launchSettings.json
+# **/Properties/launchSettings.json
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt

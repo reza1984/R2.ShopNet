@@ -92,8 +92,10 @@ var identityDb = postgres.AddDatabase("identitydb");
 var catalogDb = postgres.AddDatabase("catalogdb");
 
 // Identity Service
-// Uses launchSettings.json for port configuration (http: 5002)
-var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("identity-service")
+// launchSettings.json:
+//   - http: http://localhost:5002
+//   - https: https://localhost:5003
+var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("identity-service", "http")
     .WithReference(identityDb)
     .WithReference(rabbitmq)
     .WithReference(redis)
@@ -101,8 +103,10 @@ var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("iden
     .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379");
 
 // Catalog Service
-// Uses launchSettings.json for port configuration (http: 5003)
-var catalogService = builder.AddProject<Projects.R2_ShopNet_Catalog_API>("catalog-service")
+// launchSettings.json:
+//   - http: http://localhost:5004
+//   - https: https://localhost:5005
+var catalogService = builder.AddProject<Projects.R2_ShopNet_Catalog_API>("catalog-service", "http")
     .WithReference(catalogDb)
     .WithReference(rabbitmq)
     .WithReference(redis)
@@ -110,7 +114,9 @@ var catalogService = builder.AddProject<Projects.R2_ShopNet_Catalog_API>("catalo
     .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379");
 
 // API Gateway (YARP with Consul service discovery)
-// Uses launchSettings.json for port configuration (https: 5000, http: 5001)
+// launchSettings.json:
+//   - http: http://localhost:5001
+//   - https: https://localhost:5000
 // The gateway acts as a single entry point for all client applications
 var gateway = builder.AddProject<Projects.R2_ShopNet_Gateway_API>("api-gateway")
     .WithReference(identityService)  // For health checks and testing

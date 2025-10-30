@@ -40,6 +40,7 @@ try
     builder.Host.UseSerilog();
 
     // Add services to the container
+    builder.Services.AddHealthChecks();
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
@@ -238,7 +239,7 @@ try
 
     app.UseAuthentication();
     app.UseAuthorization();
-
+    app.MapHealthChecks("/health");
     app.MapControllers();
 
     Log.Information("Identity Service started successfully");
