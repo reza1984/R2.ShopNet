@@ -1,17 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using R2.ShopNet.Catalog.API.Extensions;
-using R2.ShopNet.Catalog.Application.Commands.CreateProduct;
-using R2.ShopNet.Catalog.Domain.Entities;
 using R2.ShopNet.Catalog.Infrastructure.Persistence;
-using R2.ShopNet.Catalog.Infrastructure.Repositories;
 using R2.ShopNet.Framework.Configuration.Integration;
-using R2.ShopNet.Framework.CQRS.DependencyInjection;
 using R2.ShopNet.Framework.Events;
-using R2.ShopNet.Framework.Persistence.Storage.Abstractions;
-using R2.ShopNet.Framework.Persistence.Storage.Extensions;
-using R2.ShopNet.Framework.Persistence.UnitOfWork;
-using R2.ShopNet.Framework.ServiceDiscovery;
 using Serilog;
 using Microsoft.IdentityModel.Tokens;
 
