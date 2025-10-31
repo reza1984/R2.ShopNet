@@ -1,0 +1,33 @@
+{
+  "name": "Create product - minimal",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/products",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "POST",
+    "queryParams": [],
+    "headers": [
+      {
+        "key": "Content-Type",
+        "value": "application/json",
+        "id": 0.1,
+        "isEnabled": true
+      }
+    ],
+    "body": "{\n  \"name\": \"Simple Product\",\n  \"slug\": \"simple-product\",\n  \"sku\": \"PROD-001\",\n  \"price\": 29.99,\n  \"currency\": \"USD\",\n  \"categoryId\": \"YOUR_CATEGORY_ID_HERE\"\n}\n",
+    "bodyContainer": {
+      "text": "{\n  \"name\": \"Simple Product\",\n  \"slug\": \"simple-product\",\n  \"sku\": \"PROD-001\",\n  \"price\": 29.99,\n  \"currency\": \"USD\",\n  \"categoryId\": \"YOUR_CATEGORY_ID_HERE\"\n}\n",
+      "form": [],
+      "multipartForm": []
+    },
+    "contentType": "application/json",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}

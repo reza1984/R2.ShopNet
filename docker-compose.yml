@@ -131,8 +131,8 @@ services:
     container_name: shopnet-minio
     command: server /data --console-address ":9001"
     environment:
-      - MINIO_ROOT_USER=minioadmin
-      - MINIO_ROOT_PASSWORD=minioadmin
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
     ports:
       - "9000:9000" # API
       - "9001:9001" # Console
@@ -146,19 +146,103 @@ services:
       timeout: 10s
       retries: 5
 
-  # Create MinIO bucket
+  # Create MinIO buckets and service users with IAM policies
   minio-setup:
     image: minio/mc:latest
     container_name: shopnet-minio-setup
     depends_on:
       - minio
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - CATALOG_MINIO_PASSWORD=${CATALOG_MINIO_PASSWORD:-CatalogSecure123!}
+      - IDENTITY_MINIO_PASSWORD=${IDENTITY_MINIO_PASSWORD:-IdentitySecure123!}
+      - MEDIA_MINIO_PASSWORD=${MEDIA_MINIO_PASSWORD:-MediaSecure123!}
     entrypoint: >
       /bin/sh -c "
       sleep 10;
-      /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc alias set myminio http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
+
+      # Create buckets with versioning
       /usr/bin/mc mb myminio/product-images --ignore-existing;
-      /usr/bin/mc mb myminio/documents --ignore-existing;
-      /usr/bin/mc anonymous set download myminio/product-images;
+      /usr/bin/mc version enable myminio/product-images;
+
+      /usr/bin/mc mb myminio/user-avatars --ignore-existing;
+      /usr/bin/mc version enable myminio/user-avatars;
+
+      /usr/bin/mc mb myminio/media-files --ignore-existing;
+      /usr/bin/mc version enable myminio/media-files;
+
+      # Create service users
+      /usr/bin/mc admin user add myminio catalog-service $${CATALOG_MINIO_PASSWORD};
+      /usr/bin/mc admin user add myminio identity-service $${IDENTITY_MINIO_PASSWORD};
+      /usr/bin/mc admin user add myminio media-service $${MEDIA_MINIO_PASSWORD};
+
+      # Create and attach policies for catalog service
+      echo '{
+        \"Version\": \"2012-10-17\",
+        \"Statement\": [{
+          \"Effect\": \"Allow\",
+          \"Action\": [
+            \"s3:GetObject\",
+            \"s3:PutObject\",
+            \"s3:DeleteObject\",
+            \"s3:ListBucket\",
+            \"s3:GetBucketLocation\",
+            \"s3:ListBucketMultipartUploads\",
+            \"s3:ListMultipartUploadParts\",
+            \"s3:AbortMultipartUpload\"
+          ],
+          \"Resource\": [\"arn:aws:s3:::product-images\", \"arn:aws:s3:::product-images/*\"]
+        }]
+      }' > /tmp/catalog-policy.json;
+      /usr/bin/mc admin policy create myminio catalog-full-access /tmp/catalog-policy.json;
+      /usr/bin/mc admin policy attach myminio catalog-full-access --user=catalog-service;
+
+      # Create and attach policies for identity service
+      echo '{
+        \"Version\": \"2012-10-17\",
+        \"Statement\": [{
+          \"Effect\": \"Allow\",
+          \"Action\": [
+            \"s3:GetObject\",
+            \"s3:PutObject\",
+            \"s3:DeleteObject\",
+            \"s3:ListBucket\",
+            \"s3:GetBucketLocation\",
+            \"s3:ListBucketMultipartUploads\",
+            \"s3:ListMultipartUploadParts\",
+            \"s3:AbortMultipartUpload\"
+          ],
+          \"Resource\": [\"arn:aws:s3:::user-avatars\", \"arn:aws:s3:::user-avatars/*\"]
+        }]
+      }' > /tmp/identity-policy.json;
+      /usr/bin/mc admin policy create myminio identity-full-access /tmp/identity-policy.json;
+      /usr/bin/mc admin policy attach myminio identity-full-access --user=identity-service;
+
+      # Create and attach policies for media service
+      echo '{
+        \"Version\": \"2012-10-17\",
+        \"Statement\": [{
+          \"Effect\": \"Allow\",
+          \"Action\": [
+            \"s3:GetObject\",
+            \"s3:PutObject\",
+            \"s3:DeleteObject\",
+            \"s3:ListBucket\",
+            \"s3:GetBucketLocation\",
+            \"s3:ListBucketMultipartUploads\",
+            \"s3:ListMultipartUploadParts\",
+            \"s3:AbortMultipartUpload\"
+          ],
+          \"Resource\": [\"arn:aws:s3:::media-files\", \"arn:aws:s3:::media-files/*\"]
+        }]
+      }' > /tmp/media-policy.json;
+      /usr/bin/mc admin policy create myminio media-full-access /tmp/media-policy.json;
+      /usr/bin/mc admin policy attach myminio media-full-access --user=media-service;
+
+      # DO NOT set public access - keep buckets private (use presigned URLs)
+
       exit 0;
       "
     networks:

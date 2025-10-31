@@ -1,0 +1,29 @@
+{
+  "name": "Get category by ID",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/categories/{{CATEGORY_ID}}",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "GET",
+    "queryParams": [],
+    "headers": [
+      {
+        "key": "Accept",
+        "value": "application/json",
+        "id": 0.9152120942190756,
+        "isEnabled": true
+      }
+    ],
+    "body": null,
+    "bodyContainer": {},
+    "contentType": "text/plain",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}

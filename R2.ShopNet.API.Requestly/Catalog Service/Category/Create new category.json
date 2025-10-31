@@ -1,0 +1,33 @@
+{
+  "name": "Create new category",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/categories",
+    "scripts": {
+      "preRequest": "// **********************************************\n// 🛠️ Learn more about scripts and snippets: https://docs.requestly.com/general/api-client/scripts\n// **********************************************\n",
+      "postResponse": "// **********************************************\n// 🛠️ Use JavaScript to visualize responses: https://docs.requestly.com/general/api-client/scripts\n// **********************************************\nif (rq.response.code == 200) {\n  rq.environment.set(\"CATEGORY_ID\", rq.response.body.id);\n}\n"
+    },
+    "method": "POST",
+    "queryParams": [],
+    "headers": [
+      {
+        "key": "Content-Type",
+        "value": "application/json",
+        "id": 0.37103836999956097,
+        "isEnabled": true
+      }
+    ],
+    "body": "{\n  \"name\": \"Electronics\",\n  \"description\": \"Electronic devices and accessories\",\n  \"slug\": \"electronics\",\n  \"parentCategoryId\": null,\n  \"displayOrder\": 1,\n  \"isActive\": true,\n  \"metaTitle\": \"Electronics | ShopNet\",\n  \"metaDescription\": \"Browse our wide selection of electronic devices\",\n  \"metaKeywords\": \"electronics, devices, gadgets\"\n}\n",
+    "bodyContainer": {
+      "text": "{\n  \"name\": \"Electronics\",\n  \"description\": \"Electronic devices and accessories\",\n  \"slug\": \"electronics\",\n  \"parentCategoryId\": null,\n  \"displayOrder\": 1,\n  \"isActive\": true,\n  \"metaTitle\": \"Electronics | ShopNet\",\n  \"metaDescription\": \"Browse our wide selection of electronic devices\",\n  \"metaKeywords\": \"electronics, devices, gadgets\"\n}\n",
+      "form": [],
+      "multipartForm": []
+    },
+    "contentType": "application/json",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}

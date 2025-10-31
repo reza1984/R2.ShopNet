@@ -1,0 +1,33 @@
+{
+  "name": "Create new product",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/products",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "POST",
+    "queryParams": [],
+    "headers": [
+      {
+        "key": "Content-Type",
+        "value": "application/json",
+        "id": 0.1,
+        "isEnabled": true
+      }
+    ],
+    "body": "{\n  \"name\": \"Premium Wireless Headphones\",\n  \"slug\": \"premium-wireless-headphones\",\n  \"sku\": \"WH-PRO-2024\",\n  \"price\": 299.99,\n  \"currency\": \"USD\",\n  \"categoryId\": \"{{CATEGORY_ID}}\",\n  \"description\": \"High-quality wireless headphones with noise cancellation and premium sound quality. Features 30-hour battery life and comfortable over-ear design.\",\n  \"shortDescription\": \"Premium wireless headphones with noise cancellation\",\n  \"discountPrice\": 249.99,\n  \"stockQuantity\": 50,\n  \"reorderLevel\": 10,\n  \"brand\": \"AudioTech\",\n  \"weight\": 250.5,\n  \"dimensions\": \"20x18x8 cm\"\n}\n",
+    "bodyContainer": {
+      "text": "{\n  \"name\": \"Premium Wireless Headphones\",\n  \"slug\": \"premium-wireless-headphones\",\n  \"sku\": \"WH-PRO-2024\",\n  \"price\": 299.99,\n  \"currency\": \"USD\",\n  \"categoryId\": \"{{CATEGORY_ID}}\",\n  \"description\": \"High-quality wireless headphones with noise cancellation and premium sound quality. Features 30-hour battery life and comfortable over-ear design.\",\n  \"shortDescription\": \"Premium wireless headphones with noise cancellation\",\n  \"discountPrice\": 249.99,\n  \"stockQuantity\": 50,\n  \"reorderLevel\": 10,\n  \"brand\": \"AudioTech\",\n  \"weight\": 250.5,\n  \"dimensions\": \"20x18x8 cm\"\n}\n",
+      "form": [],
+      "multipartForm": []
+    },
+    "contentType": "application/json",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}

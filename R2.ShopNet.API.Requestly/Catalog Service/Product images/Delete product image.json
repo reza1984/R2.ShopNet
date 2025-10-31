@@ -1,0 +1,21 @@
+{
+  "name": "Delete product image",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5005/api/products/PRODUCT_ID/images/IMAGE_ID",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "DELETE",
+    "queryParams": [],
+    "headers": [],
+    "body": null,
+    "bodyContainer": {},
+    "contentType": "text/plain",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    }
+  }
+}

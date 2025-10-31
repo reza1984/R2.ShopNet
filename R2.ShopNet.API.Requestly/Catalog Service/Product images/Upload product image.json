@@ -1,0 +1,100 @@
+{
+  "name": "Upload product image",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/products/019a373f-f4ad-7729-a3d7-b0899d8eb4ec/images",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "POST",
+    "queryParams": [],
+    "headers": [],
+    "body": [
+      {
+        "id": 0.94786187637407,
+        "key": "altText",
+        "value": "Product front view",
+        "isEnabled": true,
+        "type": "text"
+      },
+      {
+        "id": 0.14642376594108786,
+        "key": "displayOrder",
+        "value": "1",
+        "isEnabled": true,
+        "type": "text"
+      },
+      {
+        "id": 0.1935349583236421,
+        "key": "isPrimary",
+        "value": "true",
+        "isEnabled": true,
+        "type": "text"
+      },
+      {
+        "id": 0.2883162932568277,
+        "key": "file",
+        "value": [
+          {
+            "id": "Screenshot 2025-07-28 at 06.32.29.png-1761865274758",
+            "name": "Screenshot 2025-07-28 at 06.32.29.png",
+            "path": "/Users/rezarezazadeh/Desktop/Screenshot 2025-07-28 at 06.32.29.png",
+            "size": 726309,
+            "source": "desktop"
+          }
+        ],
+        "isEnabled": true,
+        "type": "file"
+      }
+    ],
+    "bodyContainer": {
+      "text": "",
+      "form": [],
+      "multipartForm": [
+        {
+          "id": 0.94786187637407,
+          "key": "altText",
+          "value": "Product front view",
+          "isEnabled": true,
+          "type": "text"
+        },
+        {
+          "id": 0.14642376594108786,
+          "key": "displayOrder",
+          "value": "1",
+          "isEnabled": true,
+          "type": "text"
+        },
+        {
+          "id": 0.1935349583236421,
+          "key": "isPrimary",
+          "value": "true",
+          "isEnabled": true,
+          "type": "text"
+        },
+        {
+          "id": 0.2883162932568277,
+          "key": "file",
+          "value": [
+            {
+              "id": "Screenshot 2025-07-28 at 06.32.29.png-1761865274758",
+              "name": "Screenshot 2025-07-28 at 06.32.29.png",
+              "path": "/Users/rezarezazadeh/Desktop/Screenshot 2025-07-28 at 06.32.29.png",
+              "size": 726309,
+              "source": "desktop"
+            }
+          ],
+          "isEnabled": true,
+          "type": "file"
+        }
+      ]
+    },
+    "contentType": "multipart/form-data",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}

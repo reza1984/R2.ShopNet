@@ -1,0 +1,33 @@
+{
+  "name": "Create subcategory ",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/categories",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "POST",
+    "queryParams": [],
+    "headers": [
+      {
+        "key": "Content-Type",
+        "value": "application/json",
+        "id": 0.9415152435716341,
+        "isEnabled": true
+      }
+    ],
+    "body": "{\n  \"name\": \"Laptops\",\n  \"description\": \"Laptop computers\",\n  \"slug\": \"laptops\",\n  \"parentCategoryId\": \"CATEGORY_ID\",\n  \"displayOrder\": 1,\n  \"isActive\": true\n}\n",
+    "bodyContainer": {
+      "text": "{\n  \"name\": \"Laptops\",\n  \"description\": \"Laptop computers\",\n  \"slug\": \"laptops\",\n  \"parentCategoryId\": \"CATEGORY_ID\",\n  \"displayOrder\": 1,\n  \"isActive\": true\n}\n",
+      "form": [],
+      "multipartForm": []
+    },
+    "contentType": "application/json",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}

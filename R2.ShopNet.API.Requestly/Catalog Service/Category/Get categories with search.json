@@ -1,0 +1,42 @@
+{
+  "name": "Get categories with search",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/categories",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "GET",
+    "queryParams": [
+      {
+        "id": 0.9201549921426782,
+        "key": "searchTerm",
+        "value": "electronics",
+        "isEnabled": true
+      },
+      {
+        "id": 0.6955578801751268,
+        "key": "pageSize",
+        "value": "20",
+        "isEnabled": true
+      }
+    ],
+    "headers": [
+      {
+        "key": "Accept",
+        "value": "application/json",
+        "id": 0.06020201162964067,
+        "isEnabled": true
+      }
+    ],
+    "body": null,
+    "bodyContainer": {},
+    "contentType": "text/plain",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "Get root categories only",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/categories",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "GET",
+    "queryParams": [
+      {
+        "id": 0.4800594645183607,
+        "key": "parentCategoryId",
+        "value": "00000000-0000-0000-0000-000000000000",
+        "isEnabled": true
+      }
+    ],
+    "headers": [
+      {
+        "key": "Accept",
+        "value": "application/json",
+        "id": 0.13360178636658726,
+        "isEnabled": true
+      }
+    ],
+    "body": null,
+    "bodyContainer": {},
+    "contentType": "text/plain",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}

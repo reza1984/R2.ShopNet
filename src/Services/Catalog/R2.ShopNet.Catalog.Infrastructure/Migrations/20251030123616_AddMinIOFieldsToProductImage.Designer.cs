@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using R2.ShopNet.Catalog.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using R2.ShopNet.Catalog.Infrastructure.Persistence;
 namespace R2.ShopNet.Catalog.Infrastructure.Migrations
 {
     [DbContext(typeof(CatalogDbContext))]
-    partial class CatalogDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251030123616_AddMinIOFieldsToProductImage")]
+    partial class AddMinIOFieldsToProductImage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -203,8 +206,7 @@ namespace R2.ShopNet.Catalog.Infrastructure.Migrations
 
                     b.Property<string>("AltText")
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasComment("Alternative text for accessibility");
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("ContentType")
                         .IsRequired()
@@ -213,24 +215,11 @@ namespace R2.ShopNet.Catalog.Infrastructure.Migrations
                         .HasComment("MIME type (e.g., image/jpeg)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DeletedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("Upload timestamp");
 
                     b.Property<int>("DisplayOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasComment("Display order for sorting");
+                        .HasColumnType("integer");
 
                     b.Property<string>("FileName")
                         .IsRequired()
@@ -238,16 +227,14 @@ namespace R2.ShopNet.Catalog.Infrastructure.Migrations
                         .HasColumnType("character varying(255)")
                         .HasComment("Original filename");
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasComment("Legacy field - use ObjectKey instead");
 
                     b.Property<bool>("IsPrimary")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasComment("Whether this is the primary image");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("ObjectKey")
                         .IsRequired()
@@ -262,27 +249,14 @@ namespace R2.ShopNet.Catalog.Infrastructure.Migrations
                         .HasColumnType("bigint")
                         .HasComment("File size in bytes");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAt");
-
-                    b.HasIndex("IsDeleted");
 
                     b.HasIndex("ObjectKey")
                         .IsUnique();
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("ProductId", "DisplayOrder");
-
-                    b.HasIndex("ProductId", "IsPrimary");
 
                     b.ToTable("ProductImages", "catalog");
                 });

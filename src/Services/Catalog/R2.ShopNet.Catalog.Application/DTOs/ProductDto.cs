@@ -41,7 +41,10 @@ public record ProductDto
 public record ProductImageDto
 {
     public Guid Id { get; init; }
-    public string ImageUrl { get; init; } = string.Empty;
+    public string Url { get; init; } = string.Empty;
+    public string FileName { get; init; } = string.Empty;
+    public string ContentType { get; init; } = string.Empty;
+    public long SizeInBytes { get; init; }
     public string? AltText { get; init; }
     public int DisplayOrder { get; init; }
     public bool IsPrimary { get; init; }

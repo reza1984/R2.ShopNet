@@ -1,0 +1,36 @@
+{
+  "name": "Get product images with custom expiry",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/products/019a373f-f4ad-7729-a3d7-b0899d8eb4ec/images",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "GET",
+    "queryParams": [
+      {
+        "id": 0.7503615463669149,
+        "key": "expiryMinutes",
+        "value": "120",
+        "isEnabled": true
+      }
+    ],
+    "headers": [
+      {
+        "key": "Accept",
+        "value": "application/json",
+        "id": 0.46847412322483506,
+        "isEnabled": true
+      }
+    ],
+    "body": null,
+    "bodyContainer": {},
+    "contentType": "text/plain",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}

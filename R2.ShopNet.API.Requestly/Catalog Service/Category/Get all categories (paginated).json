@@ -1,0 +1,42 @@
+{
+  "name": "Get all categories (paginated)",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/categories",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "GET",
+    "queryParams": [
+      {
+        "id": 0.5414778105707332,
+        "key": "pageNumber",
+        "value": "1",
+        "isEnabled": true
+      },
+      {
+        "id": 0.6711350309510387,
+        "key": "pageSize",
+        "value": "10",
+        "isEnabled": true
+      }
+    ],
+    "headers": [
+      {
+        "key": "Accept",
+        "value": "application/json",
+        "id": 0.20974392060697067,
+        "isEnabled": true
+      }
+    ],
+    "body": null,
+    "bodyContainer": {},
+    "contentType": "text/plain",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}

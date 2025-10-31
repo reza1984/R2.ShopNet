@@ -1,0 +1,33 @@
+{
+  "name": "Update category",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/categories/019a3735-a267-79aa-a7a1-e69a293a80ce",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "PUT",
+    "queryParams": [],
+    "headers": [
+      {
+        "key": "Content-Type",
+        "value": "application/json",
+        "id": 0.04349431932763115,
+        "isEnabled": true
+      }
+    ],
+    "body": "{\n  \"categoryId\": \"{{CATEGORY_ID}}\",\n  \"name\": \"Electronics Updated\",\n  \"description\": \"Updated description for electronic devices\",\n  \"slug\": \"electronics\",\n  \"parentCategoryId\": null,\n  \"displayOrder\": 1,\n  \"isActive\": true,\n  \"metaTitle\": \"Electronics | ShopNet\",\n  \"metaDescription\": \"Browse our wide selection of electronic devices\",\n  \"metaKeywords\": \"electronics, devices, gadgets, technology\"\n}\n",
+    "bodyContainer": {
+      "text": "{\n  \"categoryId\": \"{{CATEGORY_ID}}\",\n  \"name\": \"Electronics Updated\",\n  \"description\": \"Updated description for electronic devices\",\n  \"slug\": \"electronics\",\n  \"parentCategoryId\": null,\n  \"displayOrder\": 1,\n  \"isActive\": true,\n  \"metaTitle\": \"Electronics | ShopNet\",\n  \"metaDescription\": \"Browse our wide selection of electronic devices\",\n  \"metaKeywords\": \"electronics, devices, gadgets, technology\"\n}\n",
+      "form": [],
+      "multipartForm": []
+    },
+    "contentType": "application/json",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}

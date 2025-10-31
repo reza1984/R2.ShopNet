@@ -1,0 +1,29 @@
+{
+  "name": "Get all images for a product",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/products/019a373f-f4ad-7729-a3d7-b0899d8eb4ec/images",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "GET",
+    "queryParams": [],
+    "headers": [
+      {
+        "key": "Accept",
+        "value": "application/json",
+        "id": 0.06403532930856448,
+        "isEnabled": true
+      }
+    ],
+    "body": null,
+    "bodyContainer": {},
+    "contentType": "text/plain",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}

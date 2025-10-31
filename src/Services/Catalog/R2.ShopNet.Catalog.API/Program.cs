@@ -1,11 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using R2.ShopNet.Catalog.Application.Commands.CreateProduct;
+using R2.ShopNet.Catalog.Domain.Entities;
 using R2.ShopNet.Catalog.Infrastructure.Persistence;
+using R2.ShopNet.Catalog.Infrastructure.Repositories;
 using R2.ShopNet.Framework.Configuration;
 using R2.ShopNet.Framework.Configuration.Integration;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.CQRS.DependencyInjection;
 using R2.ShopNet.Framework.Events;
+using R2.ShopNet.Framework.Persistence.Storage.Abstractions;
+using R2.ShopNet.Framework.Persistence.Storage.Extensions;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 using R2.ShopNet.Framework.ServiceDiscovery;
 using Serilog;
@@ -32,15 +36,7 @@ try
     builder.Services.AddHealthChecks();
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen(options =>
-    {
-        options.SwaggerDoc("v1", new()
-        {
-            Title = "R2.ShopNet Catalog Service API",
-            Version = "v1",
-            Description = "Product catalog and inventory management service"
-        });
-    });
+    builder.Services.AddOpenApi();
 
     // Configure Database
     var connectionString = builder.Configuration.GetConnectionString("CatalogDb")
@@ -52,6 +48,12 @@ try
     // Register UnitOfWork
     builder.Services.AddScoped<IUnitOfWork>(sp =>
         new UnitOfWork(sp.GetRequiredService<CatalogDbContext>()));
+
+    // Register MinIO Object Storage
+    builder.Services.AddMinioObjectStorage(builder.Configuration);
+
+    // Register ProductImageRepository
+    builder.Services.AddScoped<IMinIORepository<Product>, ProductImageRepository>();
 
     // Register CQRS Handlers automatically using reflection
     builder.Services.AddCQRSHandlersFromAssemblyContaining<CreateProductCommandHandler>();
@@ -78,11 +80,7 @@ try
     // Configure the HTTP request pipeline
     if (app.Environment.IsDevelopment())
     {
-        app.UseSwagger();
-        app.UseSwaggerUI(options =>
-        {
-            options.SwaggerEndpoint("/swagger/v1/swagger.json", "Catalog Service API v1");
-        });
+        app.MapOpenApi();
     }
 
     app.UseHttpsRedirection();

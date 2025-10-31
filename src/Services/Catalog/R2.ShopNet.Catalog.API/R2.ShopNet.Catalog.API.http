@@ -1,6 +1,251 @@
-@R2.ShopNet.Catalog.API_HostAddress = http://localhost:5059
+@API_HostAddress = http://localhost:5004
 
-GET {{R2.ShopNet.Catalog.API_HostAddress}}/weatherforecast/
+# Variables - Update these after creating resources
+@categoryId = 3fa85f64-5717-4562-b3fc-2c963f66afa6
+@productId = 3fa85f64-5717-4562-b3fc-2c963f66afa7
+@imageId = 3fa85f64-5717-4562-b3fc-2c963f66afa8
+
+# ====================================
+# CATEGORIES
+# ====================================
+
+### Get all categories (paginated)
+GET http://localhost:5004/api/categories?pageNumber=1&pageSize=10
 Accept: application/json
 
 ###
+
+### Get categories with search
+GET http://localhost:5004/api/categories?searchTerm=electronics&pageSize=20
+Accept: application/json
+
+###
+
+### Get root categories only
+GET http://localhost:5004/api/categories?parentCategoryId=00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+###
+
+### Get category hierarchy (tree structure)
+GET http://localhost:5004/api/categories/hierarchy
+Accept: application/json
+
+###
+
+### Get category by ID
+GET http://localhost:5004/api/categories/{{categoryId}}
+Accept: application/json
+
+###
+
+### Create new category
+POST http://localhost:5004/api/categories
+Content-Type: application/json
+
+{
+  "name": "Electronics",
+  "description": "Electronic devices and accessories",
+  "slug": "electronics",
+  "parentCategoryId": null,
+  "displayOrder": 1,
+  "isActive": true,
+  "metaTitle": "Electronics | ShopNet",
+  "metaDescription": "Browse our wide selection of electronic devices",
+  "metaKeywords": "electronics, devices, gadgets"
+}
+
+###
+
+### Create subcategory
+POST http://localhost:5004/api/categories
+Content-Type: application/json
+
+{
+  "name": "Laptops",
+  "description": "Laptop computers",
+  "slug": "laptops",
+  "parentCategoryId": "{{categoryId}}",
+  "displayOrder": 1,
+  "isActive": true
+}
+
+###
+
+### Update category
+PUT http://localhost:5004/api/categories/{{categoryId}}
+Content-Type: application/json
+
+{
+  "categoryId": "{{categoryId}}",
+  "name": "Electronics Updated",
+  "description": "Updated description for electronic devices",
+  "slug": "electronics",
+  "parentCategoryId": null,
+  "displayOrder": 1,
+  "isActive": true,
+  "metaTitle": "Electronics | ShopNet",
+  "metaDescription": "Browse our wide selection of electronic devices",
+  "metaKeywords": "electronics, devices, gadgets, technology"
+}
+
+###
+
+### Delete category (soft delete)
+DELETE http://localhost:5004/api/categories/{{categoryId}}
+
+###
+
+# ====================================
+# PRODUCTS
+# ====================================
+
+### Get all products (paginated)
+GET http://localhost:5004/api/products?pageNumber=1&pageSize=10
+Accept: application/json
+
+###
+
+### Get products by category
+GET http://localhost:5004/api/products?categoryId={{categoryId}}&pageSize=20
+Accept: application/json
+
+###
+
+### Get products with search
+GET http://localhost:5004/api/products?searchTerm=laptop&pageSize=20
+Accept: application/json
+
+###
+
+### Get products by status
+GET http://localhost:5004/api/products?status=Active&pageSize=20
+Accept: application/json
+
+###
+
+### Get products sorted by name
+GET http://localhost:5004/api/products?sortBy=Name&sortDescending=false
+Accept: application/json
+
+###
+
+### Get product by ID
+GET http://localhost:5004/api/products/{{productId}}
+Accept: application/json
+
+###
+
+### Create new product
+POST http://localhost:5004/api/products
+Content-Type: application/json
+
+{
+  "name": "Dell XPS 15",
+  "description": "High-performance laptop with 15-inch display",
+  "sku": "DELL-XPS15-001",
+  "slug": "dell-xps-15",
+  "price": 1499.99,
+  "compareAtPrice": 1799.99,
+  "cost": 1200.00,
+  "categoryId": "{{categoryId}}",
+  "brandId": null,
+  "unitOfMeasure": "Each",
+  "weight": 2.5,
+  "dimensions": "357 x 235 x 18 mm",
+  "stockQuantity": 50,
+  "lowStockThreshold": 10,
+  "isActive": true,
+  "isFeatured": true,
+  "allowBackorder": false,
+  "requiresShipping": true,
+  "metaTitle": "Dell XPS 15 Laptop | Premium Performance",
+  "metaDescription": "Experience premium performance with the Dell XPS 15",
+  "metaKeywords": "dell, xps, laptop, premium, performance"
+}
+
+###
+
+# ====================================
+# PRODUCT IMAGES
+# ====================================
+
+### Get all images for a product
+GET http://localhost:5004/api/products/{{productId}}/images
+Accept: application/json
+
+###
+
+### Get product images with custom expiry (120 minutes)
+GET http://localhost:5004/api/products/{{productId}}/images?expiryMinutes=120
+Accept: application/json
+
+###
+
+### Upload product image (multipart/form-data)
+# Note: Replace with actual file path when testing
+POST http://localhost:5004/api/products/{{productId}}/images
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="product-image.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="altText"
+
+Product front view
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="displayOrder"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="isPrimary"
+
+true
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### Delete product image
+DELETE http://localhost:5004/api/products/{{productId}}/images/{{imageId}}
+
+###
+
+# ====================================
+# CURL COMMANDS - PRODUCT IMAGES
+# ====================================
+
+# Get all images for a product
+# curl -X GET "http://localhost:5005/api/products/PRODUCT_ID/images" \
+#   -H "Accept: application/json"
+
+# Get product images with custom expiry (120 minutes)
+# curl -X GET "http://localhost:5005/api/products/PRODUCT_ID/images?expiryMinutes=120" \
+#   -H "Accept: application/json"
+
+# Upload product image (replace /path/to/image.jpg with actual image path)
+# curl -X POST "http://localhost:5005/api/products/PRODUCT_ID/images" \
+#   -F "file=@/path/to/image.jpg" \
+#   -F "altText=Product front view" \
+#   -F "displayOrder=1" \
+#   -F "isPrimary=true"
+
+# Delete product image
+# curl -X DELETE "http://localhost:5005/api/products/PRODUCT_ID/images/IMAGE_ID"
+
+###
+
+# ====================================
+# VARIABLES
+# ====================================
+# To use these endpoints:
+# 1. Create a category first and copy its ID to @categoryId
+# 2. Create a product with that categoryId and copy its ID to @productId
+# 3. Upload an image and copy its ID to @imageId
+#
+# Example variables:
+# @categoryId = 3fa85f64-5717-4562-b3fc-2c963f66afa6
+# @productId = 3fa85f64-5717-4562-b3fc-2c963f66afa7
+# @imageId = 3fa85f64-5717-4562-b3fc-2c963f66afa8

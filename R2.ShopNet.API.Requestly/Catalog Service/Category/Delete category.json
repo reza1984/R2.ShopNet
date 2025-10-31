@@ -1,0 +1,21 @@
+{
+  "name": "Delete category",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/categories/CATEGORY_ID",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "DELETE",
+    "queryParams": [],
+    "headers": [],
+    "body": null,
+    "bodyContainer": {},
+    "contentType": "text/plain",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    }
+  }
+}

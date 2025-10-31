@@ -3,20 +3,14 @@ using R2.ShopNet.Framework.Common;
 namespace R2.ShopNet.Catalog.Domain.Entities;
 
 /// <summary>
-/// Represents a product image.
+/// Represents a product image stored in MinIO.
 /// </summary>
-public class ProductImage : BaseEntity
+public class ProductImage : FileEntity
 {
     /// <summary>
     /// The product this image belongs to.
     /// </summary>
     public Guid ProductId { get; private set; }
-
-    /// <summary>
-    /// URL to the image.
-    /// </summary>
-    public string ImageUrl { get; private set; } = string.Empty;
-
     /// <summary>
     /// Alternative text for accessibility.
     /// </summary>
@@ -32,42 +26,47 @@ public class ProductImage : BaseEntity
     /// </summary>
     public bool IsPrimary { get; private set; }
 
-    private ProductImage() { }
+    private ProductImage()
+    {
+    }
 
-    public ProductImage(Guid productId, string imageUrl, string? altText = null, int displayOrder = 0, bool isPrimary = false)
+    /// <summary>
+    /// Creates a new product image with file metadata.
+    /// </summary>
+    public ProductImage(
+        Guid productId,
+        string objectKey,
+        string fileName,
+        string contentType,
+        long sizeInBytes,
+        string? altText = null,
+        int displayOrder = 0,
+        bool isPrimary = false)
     {
         ProductId = productId;
-        SetImageUrl(imageUrl);
+        SetFileMetadata(objectKey, fileName, contentType, sizeInBytes);
         AltText = altText;
         DisplayOrder = displayOrder;
         IsPrimary = isPrimary;
     }
 
-    public void SetImageUrl(string imageUrl)
+    /// <summary>
+    /// Updates the image metadata.
+    /// </summary>
+    public void UpdateMetadata(string? altText = null, int? displayOrder = null, bool? isPrimary = null)
     {
-        if (string.IsNullOrWhiteSpace(imageUrl))
-            throw new ArgumentException("Image URL cannot be empty", nameof(imageUrl));
-
-        ImageUrl = imageUrl;
+        if (altText is not null) AltText = altText;
+        if (displayOrder is not null) DisplayOrder = displayOrder.Value;
+        if (isPrimary is not null) IsPrimary = isPrimary.Value;
     }
 
-    public void SetAltText(string? altText)
-    {
-        AltText = altText;
-    }
+    /// <summary>
+    /// Marks this image as primary.
+    /// </summary>
+    public void MarkAsPrimary() => IsPrimary = true;
 
-    public void SetDisplayOrder(int displayOrder)
-    {
-        DisplayOrder = displayOrder;
-    }
-
-    public void SetAsPrimary()
-    {
-        IsPrimary = true;
-    }
-
-    public void UnsetAsPrimary()
-    {
-        IsPrimary = false;
-    }
+    /// <summary>
+    /// Unmarks this image as primary.
+    /// </summary>
+    public void UnmarkAsPrimary() => IsPrimary = false;
 }

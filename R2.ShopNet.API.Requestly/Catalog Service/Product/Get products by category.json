@@ -1,0 +1,60 @@
+{
+  "name": "Get products by category",
+  "request": {
+    "type": "http",
+    "url": "http://localhost:5004/api/products",
+    "scripts": {
+      "preRequest": "",
+      "postResponse": ""
+    },
+    "method": "GET",
+    "queryParams": [
+      {
+        "id": 0.1,
+        "key": "pageNumber",
+        "value": "1",
+        "isEnabled": true
+      },
+      {
+        "id": 0.2,
+        "key": "pageSize",
+        "value": "10",
+        "isEnabled": true
+      },
+      {
+        "id": 0.3,
+        "key": "categoryId",
+        "value": "YOUR_CATEGORY_ID_HERE",
+        "isEnabled": true
+      },
+      {
+        "id": 0.4,
+        "key": "sortBy",
+        "value": "CreatedAt",
+        "isEnabled": true
+      },
+      {
+        "id": 0.5,
+        "key": "sortDescending",
+        "value": "true",
+        "isEnabled": true
+      }
+    ],
+    "headers": [
+      {
+        "key": "Accept",
+        "value": "application/json",
+        "id": 0.6,
+        "isEnabled": true
+      }
+    ],
+    "body": null,
+    "bodyContainer": {},
+    "contentType": "text/plain",
+    "auth": {
+      "currentAuthType": "INHERIT",
+      "authConfigStore": {}
+    },
+    "pathVariables": []
+  }
+}
