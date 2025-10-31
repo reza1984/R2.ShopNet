@@ -4,5 +4,11 @@
     "type": "string",
     "id": 0,
     "isSecret": false
+  },
+  "authToken": {
+    "value": "",
+    "type": "string",
+    "id": 1,
+    "isSecret": false
   }
 }

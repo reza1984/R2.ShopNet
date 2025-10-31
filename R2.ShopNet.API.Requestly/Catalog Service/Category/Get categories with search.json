@@ -2,7 +2,7 @@
   "name": "Get categories with search",
   "request": {
     "type": "http",
-    "url": "http://localhost:5004/api/categories",
+    "url": "http://localhost:5004/api/v1/categories",
     "scripts": {
       "preRequest": "",
       "postResponse": ""
@@ -10,15 +10,27 @@
     "method": "GET",
     "queryParams": [
       {
-        "id": 0.9201549921426782,
+        "id": 0.0023253582488902413,
         "key": "searchTerm",
         "value": "electronics",
         "isEnabled": true
       },
       {
-        "id": 0.6955578801751268,
+        "id": 0.34084796413351137,
         "key": "pageSize",
         "value": "20",
+        "isEnabled": true
+      },
+      {
+        "id": 0.3433268071344535,
+        "key": "pageNumber",
+        "value": "1",
+        "isEnabled": true
+      },
+      {
+        "id": 0.001516580943527801,
+        "key": "sortDescending",
+        "value": "false",
         "isEnabled": true
       }
     ],

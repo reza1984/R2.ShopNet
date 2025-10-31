@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using R2.ShopNet.Catalog.API.Extensions;
 using R2.ShopNet.Catalog.Application.Commands.CreateProduct;
 using R2.ShopNet.Catalog.Domain.Entities;
 using R2.ShopNet.Catalog.Infrastructure.Persistence;
 using R2.ShopNet.Catalog.Infrastructure.Repositories;
-using R2.ShopNet.Framework.Configuration;
 using R2.ShopNet.Framework.Configuration.Integration;
-using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.CQRS.DependencyInjection;
 using R2.ShopNet.Framework.Events;
 using R2.ShopNet.Framework.Persistence.Storage.Abstractions;
@@ -13,6 +13,7 @@ using R2.ShopNet.Framework.Persistence.Storage.Extensions;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 using R2.ShopNet.Framework.ServiceDiscovery;
 using Serilog;
+using Microsoft.IdentityModel.Tokens;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -32,48 +33,29 @@ try
     // Add Serilog
     builder.Host.UseSerilog();
 
-    // Add services to the container
-    builder.Services.AddHealthChecks();
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddOpenApi();
+    // Grouped service registrations
+    builder.Services
+        .AddCatalogHealthChecks()
+        .AddCatalogControllers()
+        .AddCatalogPersistence(builder.Configuration)
+        .AddCatalogObjectStorage(builder.Configuration)
+        .AddCatalogDomain()
+        .AddCatalogEventing()
+        .AddCatalogServiceDiscovery(builder.Configuration)
+        .AddCatalogCors();
 
-    // Configure Database
-    var connectionString = builder.Configuration.GetConnectionString("CatalogDb")
-        ?? "Host=localhost;Port=5432;Database=r2shopnet_catalog;Username=postgres;Password=postgres";
 
-    builder.Services.AddDbContext<CatalogDbContext>(options =>
-        options.UseNpgsql(connectionString));
-
-    // Register UnitOfWork
-    builder.Services.AddScoped<IUnitOfWork>(sp =>
-        new UnitOfWork(sp.GetRequiredService<CatalogDbContext>()));
-
-    // Register MinIO Object Storage
-    builder.Services.AddMinioObjectStorage(builder.Configuration);
-
-    // Register ProductImageRepository
-    builder.Services.AddScoped<IMinIORepository<Product>, ProductImageRepository>();
-
-    // Register CQRS Handlers automatically using reflection
-    builder.Services.AddCQRSHandlersFromAssemblyContaining<CreateProductCommandHandler>();
-
-    // Add Event Publisher
-    builder.Services.AddSingleton<IEventPublisher, InMemoryEventPublisher>();
-
-    // Configure Consul Service Discovery
-    builder.Services.AddConsulServiceDiscovery(builder.Configuration);
-
-    // Add CORS
-    builder.Services.AddCors(options =>
+    builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
     {
-        options.AddPolicy("AllowAll", policy =>
+        options.Authority = "https://localhost:5000"; // IdentityServer URL
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            policy.AllowAnyOrigin()
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
-        });
+            ValidateAudience = false
+        };
     });
+
+    builder.Services.AddAuthorization();
 
     var app = builder.Build();
 
@@ -85,12 +67,11 @@ try
 
     app.UseHttpsRedirection();
     app.UseCors("AllowAll");
+    app.UseAuthentication();
     app.UseAuthorization();
     app.MapHealthChecks("/health");
+    app.RegisterCatalogApiEndpoints();
     app.MapControllers();
-    
-    // Health check endpoint
-
 
     // Run database migrations
     using (var scope = app.Services.CreateScope())

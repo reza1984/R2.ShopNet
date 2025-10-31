@@ -4,21 +4,27 @@
     "type": "http",
     "url": "http://localhost:5004/api/categories",
     "scripts": {
-      "preRequest": "",
+      "preRequest": "// **********************************************\n// 🛠️ Learn more about scripts and snippets: https://docs.requestly.com/general/api-client/scripts\n// **********************************************\n\n\nrq.test(\"authToken should exist\", () => {\n  \n  rq.expect(rq.collectionVariables.get(\"authToken\")).to.be.an(\"string\");\n});\n",
       "postResponse": ""
     },
     "method": "GET",
     "queryParams": [
       {
-        "id": 0.5414778105707332,
+        "id": 0.4086007439660042,
         "key": "pageNumber",
         "value": "1",
         "isEnabled": true
       },
       {
-        "id": 0.6711350309510387,
+        "id": 0.16899343529154076,
         "key": "pageSize",
         "value": "10",
+        "isEnabled": true
+      },
+      {
+        "id": 0.576112129094539,
+        "key": "sortDescending",
+        "value": "false",
         "isEnabled": true
       }
     ],
@@ -34,8 +40,12 @@
     "bodyContainer": {},
     "contentType": "text/plain",
     "auth": {
-      "currentAuthType": "INHERIT",
-      "authConfigStore": {}
+      "currentAuthType": "BEARER_TOKEN",
+      "authConfigStore": {
+        "BEARER_TOKEN": {
+          "bearer": "Bearer {{authToken}}"
+        }
+      }
     },
     "pathVariables": []
   }
