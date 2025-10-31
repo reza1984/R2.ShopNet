@@ -174,3 +174,4 @@ secrets.json
 
 # Local development
 local/
+**/temp-tailadmin
