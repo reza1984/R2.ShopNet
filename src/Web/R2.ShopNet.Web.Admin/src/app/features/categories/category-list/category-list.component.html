@@ -1,0 +1,43 @@
+<div class="category-list-container">
+    <div class="header">
+        <h2>Categories</h2>
+        <a [routerLink]="['/categories/new']">
+            <app-button>Add Category</app-button>
+        </a>
+    </div>
+    <div class="controls">
+        <app-input-field placeholder="Search..." (valueChange)="onSearch($event)"></app-input-field>
+        <app-dropdown>
+            <app-dropdown-item (click)="onSortChange('name', sortDescending)">Name</app-dropdown-item>
+            <app-dropdown-item (click)="onSortChange('description', sortDescending)">Description</app-dropdown-item>
+        </app-dropdown>
+        <app-button (btnClick)="onSortChange(sortBy, !sortDescending)">Sort {{ sortDescending ? '↓' : '↑' }}</app-button>
+    </div>
+    <app-table>
+        <app-table-header>
+            <app-table-cell>Name</app-table-cell>
+            <app-table-cell>Description</app-table-cell>
+            <app-table-cell>Parent</app-table-cell>
+            <app-table-cell>Actions</app-table-cell>
+        </app-table-header>
+        <app-table-body>
+            <app-table-row *ngFor="let cat of categories">
+                <app-table-cell>{{ cat.name }}</app-table-cell>
+                <app-table-cell>{{ cat.description }}</app-table-cell>
+                <app-table-cell>{{ cat.parentCategoryId || '-' }}</app-table-cell>
+                <app-table-cell>
+                    <a [routerLink]="['/categories', cat.id]">
+                        <app-button>Edit</app-button>
+                    </a>
+                    <app-button (btnClick)="deleteCategory(cat.id)" variant="outline">Delete</app-button>
+                </app-table-cell>
+            </app-table-row>
+        </app-table-body>
+    </app-table>
+    <div class="pagination">
+        <app-button (click)="onPageChange(pageNumber - 1)" [disabled]="pageNumber === 1" label="Prev"></app-button>
+        <span>Page {{ pageNumber }}</span>
+        <app-button (click)="onPageChange(pageNumber + 1)" [disabled]="categories.length < pageSize" label="Next"></app-button>
+    </div>
+    <app-alert *ngIf="loading" type="info" message="Loading..." />
+</div>

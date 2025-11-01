@@ -1,6 +1,6 @@
-# TailAdmin Design Comparison
+# Tailwind Dashboard Design Comparison
 
-This document provides a visual and functional comparison between the current Angular Material design and the proposed TailAdmin-inspired design.
+This document provides a visual and functional comparison between the current Angular Material design and the proposed Tailwind Dashboard design.
 
 ## Layout Comparison
 
@@ -32,7 +32,7 @@ Features:
 - No dark mode
 ```
 
-### Proposed (TailAdmin)
+### Proposed (Tailwind Dashboard)
 ```
 ┌──────┬──────────────────────────────────────┐
 │      │ [≡] Search...    [🔔] [🌙] [@]      │  ← Header (72px)
@@ -77,7 +77,7 @@ Features:
 - Limited menu visibility
 - No grouping
 
-#### TailAdmin: Collapsible Sidebar
+#### Tailwind Dashboard: Collapsible Sidebar
 ```html
 <!-- Sidebar Structure -->
 <aside class="sidebar">
@@ -132,7 +132,7 @@ States:
 </mat-toolbar>
 ```
 
-#### TailAdmin: Modern Header
+#### Tailwind Dashboard: Modern Header
 ```html
 <header class="header">
   <button class="hamburger">≡</button>
@@ -167,7 +167,7 @@ States:
 </mat-card>
 ```
 
-#### TailAdmin: Modern Card
+#### Tailwind Dashboard: Modern Card
 ```html
 <div class="rounded-2xl border border-gray-200 bg-white p-6 
             dark:border-gray-800 dark:bg-gray-900">
@@ -182,7 +182,7 @@ States:
 
 ### Stat Cards
 
-#### TailAdmin: Dashboard Stats
+#### Tailwind Dashboard: Dashboard Stats
 ```html
 <div class="stat-card">
   <div class="stat-icon bg-blue-100 dark:bg-blue-900/30">
@@ -216,7 +216,7 @@ States:
 <mat-paginator [pageSize]="10"></mat-paginator>
 ```
 
-#### TailAdmin: Modern Table
+#### Tailwind Dashboard: Modern Table
 ```html
 <div class="overflow-x-auto">
   <table class="w-full">
@@ -274,7 +274,7 @@ States:
 <button mat-icon-button><mat-icon>edit</mat-icon></button>
 ```
 
-#### TailAdmin: Modern Buttons
+#### Tailwind Dashboard: Modern Buttons
 ```html
 <!-- Primary -->
 <button class="btn-primary">
@@ -309,7 +309,7 @@ States:
 </mat-form-field>
 ```
 
-#### TailAdmin: Modern Forms
+#### Tailwind Dashboard: Modern Forms
 ```html
 <div class="form-group">
   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

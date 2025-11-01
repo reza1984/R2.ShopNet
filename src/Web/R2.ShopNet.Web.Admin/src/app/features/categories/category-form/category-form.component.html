@@ -1,0 +1,25 @@
+<div class="category-form-container">
+    <h2>{{ isEdit ? 'Edit Category' : 'Add Category' }}</h2>
+    <form [formGroup]="form" (ngSubmit)="saveCategory()">
+        <div class="form-group">
+            <app-label for="name">Name</app-label>
+            <app-input-field id="name" formControlName="name" required></app-input-field>
+        </div>
+        <div class="form-group">
+            <app-label for="description">Description</app-label>
+            <app-input-field id="description" formControlName="description"></app-input-field>
+        </div>
+        <div class="form-group">
+            <app-label for="parent">Parent Category</app-label>
+            <app-input-field id="parent" formControlName="parentCategoryId"></app-input-field>
+            <!-- Replace with dropdown if you have category list -->
+        </div>
+        <div class="form-actions">
+            <app-button type="submit" [disabled]="loading || form.invalid">Save</app-button>
+            <app-button type="button" (btnClick)="onCancel()">Cancel</app-button>
+        </div>
+        @if (loading) {
+        <div class="loading">Saving...</div>
+        }
+    </form>
+</div>

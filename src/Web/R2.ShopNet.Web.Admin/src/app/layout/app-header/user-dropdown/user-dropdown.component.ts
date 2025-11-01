@@ -2,8 +2,9 @@ import { Component, inject, computed } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { DropdownComponent } from '../../../shared/components/ui/dropdown/dropdown.component';
-import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { IconComponent } from '../../../components/icon/icon.component';
+import { DropdownComponent } from '../../../components/ui/dropdown/dropdown.component';
+
 
 @Component({
   selector: 'app-user-dropdown',

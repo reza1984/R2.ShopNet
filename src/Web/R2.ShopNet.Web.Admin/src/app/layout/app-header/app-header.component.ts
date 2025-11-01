@@ -5,8 +5,8 @@ import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { IconComponent } from '../../shared/components/icon/icon.component';
 import { UserDropdownComponent } from './user-dropdown/user-dropdown.component';
+import { IconComponent } from '../../components/icon/icon.component';
 
 @Component({
   selector: 'app-header',

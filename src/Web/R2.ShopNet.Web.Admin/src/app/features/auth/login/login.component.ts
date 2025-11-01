@@ -2,12 +2,12 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
-import { LabelComponent } from '../../../shared/components/forms/label/label.component';
-import { ButtonComponent } from '../../../shared/components/forms/button/button.component';
-import { InputFieldComponent } from '../../../shared/components/forms/input-field/input-field.component';
-import { CheckboxComponent } from '../../../shared/components/forms/checkbox/checkbox.component';
-import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { AuthPageLayoutComponent } from '../auth-page-layout/auth-page-layout.component';
+import { ButtonComponent } from '../../../components/forms/button/button.component';
+import { CheckboxComponent } from '../../../components/forms/checkbox/checkbox.component';
+import { InputFieldComponent } from '../../../components/forms/input-field/input-field.component';
+import { LabelComponent } from '../../../components/forms/label/label.component';
+import { IconComponent } from '../../../components/icon/icon.component';
 
 @Component({
   selector: 'app-login',

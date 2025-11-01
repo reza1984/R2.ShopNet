@@ -3,7 +3,7 @@ import { Component, ElementRef, QueryList, ViewChildren, ChangeDetectorRef, PLAT
 import { SidebarService } from '../../core/services/sidebar.service';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
-import { IconComponent } from '../../shared/components/icon/icon.component';
+import { IconComponent } from '../../components/icon/icon.component';
 
 type NavItem = {
   name: string;
