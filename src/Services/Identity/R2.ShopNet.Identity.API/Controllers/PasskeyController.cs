@@ -4,6 +4,8 @@ using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Identity.Application.Commands.RegisterPasskey;
 using R2.ShopNet.Identity.Application.Commands.CompletePasskeyRegistration;
 using R2.ShopNet.Identity.Application.Commands.LoginWithPasskey;
+using R2.ShopNet.Identity.Application.DTOs;
+using R2.ShopNet.Identity.Application.Queries.GetUserPasskeys;
 using System.Security.Claims;
 
 namespace R2.ShopNet.Identity.API.Controllers;
@@ -17,13 +19,16 @@ namespace R2.ShopNet.Identity.API.Controllers;
 public class PasskeyController : ControllerBase
 {
     private readonly ICommandDispatcher _commandDispatcher;
+    private readonly IQueryDispatcher _queryDispatcher;
     private readonly ILogger<PasskeyController> _logger;
 
     public PasskeyController(
         ICommandDispatcher commandDispatcher,
+        IQueryDispatcher queryDispatcher,
         ILogger<PasskeyController> logger)
     {
         _commandDispatcher = commandDispatcher;
+        _queryDispatcher = queryDispatcher;
         _logger = logger;
     }
 
@@ -179,10 +184,19 @@ public class PasskeyController : ControllerBase
             return Unauthorized(new { error = "INVALID_TOKEN", message = "Invalid authentication token." });
         }
 
-        // TODO: Implement GetUserPasskeysQuery
-        // For now, return empty list
         _logger.LogInformation("Fetching passkeys for user: {UserId}", userId);
-        return Ok(new List<PasskeyDto>());
+
+        var query = new GetUserPasskeysQuery(userId);
+        var result = await _queryDispatcher.Dispatch(query, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            _logger.LogWarning("Failed to fetch passkeys for user {UserId}: {Error}",
+                userId, result.Error.Message);
+            return BadRequest(new { error = result.Error.Code, message = result.Error.Message });
+        }
+
+        return Ok(result.Value);
     }
 
     /// <summary>
@@ -246,55 +260,4 @@ public record LoginWithPasskeyRequest
     /// Optional username to filter passkeys.
     /// </summary>
     public string? Username { get; init; }
-}
-
-/// <summary>
-/// DTO for passkey information.
-/// </summary>
-public record PasskeyDto
-{
-    /// <summary>
-    /// The unique identifier of the passkey.
-    /// </summary>
-    public required string Id { get; init; }
-
-    /// <summary>
-    /// The user ID this passkey belongs to.
-    /// </summary>
-    public required string UserId { get; init; }
-
-    /// <summary>
-    /// The friendly name of the passkey.
-    /// </summary>
-    public required string FriendlyName { get; init; }
-
-    /// <summary>
-    /// The credential ID (base64url encoded).
-    /// </summary>
-    public required string CredentialId { get; init; }
-
-    /// <summary>
-    /// When the passkey was created.
-    /// </summary>
-    public DateTime CreatedAt { get; init; }
-
-    /// <summary>
-    /// When the passkey was last used for authentication.
-    /// </summary>
-    public DateTime? LastUsedAt { get; init; }
-
-    /// <summary>
-    /// The user agent string from when this passkey was created.
-    /// </summary>
-    public string? UserAgent { get; init; }
-
-    /// <summary>
-    /// The IP address from when this passkey was created.
-    /// </summary>
-    public string? IpAddress { get; init; }
-
-    /// <summary>
-    /// Whether this passkey is still active.
-    /// </summary>
-    public bool IsActive { get; init; }
 }
