@@ -41,7 +41,17 @@ export const routes: Routes = [
       { path: 'orders', loadComponent: () => import('./pages/orders/orders.component').then(m => m.OrdersComponent) },
       { path: 'reports', loadComponent: () => import('./pages/reports/reports.component').then(m => m.ReportsComponent) },
       { path: 'analytics', loadComponent: () => import('./pages/analytics/analytics.component').then(m => m.AnalyticsComponent) },
-      { path: 'settings', loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent) },
+      {
+        path: 'settings',
+        loadComponent: () => import('./pages/settings/settings.component').then(m => m.SettingsComponent),
+        children: [
+          { path: '', redirectTo: 'account', pathMatch: 'full' },
+          { path: 'account', loadComponent: () => import('./pages/settings/account/account-settings.component').then(m => m.AccountSettingsComponent) },
+          { path: 'profile', loadComponent: () => import('./pages/settings/profile/profile-settings.component').then(m => m.ProfileSettingsComponent) },
+          { path: 'security', loadComponent: () => import('./pages/settings/security/security-settings.component').then(m => m.SecuritySettingsComponent) },
+          { path: 'support', loadComponent: () => import('./pages/settings/support/support.component').then(m => m.SupportComponent) }
+        ]
+      },
     ]
   },
 

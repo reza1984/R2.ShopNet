@@ -1,0 +1,113 @@
+<div class="space-y-6">
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="flex items-center justify-center rounded-lg border border-gray-200 bg-white py-20 dark:border-gray-800 dark:bg-gray-900">
+      <div class="text-center">
+        <div class="inline-block size-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-500"></div>
+        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">Loading profile...</p>
+      </div>
+    </div>
+  }
+
+  <!-- Profile Information Card -->
+  @else {
+    <div class="rounded-lg border border-gray-200 bg-white shadow-theme-sm dark:border-gray-800 dark:bg-gray-900">
+      <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Profile Information</h2>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Update your personal details and bio</p>
+      </div>
+
+      <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="p-6">
+        <div class="space-y-6">
+          <!-- Name Fields Row -->
+          <div class="grid gap-6 md:grid-cols-2">
+            <!-- First Name -->
+            <div>
+              <label for="firstName" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                First Name <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="firstName"
+                formControlName="firstName"
+                placeholder="Enter first name"
+                class="h-11 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500 dark:focus:border-brand-700"
+                [class.border-red-300]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched"
+              />
+              @if (profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched) {
+                <p class="mt-1 text-xs text-red-500">First name is required</p>
+              }
+            </div>
+
+            <!-- Last Name -->
+            <div>
+              <label for="lastName" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Last Name <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="lastName"
+                formControlName="lastName"
+                placeholder="Enter last name"
+                class="h-11 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500 dark:focus:border-brand-700"
+                [class.border-red-300]="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched"
+              />
+              @if (profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched) {
+                <p class="mt-1 text-xs text-red-500">Last name is required</p>
+              }
+            </div>
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label for="phoneNumber" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="phoneNumber"
+              formControlName="phoneNumber"
+              placeholder="Enter phone number"
+              class="h-11 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-300 focus:outline-none focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500 dark:focus:border-brand-700"
+            />
+          </div>
+
+          <!-- Success Message -->
+          @if (successMessage()) {
+            <div class="flex items-center gap-3 rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
+              <span class="material-symbols-rounded text-green-600 dark:text-green-400">check_circle</span>
+              <p class="text-sm text-green-600 dark:text-green-400">{{ successMessage() }}</p>
+            </div>
+          }
+
+          <!-- Error Message -->
+          @if (errorMessage()) {
+            <div class="flex items-center gap-3 rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
+              <span class="material-symbols-rounded text-red-600 dark:text-red-400">error</span>
+              <p class="text-sm text-red-600 dark:text-red-400">{{ errorMessage() }}</p>
+            </div>
+          }
+        </div>
+
+        <!-- Form Actions -->
+        <div class="mt-6 flex justify-end">
+          <button
+            type="submit"
+            [disabled]="profileForm.invalid || saving()"
+            [class.opacity-50]="profileForm.invalid || saving()"
+            [class.cursor-not-allowed]="profileForm.invalid || saving()"
+            class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 disabled:hover:bg-brand-500 dark:bg-brand-600 dark:hover:bg-brand-700"
+          >
+            @if (saving()) {
+              <div class="inline-block size-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+              <span>Saving...</span>
+            } @else {
+              <span class="material-symbols-rounded text-lg">save</span>
+              <span>Save Changes</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</div>

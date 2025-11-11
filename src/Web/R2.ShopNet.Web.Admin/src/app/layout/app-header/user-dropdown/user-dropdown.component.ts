@@ -4,12 +4,20 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { IconComponent } from '../../../components/icon/icon.component';
 import { DropdownComponent } from '../../../components/ui/dropdown/dropdown.component';
+import { DropdownItemTwoComponent } from '../../../components/ui/dropdown/dropdown-item/dropdown-item.component-two';
 
 
 @Component({
   selector: 'app-user-dropdown',
+  standalone: true,
   templateUrl: './user-dropdown.component.html',
-  imports:[CommonModule,RouterModule,DropdownComponent,IconComponent]
+  imports: [
+    CommonModule,
+    RouterModule,
+    DropdownComponent,
+    IconComponent,
+    DropdownItemTwoComponent
+  ]
 })
 export class UserDropdownComponent {
   isOpen = false;

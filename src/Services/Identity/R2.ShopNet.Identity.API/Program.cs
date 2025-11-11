@@ -83,9 +83,23 @@ try
         // Sign-in settings
         options.SignIn.RequireConfirmedEmail = false; // Set to true in production
         options.SignIn.RequireConfirmedPhoneNumber = false;
+
+        // Enable passkey support (WebAuthn) - requires schema version 3
+        options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
     })
     .AddEntityFrameworkStores<IdentityDbContext>()
     .AddDefaultTokenProviders();
+
+    // Configure passkey options
+    builder.Services.Configure<IdentityPasskeyOptions>(options =>
+    {
+        var serverDomain = builder.Configuration["Passkey:ServerDomain"] ?? "localhost";
+        options.ServerDomain = serverDomain;
+        options.AuthenticatorTimeout = TimeSpan.FromMinutes(3);
+        options.ChallengeSize = 64;
+
+        Log.Information("Passkey support configured for domain: {ServerDomain}", serverDomain);
+    });
 
     // Register Consul KV Store for Configuration
     builder.Services.AddConsulKeyValueStore(builder.Configuration);

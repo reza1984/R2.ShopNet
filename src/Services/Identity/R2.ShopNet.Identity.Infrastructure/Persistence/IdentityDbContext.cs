@@ -6,9 +6,9 @@ using R2.ShopNet.Identity.Domain.Entities;
 namespace R2.ShopNet.Identity.Infrastructure.Persistence;
 
 /// <summary>
-/// Database context for Identity service with ASP.NET Core Identity support.
+/// Database context for Identity service with ASP.NET Core Identity and Passkey support.
 /// </summary>
-public class IdentityDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
+public class IdentityDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid, IdentityUserClaim<Guid>, IdentityUserRole<Guid>, IdentityUserLogin<Guid>, IdentityRoleClaim<Guid>, IdentityUserToken<Guid>, ApplicationUserPasskey>
 {
     public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
         : base(options)
@@ -56,6 +56,11 @@ public class IdentityDbContext : IdentityDbContext<ApplicationUser, ApplicationR
         modelBuilder.Entity<IdentityUserToken<Guid>>(entity =>
         {
             entity.ToTable("UserTokens");
+        });
+
+        modelBuilder.Entity<ApplicationUserPasskey>(entity =>
+        {
+            entity.ToTable("UserPasskeys");
         });
 
         // Configure OpenIddict entities
