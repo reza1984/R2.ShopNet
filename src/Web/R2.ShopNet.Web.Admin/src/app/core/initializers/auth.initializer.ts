@@ -13,7 +13,7 @@ export function initializeAuth() {
   return () => {
     // Only run in browser (skip during SSR)
     if (isPlatformBrowser(platformId)) {
-      console.log('🎬 [AuthInitializer] Initializing authentication state...');
+        // ...existing code...
       // The AuthService constructor already loads from localStorage
       // This just ensures it happens before routing
       return Promise.resolve();

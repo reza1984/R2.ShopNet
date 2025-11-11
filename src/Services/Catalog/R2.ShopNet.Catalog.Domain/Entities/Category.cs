@@ -8,6 +8,7 @@ namespace R2.ShopNet.Catalog.Domain.Entities;
 public class Category : AuditableSoftDeletableEntity
 {
     private readonly List<Product> _products = [];
+    private readonly List<Category> _subCategories = [];
 
     /// <summary>
     /// The name of the category.
@@ -37,7 +38,7 @@ public class Category : AuditableSoftDeletableEntity
     /// <summary>
     /// Collection of subcategories.
     /// </summary>
-    public IReadOnlyCollection<Category> SubCategories { get; private set; } = [];
+    public IReadOnlyCollection<Category> SubCategories => _subCategories.AsReadOnly();
 
     /// <summary>
     /// Products in this category.

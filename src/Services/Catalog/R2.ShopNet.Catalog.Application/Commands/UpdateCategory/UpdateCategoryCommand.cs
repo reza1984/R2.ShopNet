@@ -14,4 +14,4 @@ public record UpdateCategoryCommand(
     string? Description = null,
     Guid? ParentCategoryId = null,
     int DisplayOrder = 0,
-    string? ImageUrl = null) : ICommand<Result<CategoryDto>>;
+    ImageUploadDto? Image = null) : ICommand<Result<CategoryDto>>;

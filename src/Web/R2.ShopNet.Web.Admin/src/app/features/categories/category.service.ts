@@ -1,13 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Category {
   id: string;
   name: string;
+  slug: string;
   description?: string;
   parentCategoryId?: string;
-  // Add other fields as needed
+  parentCategoryName?: string;
+  displayOrder: number;
+  imageUrl?: string;
 }
 
 export interface CategoryHierarchy {
@@ -16,12 +20,18 @@ export interface CategoryHierarchy {
 
 export interface CategoryListResponse {
   items: Category[];
+  page: number;
+  pageSize: number;
   totalCount: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
 export class CategoryService {
-  private baseUrl = '/api/Categories';
+  private readonly apiUrl = environment.apiUrl;
+  private baseUrl = `${this.apiUrl}/api/catalog/Categories`;
 
   constructor(private http: HttpClient) {}
 
@@ -51,12 +61,15 @@ export class CategoryService {
     return this.http.get<CategoryHierarchy>(`${this.baseUrl}/hierarchy`);
   }
 
-  createCategory(category: Partial<Category>): Observable<Category> {
-    return this.http.post<Category>(`${this.baseUrl}`, category);
+  createCategory(categoryData: FormData | Partial<Category>): Observable<Category> {
+    return this.http.post<Category>(`${this.baseUrl}`, categoryData);
   }
 
-  updateCategory(id: string, category: Partial<Category>): Observable<Category> {
-    return this.http.put<Category>(`${this.baseUrl}/${id}`, { ...category, categoryId: id });
+  updateCategory(id: string, categoryData: FormData | Partial<Category>): Observable<Category> {
+    if (categoryData instanceof FormData) {
+      return this.http.put<Category>(`${this.baseUrl}/${id}`, categoryData);
+    }
+    return this.http.put<Category>(`${this.baseUrl}/${id}`, { ...categoryData, categoryId: id });
   }
 
   deleteCategory(id: string): Observable<void> {

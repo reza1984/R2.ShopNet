@@ -219,16 +219,17 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
 
     #region Soft Delete Operations
 
-    public virtual Task SoftDeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public virtual Task SoftDeleteAsync(TEntity entity, string currentUserId, CancellationToken cancellationToken = default)
     {
         if (entity is ISoftDeletable softDeletable)
         {
             softDeletable.IsDeleted = true;
 
-            // If entity also implements IAuditableEntity, update the audit timestamp
-            if (entity is IAuditableEntity auditableEntity)
+            // If entity also implements ISoftDeletable, update the audit timestamp
+            if (entity is ISoftDeletable auditableEntity)
             {
-                auditableEntity.UpdatedAt = DateTime.UtcNow;
+                auditableEntity.DeletedAt = DateTime.UtcNow;
+                auditableEntity.DeletedBy = currentUserId;
             }
 
             DbSet.Update(entity);
@@ -240,13 +241,14 @@ public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEnti
         return Task.CompletedTask;
     }
 
-    public virtual async Task SoftDeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public virtual async Task<TEntity?> SoftDeleteAsync(Guid id, string currentUserId, CancellationToken cancellationToken = default)
     {
         var entity = await GetByIdAsync(id, false, cancellationToken);
         if (entity != null)
         {
-            await SoftDeleteAsync(entity, cancellationToken);
+            await SoftDeleteAsync(entity, currentUserId, cancellationToken);
         }
+        return entity;
     }
 
     public virtual Task SoftDeleteRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)

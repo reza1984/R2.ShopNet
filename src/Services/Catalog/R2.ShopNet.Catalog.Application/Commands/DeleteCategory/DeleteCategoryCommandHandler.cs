@@ -4,6 +4,7 @@ using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Framework.Events;
+using R2.ShopNet.Framework.Persistence.Auditing;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 
 namespace R2.ShopNet.Catalog.Application.Commands.DeleteCategory;
@@ -16,13 +17,16 @@ public class DeleteCategoryCommandHandler : ICommandHandler<DeleteCategoryComman
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
+    private readonly ICurrentUserAccessor _currentUserAccessor;
 
     public DeleteCategoryCommandHandler(
         IUnitOfWork unitOfWork,
-        IEventPublisher eventPublisher)
+        IEventPublisher eventPublisher,
+        ICurrentUserAccessor currentUserAccessor)
     {
         _unitOfWork = unitOfWork;
         _eventPublisher = eventPublisher;
+        _currentUserAccessor = currentUserAccessor;
     }
 
     public async Task<Result> Handle(
@@ -64,8 +68,22 @@ public class DeleteCategoryCommandHandler : ICommandHandler<DeleteCategoryComman
                     "Cannot delete category that has subcategories"));
         }
 
+        // Get current user ID for auditing purposes
+        var currentUserId = _currentUserAccessor.GetCurrentUserId();
+        if (string.IsNullOrEmpty(currentUserId))
+        {
+            return Result.Failure(
+                Error.Unauthorized("User.Unauthenticated", "Current user is not authenticated"));
+        }
+
         // Perform soft delete
-        await categoryRepository.SoftDeleteAsync(command.CategoryId, cancellationToken);
+        var deletedCategory = await categoryRepository.SoftDeleteAsync(command.CategoryId, currentUserId, cancellationToken);
+        // Append deleted timestamp to slug to free it up for future use
+        if (deletedCategory is not null)
+        {
+            deletedCategory.SetSlug(deletedCategory.Slug + $"-deleted-{DateTime.Now.ToFileTimeUtc()}");
+            await categoryRepository.UpdateAsync(deletedCategory!);
+        }
 
         // Save changes
         await _unitOfWork.SaveChangesAsync(cancellationToken);

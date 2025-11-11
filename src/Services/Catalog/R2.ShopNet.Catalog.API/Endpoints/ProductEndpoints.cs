@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using R2.ShopNet.Catalog.Application.Commands.CreateProduct;
+using R2.ShopNet.Catalog.Application.Commands.UpdateProduct;
+using R2.ShopNet.Catalog.Application.Commands.DeleteProduct;
 using R2.ShopNet.Catalog.Application.Commands.DeleteProductImage;
 using R2.ShopNet.Catalog.Application.Commands.UploadProductImage;
 using R2.ShopNet.Catalog.Application.Queries.GetProductById;
 using R2.ShopNet.Catalog.Application.Queries.GetProductImages;
 using R2.ShopNet.Catalog.Application.Queries.GetProducts;
 using R2.ShopNet.Framework.CQRS;
+using R2.ShopNet.Framework.Common;
 
 
 namespace R2.ShopNet.Catalog.API.Endpoints;
@@ -67,7 +70,50 @@ public static class Products
             }
             return Results.Created($"/api/{nameof(Products)}/{result.Value.Id}", result.Value);
         });
-       
+
+        products.MapPut("/{id}", async (
+            [FromServices] ICommandDispatcher commandDispatcher,
+            Guid id,
+            [FromBody] UpdateProductCommand command,
+            CancellationToken cancellationToken) =>
+        {
+            // Ensure the ID in the route matches the command
+            if (id != command.ProductId)
+            {
+                return Results.BadRequest(new { message = "Product ID mismatch" });
+            }
+
+            var result = await commandDispatcher.Dispatch(command, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                return result.Error.Type switch
+                {
+                    ErrorType.NotFound => Results.NotFound(result.Error),
+                    ErrorType.Conflict => Results.Conflict(result.Error),
+                    _ => Results.BadRequest(result.Error)
+                };
+            }
+            return Results.Ok(result.Value);
+        });
+
+        products.MapDelete("/{id}", async (
+            [FromServices] ICommandDispatcher commandDispatcher,
+            Guid id,
+            CancellationToken cancellationToken) =>
+        {
+            var command = new DeleteProductCommand(id);
+            var result = await commandDispatcher.Dispatch(command, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                return result.Error.Type switch
+                {
+                    ErrorType.NotFound => Results.NotFound(result.Error),
+                    _ => Results.BadRequest(result.Error)
+                };
+            }
+            return Results.NoContent();
+        });
+
         #endregion
 
         #region Product Images

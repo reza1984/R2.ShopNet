@@ -140,7 +140,7 @@ public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisp
                             {
                                 ["static-fallback"] = new DestinationConfig
                                 {
-                                    Address = "https://localhost:5002"
+                                    Address = "http://localhost:5002"  // Changed from https to http
                                 }
                             };
 

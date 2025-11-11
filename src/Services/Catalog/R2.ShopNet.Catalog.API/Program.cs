@@ -4,7 +4,7 @@ using R2.ShopNet.Catalog.Infrastructure.Persistence;
 using R2.ShopNet.Framework.Configuration.Integration;
 using R2.ShopNet.Framework.Events;
 using Serilog;
-using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Validation.AspNetCore;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -36,16 +36,45 @@ try
         .AddCatalogCors();
 
 
-    builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
-    {
-        options.Authority = "https://localhost:5000"; // IdentityServer URL
-        options.TokenValidationParameters = new TokenValidationParameters
+    // Configure OpenIddict validation (handles both JWS and JWE tokens)
+    builder.Services.AddOpenIddict()
+        .AddValidation(options =>
         {
-            ValidateAudience = false
-        };
-    });
+            // Note: The validation handler uses OpenID Connect discovery to retrieve
+            // the signing keys from Identity service's /.well-known/openid-configuration
+            options.SetIssuer("http://localhost:5002/");
+            
+            // Don't validate audience in development (tokens may not have audience claim)
+            options.Configure(validationOptions =>
+            {
+                validationOptions.TokenValidationParameters.ValidateAudience = false;
+            });
+            
+            options.UseSystemNetHttp();
+            
+            // Register the ASP.NET Core host
+            options.UseAspNetCore();
+        });
+    
+    // Add HTTP client handler to bypass SSL in development
+    if (builder.Environment.IsDevelopment())
+    {
+        builder.Services.ConfigureHttpClientDefaults(http =>
+        {
+            http.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = 
+                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            });
+        });
+    }
 
+    // Configure authentication to use OpenIddict
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+    });
+    
     builder.Services.AddAuthorization();
 
     var app = builder.Build();
@@ -113,3 +142,6 @@ public class InMemoryEventPublisher : IEventPublisher
         return Task.CompletedTask;
     }
 }
+
+// Make Program accessible to integration tests
+public partial class Program { }

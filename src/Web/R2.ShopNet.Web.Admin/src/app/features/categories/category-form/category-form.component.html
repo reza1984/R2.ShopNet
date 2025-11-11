@@ -1,25 +1,172 @@
-<div class="category-form-container">
-    <h2>{{ isEdit ? 'Edit Category' : 'Add Category' }}</h2>
-    <form [formGroup]="form" (ngSubmit)="saveCategory()">
-        <div class="form-group">
-            <app-label for="name">Name</app-label>
-            <app-input-field id="name" formControlName="name" required></app-input-field>
+<div class="p-6">
+    <!-- Page Breadcrumb -->
+    <app-page-breadcrumb [pageTitle]="isEdit() ? 'Edit Category' : 'Add Category'" [parent]="{ title: 'Categories', url: '/products/categories' }">
+    </app-page-breadcrumb>
+
+    <!-- Error Alert -->
+    @if (errorMessage()) {
+    <div class="mb-6">
+        <app-alert variant="error" title="Error" [message]="errorMessage()">
+        </app-alert>
+    </div>
+    }
+
+    <!-- Form Card -->
+    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+        <div class="p-6">
+            <form [formGroup]="form" (ngSubmit)="saveCategory()">
+                <div class="space-y-6">
+                    <!-- Category Description -->
+                    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                        <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+                            <h2 class="text-lg font-medium text-gray-800 dark:text-white">
+                                Category Description
+                            </h2>
+                        </div>
+                        <div class="p-4 sm:p-6 space-y-6">
+                            <!-- Two Column Layout for Name and Slug -->
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <!-- Name Field -->
+                                <div>
+                                    <app-label for="name">
+                                        Category Name
+                                        <span class="text-error-500">*</span>
+                                    </app-label>
+                                    <app-input-field id="name" formControlName="name" placeholder="Enter category name"
+                                        [error]="!!(form.get('name')?.invalid && form.get('name')?.touched)"
+                                        [hint]="form.get('name')?.invalid && form.get('name')?.touched ? 'Category name is required' : ''"></app-input-field>
+                                </div>
+
+                                <!-- Slug Field -->
+                                <div>
+                                    <div class="flex items-center justify-between">
+                                        <app-label for="slug">
+                                            URL Slug
+                                            <span class="text-error-500">*</span>
+                                        </app-label>
+                                        <button type="button" (click)="regenerateSlug()"
+                                            class="text-xs text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 flex items-center gap-1"
+                                            title="Regenerate slug from name">
+                                            <app-icon name="refresh" [size]="14"></app-icon>
+                                            <span>Auto-generate</span>
+                                        </button>
+                                    </div>
+                                    <app-input-field id="slug" formControlName="slug" placeholder="e.g., electronics, clothing"
+                                        [error]="!!(form.get('slug')?.invalid && form.get('slug')?.touched)"
+                                        [hint]="form.get('slug')?.invalid && form.get('slug')?.touched ? 'Slug is required' : 'Auto-generates from name or edit manually'"></app-input-field>
+                                </div>
+                            </div>
+
+
+                            <!-- Two Column Layout for Parent Category and Display Order -->
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <!-- Parent Category Field -->
+                                <div>
+                                    <app-label for="parent">Parent Category</app-label>
+                                    <app-select formControlName="parentCategoryId" [url]="categoriesApiUrl" valueField="id" labelField="name" [options]="categories"
+                                        [searchable]="true" [clearable]="true" [pageSize]="20" placeholder="Select parent category (optional)">
+                                    </app-select>
+                                    <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                                        Leave empty for top-level category
+                                    </p>
+                                </div>
+
+                                <!-- Display Order Field -->
+                                <div>
+                                    <app-label for="displayOrder">
+                                        Display Order
+                                        <span class="text-error-500">*</span>
+                                    </app-label>
+                                    <app-input-field id="displayOrder" type="number" formControlName="displayOrder" placeholder="0"
+                                        [error]="!!(form.get('displayOrder')?.invalid && form.get('displayOrder')?.touched)"
+                                        [hint]="form.get('displayOrder')?.invalid && form.get('displayOrder')?.touched ? 'Must be 0 or greater' : 'Lower numbers appear first'"></app-input-field>
+                                </div>
+                            </div>
+
+                            <!-- Description Field -->
+                            <div>
+                                <app-label for="description">Description</app-label>
+                                <textarea id="description" formControlName="description" placeholder="Enter category description" rows="4"
+                                    class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"></textarea>
+                                <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                                    Optional: Add a description to help identify this category
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Category Image -->
+                    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                        <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+                            <h2 class="text-lg font-medium text-gray-800 dark:text-white">
+                                Category Image
+                            </h2>
+                        </div>
+                        <div class="p-4 sm:p-6">
+                            @if (imagePreviewUrl()) {
+                                <!-- Image Preview -->
+                                <div class="space-y-4">
+                                    <div class="relative inline-block">
+                                        <img [src]="imagePreviewUrl()" alt="Category preview"
+                                            class="h-48 w-auto rounded-lg border border-gray-200 object-cover dark:border-gray-800" />
+                                        <button type="button" (click)="removeImage()"
+                                            class="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-error-500 text-white shadow-lg hover:bg-error-600 transition">
+                                            <app-icon name="x" [size]="16"></app-icon>
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        @if (selectedImage()) {
+                                            Selected: {{ selectedImage()!.name }} ({{ (selectedImage()!.size / 1024).toFixed(2) }} KB)
+                                        } @else {
+                                            Current category image
+                                        }
+                                    </p>
+                                </div>
+                            } @else {
+                                <!-- Upload Area -->
+                                <label for="category-image"
+                                    class="shadow-theme-xs group hover:border-brand-500 block cursor-pointer rounded-lg border-2 border-dashed border-gray-300 transition dark:hover:border-brand-400 dark:border-gray-800">
+                                    <div class="flex justify-center p-10">
+                                        <div class="flex max-w-[260px] flex-col items-center gap-4">
+                                            <div
+                                                class="inline-flex h-13 w-13 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition dark:border-gray-800 dark:text-gray-400">
+                                                <app-icon name="upload" [size]="24"></app-icon>
+                                            </div>
+                                            <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                                                <span class="font-medium text-gray-800 dark:text-white/90">
+                                                    Click to upload
+                                                </span>
+                                                or drag and drop SVG, PNG, JPG, WebP or GIF (MAX. 5MB)
+                                            </p>
+                                        </div>
+                                    </div>
+                                </label>
+                            }
+                            <input type="file" id="category-image" class="hidden" accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,image/svg+xml" (change)="onFileSelected($event)" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                @if (loading() && !errorMessage()) {
+                <div class="mt-6">
+                    <app-alert variant="info" title="Saving" message="Saving category...">
+                    </app-alert>
+                </div>
+                }
+
+                <!-- Form Actions -->
+                <div class="mt-6 flex items-center justify-end gap-3 border-t border-gray-200 pt-6 dark:border-gray-800">
+                    <app-button type="button" variant="secondary" [disabled]="loading()" (btnClick)="onCancel()">
+                        Cancel
+                    </app-button>
+                    <app-button type="submit" variant="primary" [disabled]="loading() || form.invalid">
+                        <app-icon [name]="isEdit() ? 'save' : 'add'" [size]="20" class="mr-2"></app-icon>
+                        {{ isEdit() ? 'Update Category' : 'Create Category' }}
+                    </app-button>
+                </div>
+            </form>
         </div>
-        <div class="form-group">
-            <app-label for="description">Description</app-label>
-            <app-input-field id="description" formControlName="description"></app-input-field>
-        </div>
-        <div class="form-group">
-            <app-label for="parent">Parent Category</app-label>
-            <app-input-field id="parent" formControlName="parentCategoryId"></app-input-field>
-            <!-- Replace with dropdown if you have category list -->
-        </div>
-        <div class="form-actions">
-            <app-button type="submit" [disabled]="loading || form.invalid">Save</app-button>
-            <app-button type="button" (btnClick)="onCancel()">Cancel</app-button>
-        </div>
-        @if (loading) {
-        <div class="loading">Saving...</div>
-        }
-    </form>
+    </div>
 </div>

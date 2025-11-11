@@ -1,0 +1,300 @@
+<div class="p-6">
+    <!-- Page Breadcrumb -->
+    <app-page-breadcrumb [pageTitle]="isEdit() ? 'Edit Product' : 'Add Product'" [parent]="{ title: 'Products', url: '/products' }">
+    </app-page-breadcrumb>
+
+    <!-- Error Alert -->
+    @if (errorMessage()) {
+    <div class="mb-6">
+        <app-alert variant="error" title="Error" [message]="errorMessage()"></app-alert>
+    </div>
+    }
+
+    <!-- Loading Alert -->
+    @if (loading()) {
+    <div class="mb-6">
+        <app-alert variant="info" title="Loading" message="Saving product..."></app-alert>
+    </div>
+    }
+
+    <!-- Form -->
+    <form [formGroup]="form" (ngSubmit)="saveProduct()">
+        <div class="space-y-6">
+            <!-- Basic Information -->
+            <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+                    <h2 class="text-lg font-medium text-gray-800 dark:text-white">Basic Information</h2>
+                </div>
+                <div class="p-4 sm:p-6 space-y-6">
+                    <!-- Name & Slug -->
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div>
+                            <app-label for="name">Product Name <span class="text-error-500">*</span></app-label>
+                            <app-input-field id="name" formControlName="name" placeholder="Enter product name"
+                                [error]="!!(form.get('name')?.invalid && form.get('name')?.touched)"
+                                [hint]="form.get('name')?.invalid && form.get('name')?.touched ? 'Product name is required' : ''">
+                            </app-input-field>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <app-label for="slug">URL Slug <span class="text-error-500">*</span></app-label>
+                                <button type="button" (click)="regenerateSlug()"
+                                    class="text-xs text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 flex items-center gap-1">
+                                    <app-icon name="refresh" [size]="14"></app-icon>
+                                    <span>Auto-generate</span>
+                                </button>
+                            </div>
+                            <app-input-field id="slug" formControlName="slug" placeholder="product-slug"
+                                [error]="!!(form.get('slug')?.invalid && form.get('slug')?.touched)"
+                                [hint]="'Auto-generates from name or edit manually'">
+                            </app-input-field>
+                        </div>
+                    </div>
+
+                    <!-- SKU & Category -->
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <app-label for="sku">SKU <span class="text-error-500">*</span></app-label>
+                                <button type="button" (click)="regenerateSku()"
+                                    class="text-xs text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 flex items-center gap-1">
+                                    <app-icon name="refresh" [size]="14"></app-icon>
+                                    <span>Auto-generate</span>
+                                </button>
+                            </div>
+                            <app-input-field id="sku" formControlName="sku" placeholder="PROD-1234"
+                                [error]="!!(form.get('sku')?.invalid && form.get('sku')?.touched)" [hint]="'Unique product identifier'">
+                            </app-input-field>
+                        </div>
+
+                        <div>
+                            <app-label for="category">Category <span class="text-error-500">*</span></app-label>
+                            <app-select formControlName="categoryId" [url]="categoriesApiUrl" valueField="id" labelField="name" [searchable]="true"
+                                [pageSize]="20" placeholder="Select a category">
+                            </app-select>
+                        </div>
+                    </div>
+
+                    <!-- Short Description -->
+                    <div>
+                        <app-label for="shortDescription">Short Description</app-label>
+                        <textarea id="shortDescription" formControlName="shortDescription" placeholder="Brief product summary (shown in listings)"
+                            rows="2"
+                            class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"></textarea>
+
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <app-label for="description">Description</app-label>
+                        <textarea id="description" formControlName="description" placeholder="Full product description" rows="6"
+                            class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"></textarea>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing & Inventory -->
+            <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+                    <h2 class="text-lg font-medium text-gray-800 dark:text-white">Pricing & Inventory</h2>
+                </div>
+                <div class="p-4 sm:p-6 space-y-6">
+                    <!-- Price & Currency -->
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                        <div>
+                            <app-label for="price">Price <span class="text-error-500">*</span></app-label>
+                            <app-input-field id="price" type="number" formControlName="price" placeholder="0.00"
+                                [error]="!!(form.get('price')?.invalid && form.get('price')?.touched)">
+                            </app-input-field>
+                        </div>
+
+                        <div>
+                            <app-label for="currency">Currency <span class="text-error-500">*</span></app-label>
+                            <app-select [options]="currencies" valueField="value" labelField="label" id="currency" formControlName="currency">
+                            </app-select>
+                        </div>
+
+                        <div>
+                            <app-label for="discountPrice">Discount Price</app-label>
+                            <app-input-field id="discountPrice" type="number" formControlName="discountPrice" placeholder="0.00">
+                            </app-input-field>
+                        </div>
+                    </div>
+
+                    <!-- Stock & Reorder Level -->
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                        <div>
+                            <app-label for="stockQuantity">Stock Quantity <span class="text-error-500">*</span></app-label>
+                            <app-input-field id="stockQuantity" type="number" formControlName="stockQuantity" placeholder="0"
+                                [hint]="'Current inventory quantity'">
+                            </app-input-field>
+                        </div>
+
+                        <div>
+                            <app-label for="reorderLevel">Reorder Level <span class="text-error-500">*</span></app-label>
+                            <app-input-field id="reorderLevel" type="number" formControlName="reorderLevel" placeholder="10"
+                                [hint]="'Alert when stock reaches this level'">
+                            </app-input-field>
+                        </div>
+
+                        <div>
+                            <app-label for="costPrice">Cost Price</app-label>
+                            <app-input-field id="costPrice" type="number" formControlName="costPrice" placeholder="0.00"
+                                [hint]="'Internal cost (optional)'">
+                            </app-input-field>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div> 
+                        <app-label for="status">Status <span class="text-error-500">*</span></app-label>
+                        <app-select id="status" valueField="value" labelField="label" formControlName="status" [options]="productStatuses"></app-select>
+                               
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Details -->
+            <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+                    <h2 class="text-lg font-medium text-gray-800 dark:text-white">Product Details</h2>
+                </div>
+                <div class="p-4 sm:p-6 space-y-6">
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                        <div>
+                            <app-label for="brand">Brand</app-label>
+                            <app-input-field id="brand" formControlName="brand" placeholder="Brand name">
+                            </app-input-field>
+                        </div>
+
+                        <div>
+                            <app-label for="weight">Weight (grams)</app-label>
+                            <app-input-field id="weight" type="number" formControlName="weight" placeholder="0">
+                            </app-input-field>
+                        </div>
+
+                        <div>
+                            <app-label for="dimensions">Dimensions</app-label>
+                            <app-input-field id="dimensions" formControlName="dimensions" placeholder="e.g., 10x20x30 cm">
+                            </app-input-field>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Images -->
+            <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+                    <h2 class="text-lg font-medium text-gray-800 dark:text-white">Product Images</h2>
+                </div>
+                <div class="p-4 sm:p-6 space-y-4">
+                    <!-- Existing Images -->
+                    @if (existingImages().length > 0) {
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Current Images</p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            @for (img of existingImages(); track img.id) {
+                            <div class="relative">
+                                <img [src]="img.url" [alt]="img.altText || 'Product image'"
+                                    class="h-32 w-full rounded-lg border border-gray-200 object-cover dark:border-gray-800" />
+                                @if (img.isPrimary) {
+                                <span class="absolute top-2 left-2 bg-brand-500 text-white text-xs px-2 py-1 rounded">Primary</span>
+                                }
+                                <button type="button" (click)="removeExistingImage(img.id)"
+                                    class="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-error-500 text-white shadow-lg hover:bg-error-600">
+                                    <app-icon name="x" [size]="16"></app-icon>
+                                </button>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                    }
+
+                    <!-- New Image Previews -->
+                    @if (imagePreviewUrls().length > 0) {
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">New Images</p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            @for (preview of imagePreviewUrls(); track $index) {
+                            <div class="relative">
+                                <img [src]="preview" alt="Preview"
+                                    class="h-32 w-full rounded-lg border border-gray-200 object-cover dark:border-gray-800" />
+                                @if ($index === 0 && existingImages().length === 0) {
+                                <span class="absolute top-2 left-2 bg-brand-500 text-white text-xs px-2 py-1 rounded">Primary</span>
+                                }
+                                <button type="button" (click)="removeNewImage($index)"
+                                    class="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-error-500 text-white shadow-lg hover:bg-error-600">
+                                    <app-icon name="x" [size]="16"></app-icon>
+                                </button>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                    }
+
+                    <!-- Upload Area -->
+                    <label for="product-images"
+                        class="shadow-theme-xs group hover:border-brand-500 block cursor-pointer rounded-lg border-2 border-dashed border-gray-300 transition dark:hover:border-brand-400 dark:border-gray-800">
+                        <div class="flex justify-center p-10">
+                            <div class="flex max-w-[260px] flex-col items-center gap-4">
+                                <div
+                                    class="inline-flex h-13 w-13 items-center justify-center rounded-full border border-gray-200 text-gray-700 dark:border-gray-800 dark:text-gray-400">
+                                    <app-icon name="upload" [size]="24"></app-icon>
+                                </div>
+                                <p class="text-center text-sm text-gray-500 dark:text-gray-400">
+                                    <span class="font-medium text-gray-800 dark:text-white/90">Click to upload</span>
+                                    or drag and drop<br>PNG, JPG, WebP or GIF (MAX. 5MB each)
+                                </p>
+                            </div>
+                        </div>
+                    </label>
+                    <input type="file" id="product-images" class="hidden" accept="image/jpeg,image/jpg,image/png,image/webp,image/gif" multiple
+                        (change)="onFilesSelected($event)" />
+                </div>
+            </div>
+
+            <!-- SEO -->
+            <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+                    <h2 class="text-lg font-medium text-gray-800 dark:text-white">SEO Settings</h2>
+                </div>
+                <div class="p-4 sm:p-6 space-y-6">
+                    <div>
+                        <app-label for="metaTitle">Meta Title</app-label>
+                        <app-input-field id="metaTitle" formControlName="metaTitle" placeholder="SEO title (max 60 characters)"
+                            [hint]="'Recommended: 50-60 characters'">
+                        </app-input-field>
+                    </div>
+
+                    <div>
+                        <app-label for="metaDescription">Meta Description</app-label>
+
+                        <textarea id="metaDescription" formControlName="metaDescription" placeholder="SEO description (max 160 characters)" rows="3"
+                            class="w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"></textarea>
+
+                        <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">Recommended: 150-160 characters</p>
+                    </div>
+
+                    <div>
+                        <app-label for="metaKeywords">Meta Keywords</app-label>
+                        <app-input-field id="metaKeywords" formControlName="metaKeywords" placeholder="keyword1, keyword2, keyword3"
+                            [hint]="'Comma-separated keywords'">
+                        </app-input-field>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end gap-4">
+                <a [routerLink]="['/products']">
+                    <app-button variant="secondary" size="md" type="button">Cancel</app-button>
+                </a>
+                <app-button variant="primary" size="md" type="submit" [disabled]="form.invalid || loading()">
+                    {{ isEdit() ? 'Update Product' : 'Create Product' }}
+                </app-button>
+            </div>
+        </div>
+    </form>
+</div>

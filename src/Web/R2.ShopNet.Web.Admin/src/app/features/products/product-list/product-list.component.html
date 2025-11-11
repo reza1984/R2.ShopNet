@@ -1,0 +1,223 @@
+<div class="p-6">
+    <!-- Page Header -->
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Products</h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Manage your product catalog
+            </p>
+        </div>
+        <a [routerLink]="['/catalog/products/new']">
+            <app-button variant="primary" size="md">
+                <app-icon name="add" [size]="20" class="pe-1" color="currentColor" />
+                Add Product
+            </app-button>
+        </a>
+    </div>
+
+    <!-- Controls Card -->
+    <div class="mb-6 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <!-- Search -->
+            <div class="flex-1 sm:max-w-md">
+                <div class="relative">
+                    <input
+                        type="text"
+                        placeholder="Search products..."
+                        (input)="onSearch($any($event.target).value)"
+                        class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-10 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                    />
+                    <app-icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" [size]="20" color="currentColor" />
+                </div>
+            </div>
+
+            <!-- Filter & Sort Controls -->
+            <div class="flex items-center gap-2">
+                <select
+                    (change)="onStatusFilter($any($event.target).value)"
+                    class="h-11 rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+                    <option value="">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Draft">Draft</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="OutOfStock">Out of Stock</option>
+                    <option value="Discontinued">Discontinued</option>
+                </select>
+
+                <app-button
+                    variant="secondary"
+                    size="sm"
+                    (btnClick)="onSortChange(sortBy(), !sortDescending())">
+                    <app-icon name="sort" [size]="20" color="currentColor" [class.rotate-180]="sortDescending()" [class.ps-1]="sortDescending()" [class.pe-1]="!sortDescending()" />
+                    Sort {{ sortDescending() ? 'Desc' : 'Asc' }}
+                </app-button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Alert -->
+    @if (errorMessage()) {
+    <div class="mb-6">
+        <app-alert
+            variant="error"
+            title="Error"
+            [message]="errorMessage()">
+        </app-alert>
+    </div>
+    }
+
+    <!-- Loading State -->
+    @if (loading()) {
+    <div class="mb-6">
+        <app-alert
+            variant="info"
+            title="Loading"
+            message="Loading products...">
+        </app-alert>
+    </div>
+    }
+
+    <!-- Table Card -->
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+        <div class="max-w-full overflow-x-auto">
+            <table class="min-w-full">
+                <!-- Table Header -->
+                <thead class="border-b border-gray-100 dark:border-white/[0.05]">
+                    <tr>
+                        <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">Product</th>
+                        <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">SKU</th>
+                        <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">Price</th>
+                        <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">Stock</th>
+                        <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">Status</th>
+                        <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">Category</th>
+                        <th class="px-5 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                    </tr>
+                </thead>
+                <!-- Table Body -->
+                <tbody class="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                    @if (products().length === 0 && !loading()) {
+                    <tr>
+                        <td colspan="7" class="px-5 py-8 text-center">
+                            <div class="flex flex-col items-center justify-center">
+                                <svg class="h-12 w-12 text-gray-300 dark:text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                                <p class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No products found</p>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Get started by creating a new product</p>
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                    @for (product of products(); track product.id) {
+                    <tr class="transition hover:bg-gray-50 dark:hover:bg-white/[0.02]">
+                        <!-- Product -->
+                        <td class="px-5 py-4">
+                            <div class="flex items-center gap-3">
+                                @if (getPrimaryImage(product)) {
+                                <img
+                                    [src]="getPrimaryImage(product)"
+                                    [alt]="product.name"
+                                    class="h-10 w-10 rounded-lg border border-gray-200 object-cover dark:border-gray-700" />
+                                } @else {
+                                <div class="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                                    <app-icon name="image" [size]="20" color="currentColor" class="text-gray-400" />
+                                </div>
+                                }
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ product.name }}</p>
+                                    <p class="truncate text-xs text-gray-500 dark:text-gray-400">{{ product.slug }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <!-- SKU -->
+                        <td class="px-5 py-4">
+                            <code class="rounded bg-gray-100 px-2 py-1 text-xs font-mono text-gray-700 dark:bg-gray-800 dark:text-gray-300">{{ product.sku }}</code>
+                        </td>
+                        <!-- Price -->
+                        <td class="px-5 py-4">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                    {{ formatPrice(product.price, product.currency) }}
+                                </span>
+                                @if (product.discountPrice) {
+                                <span class="text-xs text-success-600 dark:text-success-400">
+                                    {{ formatPrice(product.discountPrice, product.currency) }}
+                                    <span class="text-gray-500">({{ product.discountPercentage?.toFixed(0) }}% off)</span>
+                                </span>
+                                }
+                            </div>
+                        </td>
+                        <!-- Stock -->
+                        <td class="px-5 py-4">
+                            <span class="text-sm font-medium" [ngClass]="getStockStatusClass(product.stockQuantity, product.reorderLevel)">
+                                {{ product.stockQuantity }}
+                            </span>
+                            @if (product.stockQuantity <= product.reorderLevel && product.stockQuantity > 0) {
+                            <p class="text-xs text-warning-600">Low stock</p>
+                            }
+                            @if (product.stockQuantity === 0) {
+                            <p class="text-xs text-error-600">Out of stock</p>
+                            }
+                        </td>
+                        <!-- Status -->
+                        <td class="px-5 py-4">
+                            <span class="inline-flex rounded-full px-2 py-1 text-xs font-medium" [ngClass]="getStatusBadgeClass(product.status)">
+                                {{ product.status }}
+                            </span>
+                        </td>
+                        <!-- Category -->
+                        <td class="px-5 py-4">
+                            <span class="text-sm text-gray-700 dark:text-gray-300">{{ product.categoryName || '-' }}</span>
+                        </td>
+                        <!-- Actions -->
+                        <td class="px-5 py-4">
+                            <div class="flex items-center gap-2">
+                                <a
+                                    [routerLink]="['/catalog/products', product.id]"
+                                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-300 text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                                    <app-icon name="edit" [size]="16" color="currentColor" />
+                                </a>
+                                <button
+                                    (click)="deleteProduct(product.id, product.name)"
+                                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-error-300 text-error-700 transition hover:bg-error-50 dark:border-error-700 dark:text-error-400 dark:hover:bg-error-900/20">
+                                    <app-icon name="delete" [size]="16" color="currentColor" />
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (products().length > 0) {
+        <div class="flex items-center justify-between border-t border-gray-100 px-5 py-4 dark:border-white/[0.05]">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                Showing {{ (pageNumber() - 1) * pageSize() + 1 }} to
+                {{ Math.min(pageNumber() * pageSize(), totalCount()) }} of
+                {{ totalCount() }} products
+            </div>
+            <div class="flex items-center gap-2">
+                <app-button
+                    variant="secondary"
+                    size="sm"
+                    [disabled]="pageNumber() === 1"
+                    (btnClick)="onPageChange(pageNumber() - 1)">
+                    Previous
+                </app-button>
+                <span class="text-sm text-gray-700 dark:text-gray-300">
+                    Page {{ pageNumber() }} of {{ Math.ceil(totalCount() / pageSize()) }}
+                </span>
+                <app-button
+                    variant="secondary"
+                    size="sm"
+                    [disabled]="pageNumber() >= Math.ceil(totalCount() / pageSize())"
+                    (btnClick)="onPageChange(pageNumber() + 1)">
+                    Next
+                </app-button>
+            </div>
+        </div>
+        }
+    </div>
+</div>

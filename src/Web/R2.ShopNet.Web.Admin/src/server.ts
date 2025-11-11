@@ -5,6 +5,7 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
@@ -13,16 +14,22 @@ const app = express();
 const angularApp = new AngularNodeAppEngine();
 
 /**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
+ * Proxy API requests to the API Gateway
+ * This must be configured BEFORE the Angular app handler
  */
+app.use('/api', createProxyMiddleware({
+  target: 'https://localhost:5000',
+  changeOrigin: true,
+  secure: false,
+  on: {
+    proxyReq: (proxyReq, req, res) => {
+      console.log(`[Proxy] ${req.method} ${req.url} -> ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
+    },
+    error: (err, req, res) => {
+      console.error('[Proxy Error]', err);
+    }
+  }
+}));
 
 /**
  * Serve static files from /browser

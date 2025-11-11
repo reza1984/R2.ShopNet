@@ -39,15 +39,42 @@ public sealed record Error
 }
 
 /// <summary>
-/// Specifies the type of error.
+/// Specifies the type of error, aligned with HTTP status codes.
 /// </summary>
 public enum ErrorType
 {
+    /// <summary>
+    /// No error occurred (200 OK)
+    /// </summary>
     None = 0,
-    Failure = 1,
-    Validation = 2,
-    NotFound = 3,
-    Conflict = 4,
-    Unauthorized = 5,
-    Forbidden = 6
+    
+    /// <summary>
+    /// General failure (500 Internal Server Error)
+    /// </summary>
+    Failure = 500,
+    
+    /// <summary>
+    /// Validation error (400 Bad Request)
+    /// </summary>
+    Validation = 400,
+    
+    /// <summary>
+    /// Resource not found (404 Not Found)
+    /// </summary>
+    NotFound = 404,
+    
+    /// <summary>
+    /// Conflict with current state (409 Conflict)
+    /// </summary>
+    Conflict = 409,
+    
+    /// <summary>
+    /// Authentication required (401 Unauthorized)
+    /// </summary>
+    Unauthorized = 401,
+    
+    /// <summary>
+    /// Access forbidden (403 Forbidden)
+    /// </summary>
+    Forbidden = 403
 }

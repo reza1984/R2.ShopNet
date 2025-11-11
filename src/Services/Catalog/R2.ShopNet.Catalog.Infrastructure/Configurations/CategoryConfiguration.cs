@@ -38,6 +38,11 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasForeignKey(c => c.ParentCategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Configure backing field for SubCategories collection
+        builder.Navigation(c => c.SubCategories)
+            .HasField("_subCategories")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         // Soft delete query filter
         builder.HasQueryFilter(c => !c.IsDeleted);
     }

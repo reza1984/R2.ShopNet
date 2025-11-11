@@ -4,7 +4,7 @@ import { Router, type CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 export const authGuard: CanActivateFn = (route, state) => {
-  console.log('🛡️  [AuthGuard] Checking authentication for route:', state.url);
+  // ...existing code...
 
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -13,22 +13,21 @@ export const authGuard: CanActivateFn = (route, state) => {
   // During SSR, always allow access to prevent hydration mismatch
   // The actual auth check will happen on the client side
   if (!isPlatformBrowser(platformId)) {
-    console.log('🖥️  [AuthGuard] Running on server, allowing access for SSR');
+  // ...existing code...
     return true;
   }
 
   const isAuth = authService.isAuthenticated();
-  console.log('🔐 [AuthGuard] Is authenticated:', isAuth);
+  // ...existing code...
 
   if (isAuth) {
-    console.log('✅ [AuthGuard] User is authenticated, allowing access');
+  // ...existing code...
     return true;
   }
 
   // Store the attempted URL for redirecting after login
   const returnUrl = state.url;
-  console.log('❌ [AuthGuard] User not authenticated, redirecting to login');
-  console.log('🎯 [AuthGuard] Return URL will be:', returnUrl);
+  // ...existing code...
 
   // Redirect to login page with return url
   router.navigate(['/login'], { queryParams: { returnUrl } });

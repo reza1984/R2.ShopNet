@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Catalog.Infrastr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Catalog.API", "src\Services\Catalog\R2.ShopNet.Catalog.API\R2.ShopNet.Catalog.API.csproj", "{9B0EFCEB-3110-4E53-8E2F-6E4901D10CD2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Catalog.IntegrationTests", "src\Services\Catalog\R2.ShopNet.Catalog.IntegrationTests\R2.ShopNet.Catalog.IntegrationTests.csproj", "{48D2EC1D-C573-4226-8E8D-B2375E37E30B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -277,6 +279,18 @@ Global
 		{9B0EFCEB-3110-4E53-8E2F-6E4901D10CD2}.Release|x64.Build.0 = Release|Any CPU
 		{9B0EFCEB-3110-4E53-8E2F-6E4901D10CD2}.Release|x86.ActiveCfg = Release|Any CPU
 		{9B0EFCEB-3110-4E53-8E2F-6E4901D10CD2}.Release|x86.Build.0 = Release|Any CPU
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B}.Debug|x64.Build.0 = Debug|Any CPU
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B}.Debug|x86.Build.0 = Debug|Any CPU
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B}.Release|x64.ActiveCfg = Release|Any CPU
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B}.Release|x64.Build.0 = Release|Any CPU
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B}.Release|x86.ActiveCfg = Release|Any CPU
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -305,5 +319,6 @@ Global
 		{FDFD2990-1BDD-4F62-9B06-E26AC87972EF} = {C91C1CF1-1625-0789-F869-53D87D6277BA}
 		{DAC012B4-87F1-44D0-BC58-8FDD82B92E8D} = {C91C1CF1-1625-0789-F869-53D87D6277BA}
 		{9B0EFCEB-3110-4E53-8E2F-6E4901D10CD2} = {C91C1CF1-1625-0789-F869-53D87D6277BA}
+		{48D2EC1D-C573-4226-8E8D-B2375E37E30B} = {C91C1CF1-1625-0789-F869-53D87D6277BA}
 	EndGlobalSection
 EndGlobal

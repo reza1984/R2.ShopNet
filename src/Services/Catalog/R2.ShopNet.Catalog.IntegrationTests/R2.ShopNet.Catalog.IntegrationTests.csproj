@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- xUnit Testing Framework -->
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+
+    <!-- Integration Testing -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0" />
+
+    <!-- In-Memory Database for Testing -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.10" />
+
+    <!-- Test Containers (Docker containers for tests) -->
+    <PackageReference Include="Testcontainers.PostgreSql" Version="4.8.1" />
+    <PackageReference Include="Testcontainers.Minio" Version="4.8.1" />
+
+    <!-- FluentAssertions for better test assertions -->
+    <PackageReference Include="FluentAssertions" Version="7.0.0" />
+
+    <!-- Bogus for generating test data -->
+    <PackageReference Include="Bogus" Version="35.6.1" />
+
+    <!-- Respawn for database cleanup between tests -->
+    <PackageReference Include="Respawn" Version="6.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../R2.ShopNet.Catalog.API/R2.ShopNet.Catalog.API.csproj" />
+    <ProjectReference Include="../R2.ShopNet.Catalog.Application/R2.ShopNet.Catalog.Application.csproj" />
+    <ProjectReference Include="../R2.ShopNet.Catalog.Domain/R2.ShopNet.Catalog.Domain.csproj" />
+    <ProjectReference Include="../R2.ShopNet.Catalog.Infrastructure/R2.ShopNet.Catalog.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

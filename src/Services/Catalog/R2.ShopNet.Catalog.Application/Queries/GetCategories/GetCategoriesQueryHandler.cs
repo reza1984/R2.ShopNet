@@ -98,11 +98,12 @@ public sealed class GetCategoriesQueryHandler : IQueryHandler<GetCategoriesQuery
 
             var pagedResult = new PagedResult<CategoryDto>(
                 categories,
-                totalCount,
                 query.PageNumber,
-                query.PageSize);
+                query.PageSize,
+                totalCount
+                );
 
-            return Result<PagedResult<CategoryDto>>.Success(pagedResult);
+            return Result.Success(pagedResult);
         }
         catch (Exception ex)
         {

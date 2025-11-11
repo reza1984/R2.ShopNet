@@ -1,46 +1,36 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CategoryService, Category } from '../category.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ButtonComponent } from '../../../components/forms/button/button.component';
-import { InputFieldComponent } from '../../../components/forms/input-field/input-field.component';
+import { IconComponent } from '../../../components/icon/icon.component';
 import { AlertComponent } from '../../../components/ui/alert/alert.component';
-import { DropdownItemComponent } from '../../../components/ui/dropdown/dropdown-item/dropdown-item.component';
-import { DropdownComponent } from '../../../components/ui/dropdown/dropdown.component';
-import { TableBodyComponent } from '../../../components/ui/table/table-body.component';
-import { TableCellComponent } from '../../../components/ui/table/table-cell.component';
-import { TableHeaderComponent } from '../../../components/ui/table/table-header.component';
-import { TableRowComponent } from '../../../components/ui/table/table-row.component';
-import { TableComponent } from '../../../components/ui/table/table.component';
 
 @Component({
 	selector: 'app-category-list',
 	templateUrl: './category-list.component.html',
 	imports: [
 		CommonModule,
-		InputFieldComponent,
+		RouterModule,
 		ButtonComponent,
-		TableComponent,
-		TableHeaderComponent,
-		TableBodyComponent,
-		TableRowComponent,
-		TableCellComponent,
-		DropdownComponent,
-		AlertComponent,
-		DropdownItemComponent,
-		RouterModule
+		IconComponent,
+		AlertComponent
 	]
 })
 export class CategoryListComponent implements OnInit {
-	categories: Category[] = [];
-	totalCount = 0;
-	pageNumber = 1;
-	pageSize = 10;
-	searchTerm = '';
-	sortBy = 'name';
-	sortDescending = false;
-	parentCategoryId?: string;
-	loading = false;
+	categories = signal<Category[]>([]);
+	totalCount = signal(0);
+	pageNumber = signal(1);
+	pageSize = signal(10);
+	searchTerm = signal('');
+	sortBy = signal('name');
+	sortDescending = signal(false);
+	parentCategoryId = signal<string | undefined>(undefined);
+	loading = signal(false);
+	errorMessage = signal<string>('');
+	
+	// Expose Math to template
+	Math = Math;
 
 	constructor(private categoryService: CategoryService) {}
 
@@ -49,45 +39,56 @@ export class CategoryListComponent implements OnInit {
 	}
 
 	loadCategories(): void {
-		this.loading = true;
+		this.loading.set(true);
+		
 		this.categoryService.getCategories({
-			pageNumber: this.pageNumber,
-			pageSize: this.pageSize,
-			parentCategoryId: this.parentCategoryId,
-			searchTerm: this.searchTerm,
-			sortBy: this.sortBy,
-			sortDescending: this.sortDescending
+			pageNumber: this.pageNumber(),
+			pageSize: this.pageSize(),
+			parentCategoryId: this.parentCategoryId(),
+			searchTerm: this.searchTerm(),
+			sortBy: this.sortBy(),
+			sortDescending: this.sortDescending()
 		}).subscribe({
 			next: res => {
-				this.categories = res.items;
-				this.totalCount = res.totalCount;
-				this.loading = false;
+				console.log('API Response:', res);
+				this.categories.set(res.items);
+				this.totalCount.set(res.totalCount);
+				this.loading.set(false);
 			},
-			error: () => { this.loading = false; }
+			error: (err) => { 
+				console.error('API Error:', err);
+				this.loading.set(false);
+			}
 		});
 	}
 
 	deleteCategory(id: string): void {
 		if (!confirm('Delete this category?')) return;
+		this.errorMessage.set('');
 		this.categoryService.deleteCategory(id).subscribe({
-			next: () => this.loadCategories()
+			next: () => this.loadCategories(),
+			error: (err) => {
+				console.error('Delete error:', err);
+				this.errorMessage.set(err.error?.message || err.message || 'Failed to delete category. Please try again.');
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			}
 		});
 	}
 
 	onSearch(term: string): void {
-		this.searchTerm = term;
-		this.pageNumber = 1;
+		this.searchTerm.set(term);
+		this.pageNumber.set(1);
 		this.loadCategories();
 	}
 
 	onPageChange(page: number): void {
-		this.pageNumber = page;
+		this.pageNumber.set(page);
 		this.loadCategories();
 	}
 
 	onSortChange(sortBy: string, sortDescending: boolean): void {
-		this.sortBy = sortBy;
-		this.sortDescending = sortDescending;
+		this.sortBy.set(sortBy);
+		this.sortDescending.set(sortDescending);
 		this.loadCategories();
 	}
 

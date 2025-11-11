@@ -221,7 +221,7 @@ export class TokenStorageService {
   migrateFromLocalStorage(): void {
     if (!this.isBrowser) return;
 
-    console.log('🔄 [TokenStorage] Checking for token migration...');
+    // Token migration check
 
     try {
       // Check for old unprefixed localStorage keys
@@ -231,7 +231,7 @@ export class TokenStorageService {
       const oldUserInfo = localStorage.getItem('user_info');
 
       if (oldAccessToken || oldRefreshToken || oldTokenExpiry || oldUserInfo) {
-        console.log('📦 [TokenStorage] Migrating old tokens to new format...');
+        // Migrating old tokens to new format
         
         // Migrate to new prefixed keys
         if (oldAccessToken) {
@@ -251,9 +251,9 @@ export class TokenStorageService {
           localStorage.removeItem('user_info');
         }
 
-        console.log('✅ [TokenStorage] Token migration complete. Session preserved.');
+        // Token migration complete. Session preserved.
       } else {
-        console.log('✅ [TokenStorage] No token migration needed');
+        // No token migration needed
       }
     } catch (error) {
       console.error('❌ [TokenStorage] Migration failed:', error);

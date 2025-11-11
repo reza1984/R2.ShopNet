@@ -42,11 +42,11 @@ export class AppSidebarComponent {
     },
     {
       icon: "category",
-      name: "Products",
+      name: "Catalog",
       subItems: [
-        { name: "All Products", path: "/products" },
-        { name: "Categories", path: "/products/categories" },
-        { name: "Inventory", path: "/products/inventory" },
+        { name: "Products", path: "/catalog/products" },
+        { name: "Categories", path: "/catalog/categories" },
+        { name: "Inventory", path: "/catalog/inventory" },
       ],
     },
     {

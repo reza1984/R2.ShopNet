@@ -124,8 +124,12 @@ try
             options.AcceptAnonymousClients();
 
             // Register the signing and encryption credentials
+            // Note: Encryption certificate is still required by OpenIddict even when encryption is disabled
             options.AddDevelopmentEncryptionCertificate()
                    .AddDevelopmentSigningCertificate();
+            
+            // Disable access token encryption for development (allows standard JWT Bearer validation)
+            options.DisableAccessTokenEncryption();
 
             // Register the ASP.NET Core host and configure options
             options.UseAspNetCore()
@@ -233,7 +237,11 @@ try
 
     app.UseSerilogRequestLogging();
 
-    app.UseHttpsRedirection();
+    // Only redirect to HTTPS in production (not in development where we use HTTP)
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
 
     app.UseCors("AllowAll");
 

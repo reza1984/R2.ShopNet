@@ -13,6 +13,7 @@ namespace R2.ShopNet.Catalog.API.Extensions
         {
             services.AddMinioObjectStorage(configuration);
             services.AddScoped<IMinIORepository<Product>, ProductImageRepository>();
+            services.AddScoped<IMinIORepository<Category>, CategoryImageRepository>();
             return services;
         }
     }

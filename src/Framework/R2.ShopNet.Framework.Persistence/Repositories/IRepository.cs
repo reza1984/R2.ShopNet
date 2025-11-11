@@ -54,8 +54,8 @@ public interface IRepository<TEntity> where TEntity : BaseEntity
     Task DeleteRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
     // Soft Delete Operations
-    Task SoftDeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
-    Task SoftDeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task SoftDeleteAsync(TEntity entity, string currentUserId, CancellationToken cancellationToken = default);
+    Task<TEntity?> SoftDeleteAsync(Guid id, string currentUserId, CancellationToken cancellationToken = default);
     Task SoftDeleteRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
     // Queryable (for advanced scenarios)

@@ -21,17 +21,17 @@ public static class Categories
     public static void RegisterCategoryEndpoints(this IEndpointRouteBuilder routes)
     {
         var categories = routes.MapGroup($"/api/{nameof(Categories)}")
-            .RequireAuthorization();
+            .WithTags(nameof(Categories));
 
         categories.MapGet("", async (
             [FromServices] IQueryDispatcher queryDispatcher,
             [FromQuery] int pageNumber,
             [FromQuery] int pageSize,
-            [FromQuery] Guid? parentCategoryId,
-            [FromQuery] string? searchTerm,
-            [FromQuery] string? sortBy,
-            [FromQuery] bool sortDescending,
-            CancellationToken cancellationToken) =>
+            CancellationToken cancellationToken,
+            [FromQuery] Guid? parentCategoryId = null,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] bool sortDescending = false) =>
         {
             var query = new GetCategoriesQuery(
                 pageNumber,
@@ -65,9 +65,27 @@ public static class Categories
 
         categories.MapPost("", async (
             [FromServices] ICommandDispatcher commandDispatcher,
-            [FromBody] CreateCategoryCommand command,
+            [FromForm] string name,
+            [FromForm] string slug,
+            [FromForm] string? description,
+            [FromForm] Guid? parentCategoryId,
+            [FromForm] int displayOrder,
+            [FromForm] IFormFile? image,
             CancellationToken cancellationToken) =>
         {
+            ImageUploadDto? imageUploadDto = null;
+            if (image != null && image.Length > 0)
+            {
+                using var memoryStream = new MemoryStream();
+                await image.CopyToAsync(memoryStream, cancellationToken);
+                imageUploadDto = new ImageUploadDto(
+                    image.FileName,
+                    memoryStream.ToArray(),
+                    image.ContentType,
+                    image.Length);
+            }
+
+            var command = new CreateCategoryCommand(name, slug, description, parentCategoryId, displayOrder, imageUploadDto);
             var result = await commandDispatcher.Dispatch(command, cancellationToken);
             if (!result.IsSuccess)
             {
@@ -78,19 +96,34 @@ public static class Categories
                     _ => Results.BadRequest(result.Error)
                 };
             }
-            return Results.Created($"/api/v1/categories/{result.Value.Id}", result.Value);
-        });
+            return Results.Created($"/api/categories/{result.Value.Id}", result.Value);
+        })
+        .DisableAntiforgery();
 
         categories.MapPut("/{id}", async (
             [FromServices] ICommandDispatcher commandDispatcher,
             Guid id,
-            [FromBody] UpdateCategoryCommand command,
+            [FromForm] string name,
+            [FromForm] string slug,
+            [FromForm] string? description,
+            [FromForm] Guid? parentCategoryId,
+            [FromForm] int displayOrder,
+            [FromForm] IFormFile? image,
             CancellationToken cancellationToken) =>
         {
-            if (id != command.CategoryId)
+            ImageUploadDto? imageUploadDto = null;
+            if (image != null && image.Length > 0)
             {
-                return Results.BadRequest(new { Error = "Category ID in route does not match command" });
+                using var memoryStream = new MemoryStream();
+                await image.CopyToAsync(memoryStream, cancellationToken);
+                imageUploadDto = new ImageUploadDto(
+                    image.FileName,
+                    memoryStream.ToArray(),
+                    image.ContentType,
+                    image.Length);
             }
+
+            var command = new UpdateCategoryCommand(id, name, slug, description, parentCategoryId, displayOrder, imageUploadDto);
             var result = await commandDispatcher.Dispatch(command, cancellationToken);
             if (!result.IsSuccess)
             {
@@ -102,7 +135,8 @@ public static class Categories
                 };
             }
             return Results.Ok(result.Value);
-        });
+        })
+        .DisableAntiforgery();
 
         categories.MapDelete("/{id}", async (
             [FromServices] ICommandDispatcher commandDispatcher,
