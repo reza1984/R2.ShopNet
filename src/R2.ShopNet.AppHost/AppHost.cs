@@ -95,7 +95,7 @@ var catalogDb = postgres.AddDatabase("catalogdb");
 // launchSettings.json:
 //   - http: http://localhost:5002
 //   - https: https://localhost:5003
-var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("identity-service", "http")
+var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("identity-service", "https")
     .WithReference(identityDb)
     .WithReference(rabbitmq)
     .WithReference(redis)

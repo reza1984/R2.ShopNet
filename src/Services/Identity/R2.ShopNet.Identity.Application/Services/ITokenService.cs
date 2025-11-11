@@ -8,6 +8,7 @@ namespace R2.ShopNet.Identity.Application.Services;
 public interface ITokenService
 {
     Task<string> GenerateAccessTokenAsync(ApplicationUser user);
+    Task<string> GenerateIdTokenAsync(ApplicationUser user);
     string GenerateRefreshToken();
     bool ValidateToken(string token);
 }

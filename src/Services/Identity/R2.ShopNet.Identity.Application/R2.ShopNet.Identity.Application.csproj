@@ -6,8 +6,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="10.0.0" />
     <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Framework\R2.ShopNet.Framework.Common\R2.ShopNet.Framework.Common.csproj" />

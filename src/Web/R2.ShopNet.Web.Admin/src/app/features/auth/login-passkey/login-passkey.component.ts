@@ -23,9 +23,9 @@ import { IconComponent } from '../../../components/icon/icon.component';
     IconComponent,
     AuthPageLayoutComponent
   ],
-  templateUrl: './login.component.html'
+  templateUrl: './login-passkey.component.html'
 })
-export class LoginComponent implements OnInit {
+export class LoginWithPasskeyComponent implements OnInit {
   private authService = inject(AuthService);
   private passkeyService = inject(PasskeyService);
   private router = inject(Router);
@@ -45,8 +45,6 @@ export class LoginComponent implements OnInit {
     // Initialize reactive form
     this.loginForm = this.fb.group({
       email: ['admin@shopnet.com', [Validators.required, Validators.email]],
-      password: ['Admin@123', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
     });
 
     // Get the returnUrl from query params, default to /dashboard
@@ -69,16 +67,17 @@ export class LoginComponent implements OnInit {
     }
 
     const { email, password } = this.loginForm.value;
+
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
     this.authService.login(email, password).subscribe({
       next: () => {
-
         this.isLoading.set(false);
 
       },
       error: (error) => {
+      
         this.isLoading.set(false);
 
         // Handle different error scenarios
@@ -96,17 +95,59 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  onSignInWithPasskey(): void {
+
+    const email = this.loginForm.get('email')?.value;
+
+    if (!email) {
+      this.errorMessage.set('Please enter your email address');
+      return;
+    }
+
+    if (!this.passkeyService.isWebAuthnSupported()) {
+      this.errorMessage.set('Passkey authentication is not supported in this browser');
+      return;
+    }
+
+    this.isPasskeyLoading.set(true);
+    this.errorMessage.set(null);
+
+    this.authService.loginWithPasskey(email).subscribe({
+      next: () => {
+        this.isPasskeyLoading.set(false);
+        // Navigate to dashboard or return URL after successful login
+        this.router.navigate([this.returnUrl]);
+      },
+      error: (error) => {
+        this.isPasskeyLoading.set(false);
+
+        // Handle different error scenarios
+        if (error.name === 'NotAllowedError') {
+          console.error('📛 [LoginComponent] User cancelled or timeout');
+          this.errorMessage.set('Passkey authentication was cancelled or timed out');
+        } else if (error.name === 'NotSupportedError') {
+          console.error('📛 [LoginComponent] WebAuthn not supported');
+          this.errorMessage.set('Passkey authentication is not supported');
+        } else if (error.status === 404) {
+          console.error('📛 [LoginComponent] No passkey found');
+          this.errorMessage.set('No passkey found for this account');
+        } else if (error.status === 400) {
+          console.error('📛 [LoginComponent] Invalid passkey');
+          this.errorMessage.set('Invalid passkey authentication');
+        } else if (error.status === 0) {
+          console.error('📛 [LoginComponent] Network/CORS error');
+          this.errorMessage.set('Unable to connect to server. Please try again later.');
+        } else {
+          console.error('📛 [LoginComponent] Unknown error:', error);
+          this.errorMessage.set('Passkey login failed. Please try again.');
+        }
+      }
+    });
+  }
 
   // Helper methods for template
   get emailControl() {
     return this.loginForm.get('email');
   }
 
-  get passwordControl() {
-    return this.loginForm.get('password');
-  }
-
-  get rememberMeControl() {
-    return this.loginForm.get('rememberMe');
-  }
 }

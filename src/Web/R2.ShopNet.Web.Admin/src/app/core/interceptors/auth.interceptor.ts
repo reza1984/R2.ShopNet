@@ -7,16 +7,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
 
   // Skip adding auth header for token endpoint requests
+  // But still include withCredentials for cookie support
   if (req.url.includes('/connect/token')) {
-    return next(req);
+    const clonedReq = req.clone({ withCredentials: true });
+    return next(clonedReq);
   }
 
   // Get the access token
   const token = authService.getAccessToken();
 
-  // If no token, proceed without authorization header
+  // If no token, proceed without authorization header but WITH credentials
+  // This is CRITICAL for passkey authentication session cookies
   if (!token) {
-    return next(req);
+    const clonedReq = req.clone({ withCredentials: true });
+    return next(clonedReq);
   }
 
   // Check if token is expired
@@ -29,7 +33,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         const clonedReq = req.clone({
           setHeaders: {
             Authorization: `Bearer ${newToken}`
-          }
+          },
+          withCredentials: true
         });
         return next(clonedReq);
       }),
@@ -42,10 +47,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   // Clone the request and add the authorization header
+  // Also include credentials (cookies) for cross-origin requests (required for passkey session)
   const clonedReq = req.clone({
     setHeaders: {
       Authorization: `Bearer ${token}`
-    }
+    },
+    withCredentials: true
   });
 
   return next(clonedReq).pipe(

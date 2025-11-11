@@ -1,0 +1,78 @@
+<app-auth-page-layout>
+
+
+  <div class="flex flex-col justify-center flex-1 w-full max-w-md mx-auto px-4">
+    <div>
+      <div class="mb-5 sm:mb-8">
+        <h1 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
+          Sign In With Passkey
+        </h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Enter your email to sign in!
+        </p>
+      </div>
+
+      <!-- Error Message -->
+      @if (errorMessage()) {
+        <div class="p-4 mb-6 text-sm text-red-800 bg-red-100 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400">
+          {{ errorMessage() }}
+        </div>
+      }
+
+
+
+      <!-- Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSignIn()" novalidate class="space-y-6">
+        <div>
+          <app-label>Email <span class="text-error-500">*</span></app-label>
+          <app-input-field
+            type="email"
+            placeholder="info@gmail.com"
+            formControlName="email"
+          />
+          @if (emailControl?.invalid && emailControl?.touched) {
+            <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+              @if (emailControl?.errors?.['required']) {
+                Email is required
+              } @else if (emailControl?.errors?.['email']) {
+                Please enter a valid email address
+              }
+            </p>
+          }
+        </div>
+
+       
+
+            <!-- Passkey Button -->
+            @if (isPasskeySupported()) {
+            <app-button type="button" (click)="onSignInWithPasskey()" className="w-full" variant="secondary" size="sm" [disabled]="isPasskeyLoading()">
+              @if (isPasskeyLoading()) {
+              <span class="inline-flex items-center gap-2">
+                <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Authenticating...
+              </span>
+              } @else {
+              <span class="inline-flex items-center gap-2">
+                <app-icon name="fingerprint" [size]="20" />
+                Sign in with Passkey
+              </span>
+              }
+            </app-button>
+            }
+      </form>
+
+      <div class="mt-5">
+        <p class="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
+          <a routerLink="/login" class="inline-flex items-center gap-1 text-brand-500 hover:text-brand-600 dark:text-brand-400">
+            <app-icon name="arrow_back" [size]="16" />
+            Sign In with email and password
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</app-auth-page-layout>

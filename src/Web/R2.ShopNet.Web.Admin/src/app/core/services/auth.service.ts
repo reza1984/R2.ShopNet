@@ -2,10 +2,11 @@ import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, switchMap, map } from 'rxjs';
 import { LoginRequest, LoginResponse, AuthState, UserInfo } from '../models/auth.model';
 import { environment } from '../../../environments/environment.development';
 import { TokenStorageService } from './token-storage.service';
+import { PasskeyService } from './passkey.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,7 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly tokenStorage = inject(TokenStorageService);
+  private readonly passkeyService = inject(PasskeyService);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
   // Use direct Identity service URL for token endpoint (to avoid Aspire port conflict)
@@ -70,10 +72,6 @@ export class AuthService {
         this.handleLoginSuccess(response);
       }),
       catchError(error => {
-        console.error('❌ [AuthService] Login failed!');
-        console.error('📛 [AuthService] Error status:', error.status);
-        console.error('📛 [AuthService] Error message:', error.message);
-        console.error('📛 [AuthService] Error details:', error);
         if (error.error) {
           console.error('📛 [AuthService] Server error response:', error.error);
         }
@@ -196,7 +194,6 @@ export class AuthService {
       tokenExpiry: tokenExpiry,
       user: userInfo
     });
-
   }
 
   /**
@@ -231,20 +228,13 @@ export class AuthService {
       // Check if token is expired and try to refresh
       if (new Date() >= tokenExpiry && refreshToken) {
         this.refreshToken().subscribe({
-          next: () => {
-            console.log('✅ [AuthService] Token refreshed successfully');
-          },
           error: () => {
-            console.log('❌ [AuthService] Token refresh failed, logging out');
             this.logout();
           }
         });
       } else if (new Date() >= tokenExpiry && !refreshToken) {
-        console.log('⏰ [AuthService] Token expired and no refresh token, logging out');
         this.logout();
       }
-    } else {
-      console.log('ℹ️  [AuthService] No valid session data found in localStorage');
     }
   }
 
@@ -317,6 +307,31 @@ export class AuthService {
     ).pipe(
       catchError(error => {
         console.error('❌ [AuthService] Reset password failed', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Login with passkey (WebAuthn)
+   */
+  loginWithPasskey(email: string): Observable<LoginResponse> {    
+    return this.passkeyService.loginWithPasskey(email).pipe(
+      map(response => {
+        const loginResponse: LoginResponse = {
+          access_token: response.accessToken,
+          refresh_token: response.refreshToken,
+          expires_in: response.expiresIn,
+          token_type: response.tokenType,
+          id_token: response.idToken
+        };
+        
+        this.handleLoginSuccess(loginResponse);
+        return loginResponse;
+      }),
+      catchError(error => {
+        console.error('❌ [AuthService] Passkey login failed!');
+        console.error('📛 [AuthService] Error:', error);
         return throwError(() => error);
       })
     );

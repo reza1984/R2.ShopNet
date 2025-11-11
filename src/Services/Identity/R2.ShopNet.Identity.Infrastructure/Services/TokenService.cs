@@ -66,6 +66,38 @@ public class TokenService : ITokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    public async Task<string> GenerateIdTokenAsync(ApplicationUser user)
+    {
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        // ID token contains identity claims (not roles or permissions)
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new(JwtRegisteredClaimNames.Name, user.FullName),
+            new("preferred_username", user.UserName ?? string.Empty),
+            new("email_verified", user.EmailConfirmed.ToString().ToLower()),
+        };
+
+        if (!string.IsNullOrEmpty(user.FirstName))
+            claims.Add(new Claim("given_name", user.FirstName));
+
+        if (!string.IsNullOrEmpty(user.LastName))
+            claims.Add(new Claim("family_name", user.LastName));
+
+        var token = new JwtSecurityToken(
+            issuer: _issuer,
+            audience: "admin-web", // ID tokens are for the client application
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(_expirationMinutes),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
     public string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];

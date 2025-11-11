@@ -42,7 +42,7 @@ try
         {
             // Note: The validation handler uses OpenID Connect discovery to retrieve
             // the signing keys from Identity service's /.well-known/openid-configuration
-            options.SetIssuer("http://localhost:5002/");
+            options.SetIssuer("https://localhost:5003/");
             
             // Don't validate audience in development (tokens may not have audience claim)
             options.Configure(validationOptions =>

@@ -70,10 +70,9 @@ public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisp
                                 var instance = instances[i];
                                 var destinationId = $"{serviceMapping.ClusterId}-{i}";
 
-                                // Use http:// for local development (services behind Aspire proxy)
-                                var scheme = instance.Address.StartsWith("localhost") || instance.Address.StartsWith("127.0.0.1")
-                                    ? "http"
-                                    : "https";
+                                // Determine scheme based on service port
+                                // Identity service uses HTTPS (5003), Catalog uses HTTP (5004)
+                                var scheme = instance.Port == 5003 ? "https" : "http";
 
                                 destinations[destinationId] = new DestinationConfig
                                 {
@@ -130,50 +129,8 @@ public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisp
                     }
                     else
                     {
-                        _logger.LogWarning("No healthy instances found for service {ServiceName}, using static fallback", 
+                        _logger.LogWarning("No healthy instances found for service {ServiceName}. Service will be unavailable until instances are registered with Consul.", 
                             serviceMapping.ServiceName);
-                        
-                        // Add static fallback route for identity service
-                        if (serviceMapping.ServiceName == "identity-service" && !clusterDict.ContainsKey(serviceMapping.ClusterId))
-                        {
-                            var fallbackDestinations = new Dictionary<string, DestinationConfig>
-                            {
-                                ["static-fallback"] = new DestinationConfig
-                                {
-                                    Address = "http://localhost:5002"  // Changed from https to http
-                                }
-                            };
-
-                            clusterDict[serviceMapping.ClusterId] = new ClusterConfig
-                            {
-                                ClusterId = serviceMapping.ClusterId,
-                                Destinations = fallbackDestinations,
-                                LoadBalancingPolicy = "RoundRobin"
-                            };
-
-                            var fallbackRoute = new RouteConfig
-                            {
-                                RouteId = serviceMapping.RouteId,
-                                ClusterId = serviceMapping.ClusterId,
-                                Match = new RouteMatch
-                                {
-                                    Path = serviceMapping.PathPattern
-                                }
-                            };
-
-                            if (serviceMapping.Transforms != null && serviceMapping.Transforms.Count > 0)
-                            {
-                                fallbackRoute = fallbackRoute with
-                                {
-                                    Transforms = serviceMapping.Transforms
-                                };
-                            }
-
-                            routes.Add(fallbackRoute);
-
-                            _logger.LogInformation("Added static fallback route {RouteId} -> {ClusterId}",
-                                serviceMapping.RouteId, serviceMapping.ClusterId);
-                        }
                     }
                 }
                 catch (Exception ex)
