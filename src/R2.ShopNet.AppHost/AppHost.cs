@@ -130,9 +130,10 @@ var gateway = builder.AddProject<Projects.R2_ShopNet_Gateway_API>("api-gateway",
 // Note: Ensure Node.js is in PATH. If using nvm, run Aspire from terminal with nvm environment.
 // Angular environment config uses compile-time values in environment.ts files, not runtime environment variables
 // For production, clients should connect through the API Gateway
-var adminPortal = builder.AddExecutable("admin-portal", "npm", "../Web/R2.ShopNet.Web.Admin", "run", "start")
-    .WithHttpEndpoint(targetPort: 4200, name: "web")
+var adminPortal = builder.AddJavaScriptApp("admin-portal", "../Web/R2.ShopNet.Web.Admin")
+    // .WithHttpEndpoint(port: 4200)
     .WithExternalHttpEndpoints()
-    .WithEnvironment("NODE_ENV", "development");
+    .WithEnvironment("NODE_ENV", "development")
+    .WithRunScript("start");
 
 builder.Build().Run();

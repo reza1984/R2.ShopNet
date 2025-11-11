@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -7,51 +7,51 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Framework", "Framework", "{E0AD1809-C64F-3D39-45E0-E424261CE16D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Framework.Common", "src\Framework\R2.ShopNet.Framework.Common\R2.ShopNet.Framework.Common.csproj", "{9E2ECD95-E20C-4C23-BB16-6269E16288F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Framework.Common", "src\Framework\R2.ShopNet.Framework.Common\R2.ShopNet.Framework.Common.csproj", "{9E2ECD95-E20C-4C23-BB16-6269E16288F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Framework.CQRS", "src\Framework\R2.ShopNet.Framework.CQRS\R2.ShopNet.Framework.CQRS.csproj", "{10CFF915-4EF6-482B-9F40-34A44EBBEC38}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Framework.CQRS", "src\Framework\R2.ShopNet.Framework.CQRS\R2.ShopNet.Framework.CQRS.csproj", "{10CFF915-4EF6-482B-9F40-34A44EBBEC38}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Framework.Validation", "src\Framework\R2.ShopNet.Framework.Validation\R2.ShopNet.Framework.Validation.csproj", "{881F2BB6-41B6-40F5-BDD9-1940BD332804}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Framework.Validation", "src\Framework\R2.ShopNet.Framework.Validation\R2.ShopNet.Framework.Validation.csproj", "{881F2BB6-41B6-40F5-BDD9-1940BD332804}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Framework.Events", "src\Framework\R2.ShopNet.Framework.Events\R2.ShopNet.Framework.Events.csproj", "{7B707EBA-007D-4BD8-A67B-40E9C148784E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Framework.Events", "src\Framework\R2.ShopNet.Framework.Events\R2.ShopNet.Framework.Events.csproj", "{7B707EBA-007D-4BD8-A67B-40E9C148784E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Framework.ServiceDiscovery", "src\Framework\R2.ShopNet.Framework.ServiceDiscovery\R2.ShopNet.Framework.ServiceDiscovery.csproj", "{49057048-0589-4151-815A-E0100282FBD5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Framework.ServiceDiscovery", "src\Framework\R2.ShopNet.Framework.ServiceDiscovery\R2.ShopNet.Framework.ServiceDiscovery.csproj", "{49057048-0589-4151-815A-E0100282FBD5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{984BB9B3-3FA3-BE33-9484-CAC21695A33C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{1BFC9479-12BF-35C3-06B8-42D89D95092B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Identity.API", "src\Services\Identity\R2.ShopNet.Identity.API\R2.ShopNet.Identity.API.csproj", "{83DED62E-B025-46FB-BA5F-A19AFADC873E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Identity.API", "src\Services\Identity\R2.ShopNet.Identity.API\R2.ShopNet.Identity.API.csproj", "{83DED62E-B025-46FB-BA5F-A19AFADC873E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Identity.Application", "src\Services\Identity\R2.ShopNet.Identity.Application\R2.ShopNet.Identity.Application.csproj", "{26AA1C20-8DA6-4720-B1BB-1C16EE98AA63}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Identity.Application", "src\Services\Identity\R2.ShopNet.Identity.Application\R2.ShopNet.Identity.Application.csproj", "{26AA1C20-8DA6-4720-B1BB-1C16EE98AA63}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Identity.Domain", "src\Services\Identity\R2.ShopNet.Identity.Domain\R2.ShopNet.Identity.Domain.csproj", "{4F1FD788-F4F5-4246-8647-FE610DD997C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Identity.Domain", "src\Services\Identity\R2.ShopNet.Identity.Domain\R2.ShopNet.Identity.Domain.csproj", "{4F1FD788-F4F5-4246-8647-FE610DD997C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Identity.Infrastructure", "src\Services\Identity\R2.ShopNet.Identity.Infrastructure\R2.ShopNet.Identity.Infrastructure.csproj", "{65D298FD-2C05-4CE6-8C80-C46BD338432E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Identity.Infrastructure", "src\Services\Identity\R2.ShopNet.Identity.Infrastructure\R2.ShopNet.Identity.Infrastructure.csproj", "{65D298FD-2C05-4CE6-8C80-C46BD338432E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.AppHost", "src\R2.ShopNet.AppHost\R2.ShopNet.AppHost.csproj", "{7A7116C8-11B2-4F52-8A5E-FAE025516148}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.AppHost", "src\R2.ShopNet.AppHost\R2.ShopNet.AppHost.csproj", "{7A7116C8-11B2-4F52-8A5E-FAE025516148}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Framework.Configuration", "src\Framework\R2.ShopNet.Framework.Configuration\R2.ShopNet.Framework.Configuration.csproj", "{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Framework.Configuration", "src\Framework\R2.ShopNet.Framework.Configuration\R2.ShopNet.Framework.Configuration.csproj", "{E7C806AD-CB98-495A-85FD-1F3D994BAC5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Framework.Persistence", "src\Framework\R2.ShopNet.Framework.Persistence\R2.ShopNet.Framework.Persistence.csproj", "{AAFA7AA8-EC91-422B-A242-AE8B0E0F087C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Framework.Persistence", "src\Framework\R2.ShopNet.Framework.Persistence\R2.ShopNet.Framework.Persistence.csproj", "{AAFA7AA8-EC91-422B-A242-AE8B0E0F087C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Framework.Identity", "src\Framework\R2.ShopNet.Framework.Identity\R2.ShopNet.Framework.Identity.csproj", "{54DC9651-6E80-456E-AD1C-3A42A6D5DE05}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Framework.Identity", "src\Framework\R2.ShopNet.Framework.Identity\R2.ShopNet.Framework.Identity.csproj", "{54DC9651-6E80-456E-AD1C-3A42A6D5DE05}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gateway", "Gateway", "{6306A8FB-679E-111F-6585-8F70E0EE6013}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Gateway.API", "src\Gateway\R2.ShopNet.Gateway.API\R2.ShopNet.Gateway.API.csproj", "{8D0A0DFF-5ABB-46A0-995C-8105A835F179}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Gateway.API", "src\Gateway\R2.ShopNet.Gateway.API\R2.ShopNet.Gateway.API.csproj", "{8D0A0DFF-5ABB-46A0-995C-8105A835F179}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Catalog", "Catalog", "{C91C1CF1-1625-0789-F869-53D87D6277BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Catalog.Domain", "src\Services\Catalog\R2.ShopNet.Catalog.Domain\R2.ShopNet.Catalog.Domain.csproj", "{FAF3D0E9-AD72-419E-87BE-4398D71DFFF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Catalog.Domain", "src\Services\Catalog\R2.ShopNet.Catalog.Domain\R2.ShopNet.Catalog.Domain.csproj", "{FAF3D0E9-AD72-419E-87BE-4398D71DFFF8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Catalog.Application", "src\Services\Catalog\R2.ShopNet.Catalog.Application\R2.ShopNet.Catalog.Application.csproj", "{FDFD2990-1BDD-4F62-9B06-E26AC87972EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Catalog.Application", "src\Services\Catalog\R2.ShopNet.Catalog.Application\R2.ShopNet.Catalog.Application.csproj", "{FDFD2990-1BDD-4F62-9B06-E26AC87972EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Catalog.Infrastructure", "src\Services\Catalog\R2.ShopNet.Catalog.Infrastructure\R2.ShopNet.Catalog.Infrastructure.csproj", "{DAC012B4-87F1-44D0-BC58-8FDD82B92E8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Catalog.Infrastructure", "src\Services\Catalog\R2.ShopNet.Catalog.Infrastructure\R2.ShopNet.Catalog.Infrastructure.csproj", "{DAC012B4-87F1-44D0-BC58-8FDD82B92E8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Catalog.API", "src\Services\Catalog\R2.ShopNet.Catalog.API\R2.ShopNet.Catalog.API.csproj", "{9B0EFCEB-3110-4E53-8E2F-6E4901D10CD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Catalog.API", "src\Services\Catalog\R2.ShopNet.Catalog.API\R2.ShopNet.Catalog.API.csproj", "{9B0EFCEB-3110-4E53-8E2F-6E4901D10CD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Catalog.IntegrationTests", "src\Services\Catalog\R2.ShopNet.Catalog.IntegrationTests\R2.ShopNet.Catalog.IntegrationTests.csproj", "{48D2EC1D-C573-4226-8E8D-B2375E37E30B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Catalog.IntegrationTests", "src\Services\Catalog\R2.ShopNet.Catalog.IntegrationTests\R2.ShopNet.Catalog.IntegrationTests.csproj", "{48D2EC1D-C573-4226-8E8D-B2375E37E30B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
