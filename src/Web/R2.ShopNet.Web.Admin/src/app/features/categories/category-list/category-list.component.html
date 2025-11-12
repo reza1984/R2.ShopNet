@@ -102,6 +102,10 @@
                             <div class="flex items-center gap-3">
                                 @if (cat.imageUrl) {
                                 <img [src]="cat.imageUrl" [alt]="cat.name" class="h-10 w-10 rounded-lg object-cover" />
+                                }@else {
+                                <div class="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                                    <app-icon name="image" [size]="20" color="currentColor" class="text-gray-400" />
+                                </div>
                                 }
                                 <span class="block text-sm font-medium text-gray-800 dark:text-white/90">
                                     {{ cat.name }}

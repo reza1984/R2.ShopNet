@@ -137,7 +137,7 @@ export class ProductService {
   }
 
   updateProduct(id: string, productData: Partial<CreateProductRequest>): Observable<Product> {
-    return this.http.put<Product>(`${this.baseUrl}/${id}`, {productData, ProductId: id});
+    return this.http.put<Product>(`${this.baseUrl}/${id}`, {...productData, ProductId: id});
   }
 
   deleteProduct(id: string): Observable<void> {
