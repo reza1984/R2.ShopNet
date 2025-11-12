@@ -24,6 +24,8 @@ try
     // Add Serilog
     builder.Host.UseSerilog();
 
+    builder.AddServiceDefaults();
+
     // Grouped service registrations
     builder.Services
         .AddCatalogHealthChecks()

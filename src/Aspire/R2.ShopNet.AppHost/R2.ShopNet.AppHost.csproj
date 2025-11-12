@@ -15,8 +15,8 @@
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.13.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../Services/Catalog/R2.ShopNet.Catalog.API/R2.ShopNet.Catalog.API.csproj" />
-    <ProjectReference Include="../Services/Identity/R2.ShopNet.Identity.API/R2.ShopNet.Identity.API.csproj" />
-    <ProjectReference Include="../Gateway/R2.ShopNet.Gateway.API/R2.ShopNet.Gateway.API.csproj" />
+    <ProjectReference Include="../../Services/Catalog/R2.ShopNet.Catalog.API/R2.ShopNet.Catalog.API.csproj" />
+    <ProjectReference Include="../../Services/Identity/R2.ShopNet.Identity.API/R2.ShopNet.Identity.API.csproj" />
+    <ProjectReference Include="../../Gateway/R2.ShopNet.Gateway.API/R2.ShopNet.Gateway.API.csproj" />
   </ItemGroup>
 </Project>

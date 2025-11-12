@@ -16,6 +16,7 @@
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../Aspire/R2.ShopNet.ServiceDefaults/R2.ShopNet.ServiceDefaults.csproj" />
     <ProjectReference Include="../R2.ShopNet.Catalog.Application/R2.ShopNet.Catalog.Application.csproj" />
     <ProjectReference Include="../R2.ShopNet.Catalog.Infrastructure/R2.ShopNet.Catalog.Infrastructure.csproj" />
     <ProjectReference Include="../../../Framework/R2.ShopNet.Framework.ServiceDiscovery/R2.ShopNet.Framework.ServiceDiscovery.csproj" />

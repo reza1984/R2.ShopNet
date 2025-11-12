@@ -16,6 +16,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../../Aspire/R2.ShopNet.ServiceDefaults/R2.ShopNet.ServiceDefaults.csproj" />
     <ProjectReference Include="..\R2.ShopNet.Identity.Application\R2.ShopNet.Identity.Application.csproj" />
     <ProjectReference Include="..\R2.ShopNet.Identity.Infrastructure\R2.ShopNet.Identity.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Framework\R2.ShopNet.Framework.ServiceDiscovery\R2.ShopNet.Framework.ServiceDiscovery.csproj" />

@@ -21,7 +21,6 @@ using R2.ShopNet.Identity.Infrastructure.Configuration;
 using R2.ShopNet.Identity.Infrastructure.Events;
 using R2.ShopNet.Identity.Infrastructure.Persistence;
 using R2.ShopNet.Identity.Infrastructure.Seed;
-using R2.ShopNet.Identity.Infrastructure.Services;
 using Serilog;
 
 // Configure Serilog
@@ -42,6 +41,8 @@ try
 
     // Add Serilog
     builder.Host.UseSerilog();
+
+    builder.AddServiceDefaults();
 
     // Add services to the container
     builder.Services.AddHealthChecks();

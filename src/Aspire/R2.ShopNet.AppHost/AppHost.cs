@@ -32,28 +32,28 @@ var pgAdmin = builder.AddContainer("pgadmin", "dpage/pgadmin4", "latest")
     .WithVolume("pgadmin-data", "/var/lib/pgadmin")
     .WithLifetime(ContainerLifetime.Persistent);
 
-var redis = builder.AddRedis("redis")
-    .WithImage("redis", "7-alpine")
-    .WithRedisCommander()
-    .WithVolume("redis-data", "/data")
-    .WithLifetime(ContainerLifetime.Persistent);
+// var redis = builder.AddRedis("redis")
+//     .WithImage("redis", "7-alpine")
+//     .WithRedisCommander()
+//     .WithVolume("redis-data", "/data")
+//     .WithLifetime(ContainerLifetime.Persistent);
 
-var rabbitmq = builder.AddRabbitMQ("rabbitmq")
-    .WithManagementPlugin()
-    .WithEnvironment("RABBITMQ_DEFAULT_USER", "guest")
-    .WithEnvironment("RABBITMQ_DEFAULT_PASS", "guest")
-    .WithVolume("rabbitmq-data", "/var/lib/rabbitmq")
-    .WithLifetime(ContainerLifetime.Persistent);
+// var rabbitmq = builder.AddRabbitMQ("rabbitmq")
+//     .WithManagementPlugin()
+//     .WithEnvironment("RABBITMQ_DEFAULT_USER", "guest")
+//     .WithEnvironment("RABBITMQ_DEFAULT_PASS", "guest")
+//     .WithVolume("rabbitmq-data", "/var/lib/rabbitmq")
+//     .WithLifetime(ContainerLifetime.Persistent);
 
-var elasticsearch = builder.AddContainer("elasticsearch", "docker.elastic.co/elasticsearch/elasticsearch", "8.11.0")
-    .WithHttpEndpoint(port: 9200, targetPort: 9200, name: "api")
-    .WithEndpoint(port: 9300, targetPort: 9300, name: "transport")
-    .WithEnvironment("discovery.type", "single-node")
-    .WithEnvironment("xpack.security.enabled", "false")
-    .WithEnvironment("ES_JAVA_OPTS", "-Xms512m -Xmx512m")
-    .WithEnvironment("bootstrap.memory_lock", "true")
-    .WithVolume("elasticsearch-data", "/usr/share/elasticsearch/data")
-    .WithLifetime(ContainerLifetime.Persistent);
+// var elasticsearch = builder.AddContainer("elasticsearch", "docker.elastic.co/elasticsearch/elasticsearch", "8.11.0")
+//     .WithHttpEndpoint(port: 9200, targetPort: 9200, name: "api")
+//     .WithEndpoint(port: 9300, targetPort: 9300, name: "transport")
+//     .WithEnvironment("discovery.type", "single-node")
+//     .WithEnvironment("xpack.security.enabled", "false")
+//     .WithEnvironment("ES_JAVA_OPTS", "-Xms512m -Xmx512m")
+//     .WithEnvironment("bootstrap.memory_lock", "true")
+//     .WithVolume("elasticsearch-data", "/usr/share/elasticsearch/data")
+//     .WithLifetime(ContainerLifetime.Persistent);
 
 var minio = builder.AddContainer("minio", "minio/minio", "latest")
     .WithHttpEndpoint(port: 9000, targetPort: 9000, name: "api")
@@ -64,24 +64,24 @@ var minio = builder.AddContainer("minio", "minio/minio", "latest")
     .WithVolume("minio-data", "/data")
     .WithLifetime(ContainerLifetime.Persistent);
 
-// Observability Resources
-var seq = builder.AddContainer("seq", "datalust/seq", "latest")
-    .WithHttpEndpoint(port: 5341, targetPort: 5341, name: "ingestion")
-    .WithHttpEndpoint(port: 8081, targetPort: 80, name: "web")
-    .WithEnvironment("ACCEPT_EULA", "Y")
-    .WithEnvironment("SEQ_FIRSTRUN_ADMINPASSWORD", "admin123")
-    .WithVolume("seq-data", "/data")
-    .WithLifetime(ContainerLifetime.Persistent);
+// // Observability Resources
+// var seq = builder.AddContainer("seq", "datalust/seq", "latest")
+//     .WithHttpEndpoint(port: 5341, targetPort: 5341, name: "ingestion")
+//     .WithHttpEndpoint(port: 8081, targetPort: 80, name: "web")
+//     .WithEnvironment("ACCEPT_EULA", "Y")
+//     .WithEnvironment("SEQ_FIRSTRUN_ADMINPASSWORD", "admin123")
+//     .WithVolume("seq-data", "/data")
+//     .WithLifetime(ContainerLifetime.Persistent);
 
-var jaeger = builder.AddContainer("jaeger", "jaegertracing/all-in-one", "latest")
-    .WithHttpEndpoint(port: 16686, targetPort: 16686, name: "ui")
-    .WithHttpEndpoint(port: 14268, targetPort: 14268, name: "collector")
-    .WithEndpoint(port: 14250, targetPort: 14250, name: "grpc")
-    .WithEndpoint(port: 4317, targetPort: 4317, name: "otlp-grpc")
-    .WithHttpEndpoint(port: 4318, targetPort: 4318, name: "otlp")
-    .WithEnvironment("COLLECTOR_ZIPKIN_HOST_PORT", ":9411")
-    .WithEnvironment("COLLECTOR_OTLP_ENABLED", "true")
-    .WithLifetime(ContainerLifetime.Persistent);
+// var jaeger = builder.AddContainer("jaeger", "jaegertracing/all-in-one", "latest")
+//     .WithHttpEndpoint(port: 16686, targetPort: 16686, name: "ui")
+//     .WithHttpEndpoint(port: 14268, targetPort: 14268, name: "collector")
+//     .WithEndpoint(port: 14250, targetPort: 14250, name: "grpc")
+//     .WithEndpoint(port: 4317, targetPort: 4317, name: "otlp-grpc")
+//     .WithHttpEndpoint(port: 4318, targetPort: 4318, name: "otlp")
+//     .WithEnvironment("COLLECTOR_ZIPKIN_HOST_PORT", ":9411")
+//     .WithEnvironment("COLLECTOR_OTLP_ENABLED", "true")
+//     .WithLifetime(ContainerLifetime.Persistent);
 
 // MailDev - SMTP server for development and testing
 // Web UI: http://localhost:1080, SMTP: localhost:1025
@@ -100,8 +100,8 @@ var catalogDb = postgres.AddDatabase("catalogdb");
 //   - https: https://localhost:5003
 var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("identity-service", "https")
     .WithReference(identityDb)
-    .WithReference(rabbitmq)
-    .WithReference(redis)
+    // .WithReference(rabbitmq)
+    // .WithReference(redis)
     .WithEnvironment("Consul__KeyValue__Address", "http://localhost:8500")  // Use localhost since Identity Service runs outside Docker
     .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379");
 
@@ -111,8 +111,8 @@ var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("iden
 //   - https: https://localhost:5005
 var catalogService = builder.AddProject<Projects.R2_ShopNet_Catalog_API>("catalog-service", "http")
     .WithReference(catalogDb)
-    .WithReference(rabbitmq)
-    .WithReference(redis)
+    // .WithReference(rabbitmq)
+    // .WithReference(redis)
     .WaitFor(minio)
     .WithEnvironment("Consul__KeyValue__Address", "http://localhost:8500")  // Use localhost since Catalog Service runs outside Docker
     .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379");
@@ -123,8 +123,8 @@ var catalogService = builder.AddProject<Projects.R2_ShopNet_Catalog_API>("catalo
 //   - https: https://localhost:5000
 // The gateway acts as a single entry point for all client applications
 var gateway = builder.AddProject<Projects.R2_ShopNet_Gateway_API>("api-gateway", "https")
-    .WithReference(identityService)  // For health checks and testing
-    .WithReference(catalogService)   // For health checks and testing
+    .WithReference(identityService, "https")  // For health checks and testing
+    .WithReference(catalogService, "http")   // For health checks and testing
     .WithEnvironment("Consul__Address", "http://localhost:8500")  // Use localhost since Gateway runs outside Docker
     .WaitFor(identityService)
     .WaitFor(catalogService)
@@ -134,13 +134,14 @@ var gateway = builder.AddProject<Projects.R2_ShopNet_Gateway_API>("api-gateway",
 // Note: Ensure Node.js is in PATH. If using nvm, run Aspire from terminal with nvm environment.
 // Angular environment config uses compile-time values in environment.ts files, not runtime environment variables
 // For production, clients should connect through the API Gateway
-var adminPortal = builder.AddJavaScriptApp("admin-portal", "../Web/R2.ShopNet.Web.Admin")
+var adminPortal = builder.AddJavaScriptApp("admin-portal", "../../Web/R2.ShopNet.Web.Admin")
     .WithHttpEndpoint(targetPort: 4200)
     .WaitFor(identityService)
     .WaitFor(catalogService)
     .WaitFor(gateway)
     .WithExternalHttpEndpoints()
     .WithEnvironment("NODE_ENV", "development")
+    .WithNpm(install: true)
     .WithRunScript("start");
 
 builder.Build().Run();
