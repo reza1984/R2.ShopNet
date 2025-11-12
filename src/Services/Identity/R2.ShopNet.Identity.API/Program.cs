@@ -55,7 +55,7 @@ try
         });
     });
 
-    // Register HttpContextAccessor (required for passkey validation)
+    // Register HttpContextAccessor
     builder.Services.AddHttpContextAccessor();
 
     // Configure Database
@@ -88,25 +88,11 @@ try
         // Sign-in settings
         options.SignIn.RequireConfirmedEmail = false; // Set to true in production
         options.SignIn.RequireConfirmedPhoneNumber = false;
-
-        // REQUIRED: Enable passkey support by using Identity schema version 3
-        // This includes the IdentityUserPasskey table in the model
-        options.Stores.SchemaVersion = Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Version3;
     })
     .AddEntityFrameworkStores<IdentityDbContext>()
     .AddDefaultTokenProviders();
 
-    // Configure Passkey options (built into ASP.NET Core 10 Identity)
-    builder.Services.Configure<Microsoft.AspNetCore.Identity.IdentityPasskeyOptions>(options =>
-    {
-        // Set server domain to "localhost" to allow passkeys from any port on localhost
-        // This enables Angular dev server (4200), Gateway (5000), and Identity service (5002) to work together
-        options.ServerDomain = "localhost"; 
-        options.AuthenticatorTimeout = TimeSpan.FromMinutes(5);
-        options.ChallengeSize = 64; // bytes
-    });
-
-    // Configure Identity cookies to support cross-origin requests (required for passkey session)
+    // Configure Identity cookies to support cross-origin requests
     builder.Services.ConfigureApplicationCookie(options =>
     {
         // Use None for cross-origin support (required for Gateway/Angular scenarios)
@@ -115,18 +101,6 @@ try
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         options.Cookie.HttpOnly = true; // Prevent JavaScript access
         options.Cookie.IsEssential = true; // Required for GDPR
-    });
-
-    // Configure the Two-Factor cookie (used for passkey session state)
-    // This is CRITICAL for passkey authentication to work across requests
-    builder.Services.Configure<CookieAuthenticationOptions>(Microsoft.AspNetCore.Identity.IdentityConstants.TwoFactorUserIdScheme, options =>
-    {
-        // Use None for cross-origin support (required for Gateway/Angular scenarios)
-        options.Cookie.SameSite = SameSiteMode.None;
-        // Always require HTTPS in both dev and production for security
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        options.Cookie.HttpOnly = true;
-        options.Cookie.IsEssential = true;
     });
 
     // Configure Authentication to use OpenIddict validation as the default scheme
@@ -231,28 +205,12 @@ try
             policy.WithOrigins("http://localhost:4200", "https://localhost:4200", "https://localhost:5000")
                   .AllowAnyMethod()
                   .AllowAnyHeader()
-                  .AllowCredentials(); // Required for passkey session cookies
+                  .AllowCredentials();
         });
     });
 
     // Configure Consul Service Discovery
     builder.Services.AddConsulServiceDiscovery(builder.Configuration);
-
-    // Add session support (required for passkey authentication flow)
-    // Passkey authentication requires session state to be maintained between
-    // the /login/begin and /login/complete requests
-    builder.Services.AddDistributedMemoryCache(); // Use in-memory cache for sessions (consider Redis in production)
-    builder.Services.AddSession(options =>
-    {
-        options.Cookie.Name = ".R2ShopNet.Session";
-        options.IdleTimeout = TimeSpan.FromMinutes(10);
-        options.Cookie.HttpOnly = true;
-        options.Cookie.IsEssential = true;
-        // Use None for cross-origin support (required for Gateway/Angular scenarios)
-        options.Cookie.SameSite = SameSiteMode.None;
-        // Always require HTTPS in both dev and production for security
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    });
 
     var app = builder.Build();
 
@@ -307,11 +265,6 @@ try
     app.UseHttpsRedirection();
 
     app.UseCors("AllowAll");
-
-    // Enable session middleware (MUST be before UseAuthentication)
-    // This is required for passkey authentication to maintain state
-    // between /login/begin and /login/complete requests
-    app.UseSession();
 
     app.UseAuthentication();
     app.UseAuthorization();

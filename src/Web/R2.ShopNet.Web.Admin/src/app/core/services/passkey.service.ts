@@ -18,7 +18,7 @@ import {
 })
 export class PasskeyService {
   private http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/passkey`;
+  private readonly apiUrl = `${environment.apiUrl}/connect/passkey`;
 
   /**
    * Get list of user's passkeys
@@ -185,16 +185,10 @@ export class PasskeyService {
 
   /**
    * Begin passkey login process
-   * 
-   * NOTE: These endpoints (/login/begin and /login/complete) need to be implemented in the backend.
-   * Currently, the backend has a single /passkey/login endpoint.
-   * TODO: Update PasskeyController to add:
-   *   - POST /passkey/login/begin (returns assertion options)
-   *   - POST /passkey/login/complete (verifies assertion and returns tokens)
    */
   beginLogin(email: string): Observable<BeginPasskeyLoginResponse> {
     return this.http.post<BeginPasskeyLoginResponse>(
-      `${this.apiUrl}/login/begin`,
+      `${this.apiUrl}/begin`,
       { email }
     );
   }
@@ -204,7 +198,7 @@ export class PasskeyService {
    */
   completeLogin(request: CompletePasskeyLoginRequest): Observable<CompletePasskeyLoginResponse> {
     return this.http.post<CompletePasskeyLoginResponse>(
-      `${this.apiUrl}/login/complete`,
+      `${this.apiUrl}/complete`,
       request
     );
   }
@@ -215,17 +209,20 @@ export class PasskeyService {
   loginWithPasskey(email: string): Observable<CompletePasskeyLoginResponse> {
     return this.beginLogin(email).pipe(
       switchMap(response => {
+        console.log('✅ [PasskeyService] Received begin login response:', response);
+
         // Parse the assertion options JSON from the backend
         const optionsData = JSON.parse(response.assertionOptionsJson);
-        
+        console.log('✅ [PasskeyService] Parsed assertion options:', optionsData);
+
         // Convert base64url strings to Uint8Array for WebAuthn API
         const challengeBuffer = this.base64urlToBuffer(optionsData.challenge).buffer as ArrayBuffer;
-        
+
         const allowCredentials = optionsData.allowCredentials?.map((cred: any) => ({
           type: cred.type,
           id: this.base64urlToBuffer(cred.id).buffer as ArrayBuffer
         })) || [];
-        
+
         const options: CredentialRequestOptions = {
           publicKey: {
             challenge: challengeBuffer,
@@ -236,15 +233,20 @@ export class PasskeyService {
           }
         };
 
+        console.log('🔐 [PasskeyService] Calling navigator.credentials.get() with options:', options);
+
         // Call WebAuthn API to get assertion
         return from(navigator.credentials.get(options)).pipe(
           switchMap(credential => {
+            console.log('✅ [PasskeyService] Received credential from WebAuthn:', credential);
+
             if (!credential) {
               throw new Error('Failed to get credential');
             }
 
             // Convert credential to JSON for backend
             const assertionResponse = this.assertionToJSON(credential as PublicKeyCredential);
+            console.log('✅ [PasskeyService] Converted assertion to JSON:', assertionResponse);
 
             // Complete login on backend
             return this.completeLogin({
