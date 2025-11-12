@@ -11,6 +11,8 @@ using R2.ShopNet.Identity.Domain.Entities;
 using System.Collections.Immutable;
 using System.Security.Claims;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using R2.ShopNet.Identity.Application.Interfaces;
+using R2.ShopNet.Identity.Application.DTOs.Passkey;
 
 namespace R2.ShopNet.Identity.API.Controllers;
 
@@ -21,17 +23,20 @@ public class AuthorizationController : ControllerBase
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IOpenIddictApplicationManager _applicationManager;
     private readonly IOpenIddictScopeManager _scopeManager;
+    private readonly IPasskeyService _passkeyService;
 
     public AuthorizationController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IOpenIddictApplicationManager applicationManager,
-        IOpenIddictScopeManager scopeManager)
+        IOpenIddictScopeManager scopeManager,
+        IPasskeyService passkeyService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _applicationManager = applicationManager;
         _scopeManager = scopeManager;
+        _passkeyService = passkeyService;
     }
 
     [HttpPost("~/connect/token")]
@@ -51,11 +56,111 @@ public class AuthorizationController : ControllerBase
             return await HandleRefreshTokenFlowAsync(request);
         }
 
+        // Passkey grant type
+        if (request.GrantType == "urn:ietf:params:oauth:grant-type:passkey")
+        {
+            return await HandlePasskeyFlowAsync(request);
+        }
+
         return BadRequest(new OpenIddictResponse
         {
             Error = Errors.UnsupportedGrantType,
             ErrorDescription = "The specified grant type is not supported."
         });
+
+    }
+
+    private async Task<IActionResult> HandlePasskeyFlowAsync(OpenIddictRequest request)
+    {
+        // Extract passkey assertion from request
+        var assertionJson = request.Assertion;
+
+        if (string.IsNullOrEmpty(assertionJson))
+        {
+            return BadRequest(new OpenIddictResponse
+            {
+                Error = Errors.InvalidRequest,
+                ErrorDescription = "The passkey assertion is missing."
+            });
+        }
+
+        // Deserialize the WebAuthn assertion response
+        PasskeyAuthenticationResponse? assertion;
+        try
+        {
+            assertion = System.Text.Json.JsonSerializer.Deserialize<PasskeyAuthenticationResponse>(assertionJson);
+            if (assertion == null)
+            {
+                throw new InvalidOperationException("Failed to deserialize assertion.");
+            }
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new OpenIddictResponse
+            {
+                Error = Errors.InvalidRequest,
+                ErrorDescription = $"Invalid assertion format: {ex.Message}"
+            });
+        }
+
+        // Verify the passkey assertion using PasskeyService
+        var result = await _passkeyService.CompleteAuthenticationAsync(assertion);
+
+        if (!result.Success || result.UserId == null)
+        {
+            return BadRequest(new OpenIddictResponse
+            {
+                Error = Errors.InvalidGrant,
+                ErrorDescription = result.ErrorMessage ?? "Passkey authentication failed."
+            });
+        }
+
+        // Find the user
+        var user = await _userManager.FindByIdAsync(result.UserId.Value.ToString());
+
+        if (user == null)
+        {
+            return BadRequest(new OpenIddictResponse
+            {
+                Error = Errors.InvalidGrant,
+                ErrorDescription = "The user account no longer exists."
+            });
+        }
+
+        // Check if user is active
+        if (!user.IsActive)
+        {
+            return BadRequest(new OpenIddictResponse
+            {
+                Error = Errors.InvalidGrant,
+                ErrorDescription = "The user account is not active."
+            });
+        }
+
+        // Check if user can sign in
+        if (!await _signInManager.CanSignInAsync(user))
+        {
+            return BadRequest(new OpenIddictResponse
+            {
+                Error = Errors.InvalidGrant,
+                ErrorDescription = "The user is not allowed to sign in."
+            });
+        }
+
+
+        // Ensure 'openid' scope is present for id_token issuance
+        var scopes = request.GetScopes();
+        
+
+        // Create the SAME claims principal as password flow
+        var principal = await CreateClaimsPrincipalAsync(user, scopes);
+
+        // Update last login timestamp
+        user.LastLoginAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        // Return the token
+        return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
 
     [HttpGet("~/connect/endsession")]

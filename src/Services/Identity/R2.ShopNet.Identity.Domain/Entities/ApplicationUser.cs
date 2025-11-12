@@ -21,4 +21,9 @@ public class ApplicationUser : Framework.Identity.Entities.ApplicationUser
     /// Enforces email confirmation for the Identity service.
     /// </summary>
     protected override bool RequireEmailConfirmation() => false; // Set to true in production
+
+    /// <summary>
+    /// Navigation property for passkey credentials
+    /// </summary>
+    public ICollection<PasskeyCredential> PasskeyCredentials { get; set; } = new List<PasskeyCredential>();
 }

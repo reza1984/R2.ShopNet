@@ -15,6 +15,8 @@ public class IdentityDbContext : IdentityDbContext<ApplicationUser, ApplicationR
     {
     }
 
+    public DbSet<PasskeyCredential> PasskeyCredentials { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -56,6 +58,31 @@ public class IdentityDbContext : IdentityDbContext<ApplicationUser, ApplicationR
         modelBuilder.Entity<IdentityUserToken<Guid>>(entity =>
         {
             entity.ToTable("UserTokens");
+        });
+
+        // PasskeyCredential entity configuration
+        modelBuilder.Entity<PasskeyCredential>(entity =>
+        {
+            entity.ToTable("PasskeyCredentials", "identity");
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.CredentialId)
+                .IsRequired()
+                .HasMaxLength(1024);
+
+            entity.Property(e => e.PublicKey)
+                .IsRequired();
+
+            entity.Property(e => e.DeviceName)
+                .HasMaxLength(100);
+
+            entity.HasIndex(e => e.CredentialId)
+                .IsUnique();
+
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.PasskeyCredentials)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Configure OpenIddict entities

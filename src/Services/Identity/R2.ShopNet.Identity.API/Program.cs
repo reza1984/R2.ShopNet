@@ -1,3 +1,5 @@
+using R2.ShopNet.Identity.Application.Interfaces;
+using R2.ShopNet.Identity.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -140,8 +142,9 @@ try
             options.SetLogoutEndpointUris("/connect/endsession");
 
             // Enable the Resource Owner Password Credentials flow (for login in Angular)
-            options.AllowPasswordFlow()
-                   .AllowRefreshTokenFlow();
+         options.AllowPasswordFlow()
+             .AllowRefreshTokenFlow()
+             .AllowCustomFlow("urn:ietf:params:oauth:grant-type:passkey");
 
             // Accept anonymous clients (clients without a client_secret)
             options.AcceptAnonymousClients();
@@ -179,6 +182,7 @@ try
     var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "R2.ShopNet.Identity";
     var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "R2.ShopNet";
 
+    builder.Services.AddScoped<IPasskeyService, PasskeyService>();
     builder.Services.AddScoped<ITokenService>(sp =>
     {
         var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();

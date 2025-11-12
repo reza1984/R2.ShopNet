@@ -231,10 +231,10 @@
               <div class="flex items-center justify-between rounded-lg border border-gray-200 p-4 dark:border-gray-800">
                 <div class="flex items-center gap-4">
                   <div class="flex size-12 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400">
-                    <span class="material-symbols-rounded text-2xl">{{ getDeviceIcon(passkey) }}</span>
+                    <span class="material-symbols-rounded text-2xl">key</span>
                   </div>
                   <div>
-                    <h3 class="font-medium text-gray-900 dark:text-white">{{ passkey.friendlyName }}</h3>
+                    <h3 class="font-medium text-gray-900 dark:text-white">{{ passkey.deviceName }}</h3>
                     <div class="mt-1 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                       <span>Added {{ formatDate(passkey.createdAt) }}</span>
                       @if (passkey.lastUsedAt) {

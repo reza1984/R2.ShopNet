@@ -1,13 +1,8 @@
 export interface Passkey {
   id: string;
-  userId: string;
-  friendlyName: string;
-  credentialId: string;
+  deviceName: string;
   createdAt: string;
   lastUsedAt?: string;
-  userAgent?: string;
-  ipAddress?: string;
-  isActive: boolean;
 }
 
 export interface RegisterPasskeyOptions {
@@ -46,8 +41,17 @@ export interface RegisterPasskeyResponse {
 }
 
 export interface CompletePasskeyRegistrationRequest {
-  attestationResponseJson: string;
-  friendlyName?: string;
+  response: {
+    id: string;
+    rawId: string;
+    type: string;
+    response: {
+      clientDataJSON: string;
+      attestationObject: string;
+    };
+    clientExtensionResults?: any;
+  };
+  deviceName?: string;
 }
 
 export interface CompletePasskeyRegistrationResponse {
@@ -61,8 +65,15 @@ export interface BeginPasskeyLoginRequest {
 }
 
 export interface BeginPasskeyLoginResponse {
-  assertionOptionsJson: string; // JSON string containing WebAuthn options
-  challenge: string; // Base64url-encoded challenge
+  challenge: string;
+  rpId: string;
+  timeout: number;
+  allowCredentials: Array<{
+    type: string;
+    id: string;
+    transports: string[] | null;
+  }>;
+  userVerification: string;
 }
 
 export interface CompletePasskeyLoginRequest {
@@ -71,9 +82,9 @@ export interface CompletePasskeyLoginRequest {
 }
 
 export interface CompletePasskeyLoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  idToken: string;
-  tokenType: string;
-  expiresIn: number;
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token?: string;
+  id_token?: string;
 }

@@ -225,7 +225,7 @@ export class SecuritySettingsComponent implements OnInit {
   }
 
   deletePasskey(passkey: Passkey): void {
-    if (!confirm(`Are you sure you want to remove "${passkey.friendlyName}"?`)) {
+    if (!confirm(`Are you sure you want to remove "${passkey.deviceName}"?`)) {
       return;
     }
 
@@ -268,13 +268,5 @@ export class SecuritySettingsComponent implements OnInit {
     });
   }
 
-  getDeviceIcon(passkey: Passkey): string {
-    const ua = passkey.userAgent?.toLowerCase() || '';
-    if (ua.includes('mac')) return 'laptop_mac';
-    if (ua.includes('iphone')) return 'phone_iphone';
-    if (ua.includes('ipad')) return 'tablet_mac';
-    if (ua.includes('android')) return 'phone_android';
-    if (ua.includes('windows')) return 'computer';
-    return 'key';
-  }
+
 }

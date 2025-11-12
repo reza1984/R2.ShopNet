@@ -318,16 +318,8 @@ export class AuthService {
   loginWithPasskey(email: string): Observable<LoginResponse> {    
     return this.passkeyService.loginWithPasskey(email).pipe(
       map(response => {
-        const loginResponse: LoginResponse = {
-          access_token: response.accessToken,
-          refresh_token: response.refreshToken,
-          expires_in: response.expiresIn,
-          token_type: response.tokenType,
-          id_token: response.idToken
-        };
-        
-        this.handleLoginSuccess(loginResponse);
-        return loginResponse;
+        this.handleLoginSuccess(response);
+        return response;
       }),
       catchError(error => {
         console.error('❌ [AuthService] Passkey login failed!');
