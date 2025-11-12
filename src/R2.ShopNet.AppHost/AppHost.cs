@@ -1,4 +1,7 @@
 var builder = DistributedApplication.CreateBuilder(args);
+// Add Docker Compose publishing support
+// cd /Volumes/Secure/Projects/R2.ShopNet && aspire publish --project src/R2.ShopNet.AppHost/R2.ShopNet.AppHost.csproj --output-path ./docker-compose-output
+builder.AddDockerComposeEnvironment("shopnet");
 
 // Infrastructure Resources
 var consul = builder.AddContainer("consul", "hashicorp/consul", "1.19")
@@ -110,6 +113,7 @@ var catalogService = builder.AddProject<Projects.R2_ShopNet_Catalog_API>("catalo
     .WithReference(catalogDb)
     .WithReference(rabbitmq)
     .WithReference(redis)
+    .WaitFor(minio)
     .WithEnvironment("Consul__KeyValue__Address", "http://localhost:8500")  // Use localhost since Catalog Service runs outside Docker
     .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379");
 
@@ -131,7 +135,10 @@ var gateway = builder.AddProject<Projects.R2_ShopNet_Gateway_API>("api-gateway",
 // Angular environment config uses compile-time values in environment.ts files, not runtime environment variables
 // For production, clients should connect through the API Gateway
 var adminPortal = builder.AddJavaScriptApp("admin-portal", "../Web/R2.ShopNet.Web.Admin")
-    // .WithHttpEndpoint(port: 4200)
+    .WithHttpEndpoint(targetPort: 4200)
+    .WaitFor(identityService)
+    .WaitFor(catalogService)
+    .WaitFor(gateway)
     .WithExternalHttpEndpoints()
     .WithEnvironment("NODE_ENV", "development")
     .WithRunScript("start");

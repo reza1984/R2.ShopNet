@@ -7,6 +7,7 @@
     <UserSecretsId>4364988a-062e-436a-8cba-fce3d50b0a1f</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Docker" Version="13.0.0-preview.1.25560.3" />
     <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.0.0" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.0.0" />
     <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="13.0.0" />

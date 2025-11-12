@@ -22,11 +22,9 @@
 
       <!-- Passkey Button -->
       @if (isPasskeySupported()) {
-      <app-button type="button" [routerLink]="['/login','passkey']" className="w-full" variant="secondary" size="lg">
-
+      <app-button type="button" [routerLink]="['/login','passkey']" [queryParams]="{returnUrl: returnUrl}" className="w-full" variant="secondary" size="lg">
         <span class="inline-flex items-center gap-2">
           <app-icon name="fingerprint" [size]="20" />
-
           Sign in with Passkey
         </span>
       </app-button>
@@ -34,7 +32,7 @@
       }
 
       <!-- OAuth Buttons (Disabled for now) -->
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 mt-3">
+      <!-- <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 mt-3">
         <button disabled
           class="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-400 bg-gray-50 rounded-lg px-7 cursor-not-allowed dark:bg-white/5 dark:text-gray-600">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -61,7 +59,7 @@
           </svg>
           Sign in with X
         </button>
-      </div>
+      </div> -->
 
       <!-- Divider -->
       <div class="relative py-3 sm:py-5">

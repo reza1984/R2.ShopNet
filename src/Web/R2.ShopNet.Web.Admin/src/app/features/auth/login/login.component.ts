@@ -38,7 +38,7 @@ export class LoginComponent implements OnInit {
   isPasskeyLoading = signal(false);
   errorMessage = signal<string | null>(null);
   isPasskeySupported = signal(false);
-  private returnUrl: string = '/dashboard';
+  returnUrl: string = '/dashboard';
 
   ngOnInit(): void {
 
