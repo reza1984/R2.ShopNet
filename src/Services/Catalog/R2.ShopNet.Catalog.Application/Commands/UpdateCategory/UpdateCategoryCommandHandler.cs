@@ -1,12 +1,10 @@
 using R2.ShopNet.Catalog.Application.DTOs;
-using R2.ShopNet.Catalog.Application.Helpers;
 using R2.ShopNet.Catalog.Domain.Entities;
 using R2.ShopNet.Catalog.Domain.Events;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Framework.Events;
-using R2.ShopNet.Framework.Persistence.Storage.Abstractions;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 
 namespace R2.ShopNet.Catalog.Application.Commands.UpdateCategory;
@@ -19,16 +17,13 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
-    private readonly IMinIORepository<Category> _categoryImageRepository;
 
     public UpdateCategoryCommandHandler(
         IUnitOfWork unitOfWork,
-        IEventPublisher eventPublisher,
-        IMinIORepository<Category> categoryImageRepository)
+        IEventPublisher eventPublisher)
     {
         _unitOfWork = unitOfWork;
         _eventPublisher = eventPublisher;
-        _categoryImageRepository = categoryImageRepository;
     }
 
     public async Task<Result<CategoryDto>> Handle(
@@ -117,44 +112,9 @@ public class UpdateCategoryCommandHandler : ICommandHandler<UpdateCategoryComman
         category.SetParentCategory(command.ParentCategoryId);
         category.SetDisplayOrder(command.DisplayOrder);
 
-        // Upload new image if provided
-        if (command.Image != null)
-        {
-            try
-            {
-                // Delete old images for this category
-                await _categoryImageRepository.DeleteAllFilesAsync(category.Id, cancellationToken);
-
-                // Convert ImageUploadDto to a stream for upload
-                using var stream = new MemoryStream(command.Image.FileData);
-                stream.Position = 0; // Reset stream position to beginning
-                var formFile = new FormFileAdapter(
-                    stream,
-                    command.Image.FileName,
-                    command.Image.ContentType,
-                    command.Image.SizeInBytes);
-
-                var fileMetadata = await _categoryImageRepository.UploadFileAsync(
-                    category.Id,
-                    formFile,
-                    new Dictionary<string, string> { { "altText", command.Name } },
-                    cancellationToken);
-
-                // Get presigned URL for the uploaded image
-                // MinIO max expiry is 604800 seconds (7 days) = 10080 minutes
-                var imageUrl = await _categoryImageRepository.GetDownloadUrlAsync(
-                    fileMetadata.Id,
-                    expiryMinutes: 10080, // 7 days (MinIO's maximum)
-                    cancellationToken);
-
-                category.SetImageUrl(imageUrl);
-            }
-            catch (Exception)
-            {
-                // Log error but don't fail the category update
-                // The category will be updated without changing the image
-            }
-        }
+        // Note: Image upload/deletion is now handled through dedicated endpoints
+        // POST /api/Categories/{categoryId}/images - to upload/replace image
+        // DELETE /api/Categories/{categoryId}/images - to delete image
 
         // Update in repository
         await categoryRepository.UpdateAsync(category, cancellationToken);

@@ -75,4 +75,17 @@ export class CategoryService {
   deleteCategory(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
+
+  uploadCategoryImage(categoryId: string, file: File, altText?: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (altText) {
+      formData.append('altText', altText);
+    }
+    return this.http.post(`${this.baseUrl}/${categoryId}/images`, formData);
+  }
+
+  deleteCategoryImage(categoryId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/${categoryId}/images`);
+  }
 }

@@ -1,5 +1,5 @@
 
-import { Component, input, signal, effect, inject } from '@angular/core';
+import { Component, signal, effect, inject } from '@angular/core';
 import { CategoryService } from '../category.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -45,6 +45,8 @@ export class CategoryFormComponent {
 	autoGenerateSlug = signal(true); // Track whether to auto-generate slug
 	selectedImage = signal<File | null>(null);
 	imagePreviewUrl = signal<string | null>(null);
+	hasExistingImage = signal(false); // Track if category has an existing image
+	imageToDelete = signal(false); // Track if user wants to delete the image
 
 	// Categories API URL for select component
 	categoriesApiUrl = `${environment.apiUrl}/api/catalog/Categories`;
@@ -112,6 +114,7 @@ export class CategoryFormComponent {
 				// Set image preview if category has an image
 				if (cat.imageUrl) {
 					this.imagePreviewUrl.set(cat.imageUrl);
+					this.hasExistingImage.set(true);
 				}
 
 				this.loading.set(false);
@@ -129,7 +132,7 @@ export class CategoryFormComponent {
 		this.loading.set(true);
 		this.errorMessage.set('');
 
-		// Create FormData for file upload
+		// Create FormData for category data
 		const formData = new FormData();
 		formData.append('name', this.form.value.name);
 		formData.append('slug', this.form.value.slug);
@@ -143,16 +146,17 @@ export class CategoryFormComponent {
 			formData.append('parentCategoryId', this.form.value.parentCategoryId);
 		}
 
-		// Add image file if selected
-		if (this.selectedImage()) {
+		// Add image file only for create (not for update)
+		if (!this.isEdit() && this.selectedImage()) {
 			formData.append('image', this.selectedImage()!);
 		}
 
 		if (this.isEdit() && this.categoryId()) {
+			// Update category first
 			this.categoryService.updateCategory(this.categoryId()!, formData).subscribe({
 				next: () => {
-					this.loading.set(false);
-					this.router.navigate(['/catalog/categories']);
+					// Handle image operations after category update
+					this.handleImageOperations();
 				},
 				error: (err) => {
 					this.loading.set(false);
@@ -162,10 +166,18 @@ export class CategoryFormComponent {
 				}
 			});
 		} else {
+			// Create new category
 			this.categoryService.createCategory(formData).subscribe({
-				next: () => {
-					this.loading.set(false);
-					this.router.navigate(['/catalog/categories']);
+				next: (category) => {
+					// If image was included in create, we're done
+					// Otherwise, upload it separately if selected
+					if (!this.selectedImage() || category.imageUrl) {
+						this.loading.set(false);
+						this.router.navigate(['/catalog/categories']);
+					} else if (category.id) {
+						this.categoryId.set(category.id);
+						this.uploadImage();
+					}
 				},
 				error: (err) => {
 					this.loading.set(false);
@@ -175,6 +187,74 @@ export class CategoryFormComponent {
 				}
 			});
 		}
+	}
+
+	/**
+	 * Handle image upload/delete operations after category save
+	 */
+	private handleImageOperations(): void {
+		const categoryId = this.categoryId();
+		if (!categoryId) {
+			this.loading.set(false);
+			this.router.navigate(['/catalog/categories']);
+			return;
+		}
+
+		// If user wants to delete the image
+		if (this.imageToDelete()) {
+			this.deleteImage(categoryId);
+		}
+		// If a new image was selected, upload it
+		else if (this.selectedImage()) {
+			this.uploadImage();
+		}
+		// Otherwise, we're done
+		else {
+			this.loading.set(false);
+			this.router.navigate(['/catalog/categories']);
+		}
+	}
+
+	/**
+	 * Upload category image using dedicated endpoint
+	 */
+	private uploadImage(): void {
+		if (!this.categoryId() || !this.selectedImage()) {
+			this.loading.set(false);
+			this.router.navigate(['/catalog/categories']);
+			return;
+		}
+
+		this.categoryService.uploadCategoryImage(this.categoryId()!, this.selectedImage()!).subscribe({
+			next: () => {
+				this.loading.set(false);
+				this.router.navigate(['/catalog/categories']);
+			},
+			error: (err) => {
+				this.loading.set(false);
+				console.error('Image upload error:', err);
+				this.errorMessage.set(err.error?.message || err.message || 'Category saved but image upload failed.');
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			}
+		});
+	}
+
+	/**
+	 * Delete category image using dedicated endpoint
+	 */
+	private deleteImage(categoryId: string): void {
+		this.categoryService.deleteCategoryImage(categoryId).subscribe({
+			next: () => {
+				this.loading.set(false);
+				this.router.navigate(['/catalog/categories']);
+			},
+			error: (err) => {
+				this.loading.set(false);
+				console.error('Image delete error:', err);
+				this.errorMessage.set(err.error?.message || err.message || 'Category saved but image deletion failed.');
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			}
+		});
 	}
 
 	onCancel(): void {
@@ -228,15 +308,28 @@ export class CategoryFormComponent {
 	}
 
 	/**
-	 * Remove the selected image
+	 * Remove the selected image or mark existing image for deletion
 	 */
 	removeImage(): void {
-		this.selectedImage.set(null);
-		this.imagePreviewUrl.set(null);
-		// Reset the file input
-		const fileInput = document.getElementById('category-image') as HTMLInputElement;
-		if (fileInput) {
-			fileInput.value = '';
+		// If there's a newly selected image, just clear it
+		if (this.selectedImage()) {
+			this.selectedImage.set(null);
+			this.imagePreviewUrl.set(null);
+			// Reset the file input
+			const fileInput = document.getElementById('category-image') as HTMLInputElement;
+			if (fileInput) {
+				fileInput.value = '';
+			}
+			// If there was an existing image, restore its preview
+			if (this.hasExistingImage() && this.isEdit()) {
+				this.loadCategory(this.categoryId()!);
+			}
+		}
+		// If removing an existing image (in edit mode)
+		else if (this.hasExistingImage() && this.isEdit()) {
+			this.imageToDelete.set(true);
+			this.imagePreviewUrl.set(null);
+			this.hasExistingImage.set(false);
 		}
 	}
 }

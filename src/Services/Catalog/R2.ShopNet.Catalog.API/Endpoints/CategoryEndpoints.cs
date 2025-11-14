@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using R2.ShopNet.Catalog.Application.Commands.CreateCategory;
 using R2.ShopNet.Catalog.Application.Commands.DeleteCategory;
+using R2.ShopNet.Catalog.Application.Commands.DeleteCategoryImage;
 using R2.ShopNet.Catalog.Application.Commands.UpdateCategory;
+using R2.ShopNet.Catalog.Application.Commands.UploadCategoryImage;
 using R2.ShopNet.Catalog.Application.DTOs;
 using R2.ShopNet.Catalog.Application.Queries.GetCategories;
 using R2.ShopNet.Catalog.Application.Queries.GetCategoryById;
@@ -156,5 +158,63 @@ public static class Categories
             }
             return Results.NoContent();
         });
+
+        #region Category Images
+
+        var categoryImages = routes.MapGroup($"/api/{nameof(Categories)}/{{categoryId:guid}}/images")
+            .WithTags($"{nameof(Categories)} Images");
+
+        categoryImages.MapPost("", async (
+            [FromServices] ICommandDispatcher commandDispatcher,
+            Guid categoryId,
+            [FromForm] IFormFile file,
+            [FromForm] string? altText,
+            CancellationToken cancellationToken) =>
+        {
+            if (file == null || file.Length == 0)
+            {
+                return Results.BadRequest("File is required");
+            }
+            var command = new UploadCategoryImageCommand
+            {
+                CategoryId = categoryId,
+                File = file,
+                AltText = altText
+            };
+            var result = await commandDispatcher.Dispatch(command, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                return result.Error.Type switch
+                {
+                    ErrorType.NotFound => Results.NotFound(result.Error),
+                    _ => Results.BadRequest(result.Error)
+                };
+            }
+            return Results.Created($"/api/categories/{categoryId}/images", result.Value);
+        })
+        .DisableAntiforgery();
+
+        categoryImages.MapDelete("", async (
+            [FromServices] ICommandDispatcher commandDispatcher,
+            Guid categoryId,
+            CancellationToken cancellationToken) =>
+        {
+            var command = new DeleteCategoryImageCommand
+            {
+                CategoryId = categoryId
+            };
+            var result = await commandDispatcher.Dispatch(command, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                return result.Error.Type switch
+                {
+                    ErrorType.NotFound => Results.NotFound(result.Error),
+                    _ => Results.BadRequest(result.Error)
+                };
+            }
+            return result.Value.Success ? Results.Ok(result.Value) : Results.NotFound(result.Value);
+        });
+
+        #endregion
     }
 }
