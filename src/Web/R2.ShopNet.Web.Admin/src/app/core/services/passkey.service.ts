@@ -1,7 +1,7 @@
 import { Injectable, inject, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { Observable, from, switchMap } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, from, switchMap, throwError, catchError } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
 import {
   Passkey,
@@ -15,13 +15,22 @@ import {
 } from '../models/passkey.model';
 import { LoginResponse } from '../models/auth.model';
 
+/**
+ * Service for managing passkey (WebAuthn) operations
+ * Implements WebAuthn Level 2 specification
+ * @see https://www.w3.org/TR/webauthn-2/
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class PasskeyService {
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
+  private readonly isBrowser: boolean;
   private readonly apiUrl = `${environment.apiUrl}/passkey`;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   /**
    * Get list of user's passkeys
@@ -113,17 +122,30 @@ export class PasskeyService {
   }
 
   /**
-   * Convert base64url string to Uint8Array with proper ArrayBuffer
+   * Convert base64url string to ArrayBuffer (RFC 4648 Section 5)
+   * Used for challenge, credential ID, etc.
    */
   private base64urlToBuffer(base64url: string): Uint8Array {
-    const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
-    const binary = atob(padded);
+    if (!this.isBrowser) {
+      throw new Error('Buffer operations are only supported in browser environment');
+    }
 
-    // Create a new ArrayBuffer and Uint8Array to ensure proper type
-    const buffer = new ArrayBuffer(binary.length);
-    const bytes = new Uint8Array(buffer);
+    // Replace base64url characters with standard base64
+    let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
 
+    // Add padding
+    const padding = base64.length % 4;
+    if (padding === 2) {
+      base64 += '==';
+    } else if (padding === 3) {
+      base64 += '=';
+    }
+
+    // Decode base64 to binary string
+    const binary = atob(base64);
+
+    // Convert binary string to Uint8Array
+    const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {
       bytes[i] = binary.charCodeAt(i);
     }
@@ -132,44 +154,58 @@ export class PasskeyService {
   }
 
   /**
-   * Convert Uint8Array to base64url string
+   * Convert ArrayBuffer to base64url string (RFC 4648 Section 5)
+   * This is the proper format for WebAuthn
    */
-  private bufferToBase64url(buffer: ArrayBuffer): string {
-    const bytes = new Uint8Array(buffer);
+  private bufferToBase64url(buffer: ArrayBuffer | Uint8Array): string {
+    if (!this.isBrowser) {
+      throw new Error('Buffer operations are only supported in browser environment');
+    }
+
+    const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
     let binary = '';
     for (let i = 0; i < bytes.length; i++) {
       binary += String.fromCharCode(bytes[i]);
     }
-    return btoa(binary); // standard base64 for backend compatibility
+
+    // Convert to base64 then to base64url
+    return btoa(binary)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, ''); // Remove padding
   }
 
   /**
-   * Convert PublicKeyCredential to JSON format for backend
+   * Convert ArrayBuffer to standard base64 string
+   * Used for attestationObject and clientDataJSON (backend expects standard base64)
+   */
+  private bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
+    if (!this.isBrowser) {
+      throw new Error('Buffer operations are only supported in browser environment');
+    }
+
+    const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+
+    return btoa(binary);
+  }
+
+  /**
+   * Convert PublicKeyCredential to JSON format for backend (registration)
    */
   private credentialToJSON(credential: PublicKeyCredential): any {
     const response = credential.response as AuthenticatorAttestationResponse;
-
-    // Ensure clientDataJSON and attestationObject are always ArrayBuffer before encoding
-
-    const clientDataJSONBuffer = response.clientDataJSON instanceof ArrayBuffer
-      ? response.clientDataJSON
-      : typeof response.clientDataJSON === 'string'
-        ? new TextEncoder().encode(response.clientDataJSON).buffer
-        : new Uint8Array(response.clientDataJSON).buffer;
-
-    const attestationObjectBuffer = response.attestationObject instanceof ArrayBuffer
-      ? response.attestationObject
-      : typeof response.attestationObject === 'string'
-        ? new TextEncoder().encode(response.attestationObject).buffer
-        : new Uint8Array(response.attestationObject).buffer;
 
     return {
       id: credential.id,
       rawId: this.bufferToBase64url(credential.rawId),
       type: credential.type,
       response: {
-        clientDataJSON: this.bufferToBase64url(clientDataJSONBuffer),
-        attestationObject: this.bufferToBase64url(attestationObjectBuffer)
+        clientDataJSON: this.bufferToBase64(response.clientDataJSON),
+        attestationObject: this.bufferToBase64(response.attestationObject)
       },
       clientExtensionResults: credential.getClientExtensionResults() || {}
     };
@@ -179,14 +215,20 @@ export class PasskeyService {
    * Check if WebAuthn is supported in this browser
    */
   isWebAuthnSupported(): boolean {
-    if (!isPlatformBrowser(this.platformId)) {
+    if (!this.isBrowser) {
       return false;
     }
-    return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create);
+
+    return !!(
+      window.PublicKeyCredential &&
+      navigator.credentials &&
+      typeof navigator.credentials.create === 'function' &&
+      typeof navigator.credentials.get === 'function'
+    );
   }
 
   /**
-   * Check if platform authenticator (e.g., Touch ID, Face ID) is available
+   * Check if platform authenticator (e.g., Touch ID, Face ID, Windows Hello) is available
    */
   async isPlatformAuthenticatorAvailable(): Promise<boolean> {
     if (!this.isWebAuthnSupported()) {
@@ -195,7 +237,24 @@ export class PasskeyService {
 
     try {
       return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-    } catch {
+    } catch (error) {
+      console.error('Failed to check platform authenticator availability:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Check if conditional mediation (autofill UI) is available
+   */
+  async isConditionalMediationAvailable(): Promise<boolean> {
+    if (!this.isWebAuthnSupported()) {
+      return false;
+    }
+
+    try {
+      return await PublicKeyCredential.isConditionalMediationAvailable?.() ?? false;
+    } catch (error) {
+      console.error('Failed to check conditional mediation availability:', error);
       return false;
     }
   }
@@ -273,22 +332,132 @@ export class PasskeyService {
   }
 
   /**
-   * Convert PublicKeyCredential assertion to JSON format for backend
+   * Convert PublicKeyCredential assertion to JSON format for backend (authentication)
    */
   private assertionToJSON(credential: PublicKeyCredential): any {
     const response = credential.response as AuthenticatorAssertionResponse;
+
+    // Convert ES256 signature from DER to IEEE P1363 format for .NET compatibility
+    const signatureIeee = this.convertDerSignatureToIeeeP1363(new Uint8Array(response.signature));
 
     return {
       id: credential.id,
       rawId: this.bufferToBase64url(credential.rawId),
       type: credential.type,
       response: {
-        clientDataJSON: this.bufferToBase64url(response.clientDataJSON),
-        authenticatorData: this.bufferToBase64url(response.authenticatorData),
-        signature: this.bufferToBase64url(response.signature),
+        clientDataJSON: this.bufferToBase64(response.clientDataJSON),
+        authenticatorData: this.bufferToBase64(response.authenticatorData),
+        signature: this.bufferToBase64(signatureIeee),
         userHandle: response.userHandle ? this.bufferToBase64url(response.userHandle) : null
       },
       clientExtensionResults: credential.getClientExtensionResults() || {}
     };
+  }
+
+  /**
+   * Convert DER-encoded ECDSA signature to IEEE P1363 format
+   * WebAuthn returns ES256 signatures in DER format, but .NET expects IEEE P1363
+   */
+  private convertDerSignatureToIeeeP1363(derSignature: Uint8Array): Uint8Array {
+    try {
+      // DER format: 0x30 [total-length] 0x02 [R-length] [R] 0x02 [S-length] [S]
+      if (derSignature.length < 8 || derSignature[0] !== 0x30) {
+        // Already in IEEE P1363 format or invalid
+        return derSignature;
+      }
+
+      let offset = 2; // Skip 0x30 and total length
+
+      // Read R
+      if (derSignature[offset] !== 0x02) {
+        return derSignature;
+      }
+
+      offset++;
+      const rLength = derSignature[offset++];
+      let r = derSignature.slice(offset, offset + rLength);
+      offset += rLength;
+
+      // Read S
+      if (derSignature[offset] !== 0x02) {
+        return derSignature;
+      }
+
+      offset++;
+      const sLength = derSignature[offset++];
+      let s = derSignature.slice(offset, offset + sLength);
+
+      // Remove leading zero bytes if present (used for sign bit in DER)
+      const rCleaned = this.removeLeadingZeros(r);
+      const sCleaned = this.removeLeadingZeros(s);
+
+      // IEEE P1363 format: R (32 bytes) || S (32 bytes) for P-256
+      const ieeeSignature = new Uint8Array(64);
+
+      // Pad with leading zeros if needed
+      ieeeSignature.set(new Uint8Array(rCleaned), 32 - rCleaned.length);
+      ieeeSignature.set(new Uint8Array(sCleaned), 64 - sCleaned.length);
+
+      return ieeeSignature;
+    } catch (error) {
+      console.error('Failed to convert DER signature to IEEE P1363:', error);
+      return derSignature; // Return original if conversion fails
+    }
+  }
+
+  /**
+   * Remove leading zero bytes from a Uint8Array
+   */
+  private removeLeadingZeros(data: Uint8Array): Uint8Array {
+    let firstNonZero = 0;
+    while (firstNonZero < data.length && data[firstNonZero] === 0) {
+      firstNonZero++;
+    }
+
+    if (firstNonZero === 0) {
+      return data;
+    }
+
+    return data.slice(firstNonZero);
+  }
+
+  /**
+   * Get user-friendly error message from WebAuthn error
+   */
+  getErrorMessage(error: any): string {
+    if (error instanceof DOMException) {
+      switch (error.name) {
+        case 'NotAllowedError':
+          return 'Authentication was cancelled or timed out. Please try again.';
+        case 'InvalidStateError':
+          return 'This passkey is already registered.';
+        case 'NotSupportedError':
+          return 'Passkeys are not supported on this device or browser.';
+        case 'SecurityError':
+          return 'Security error occurred. Please ensure you are on a secure connection.';
+        case 'AbortError':
+          return 'The operation was aborted.';
+        case 'ConstraintError':
+          return 'The passkey does not meet the requirements.';
+        case 'UnknownError':
+          return 'An unknown error occurred. Please try again.';
+        default:
+          return `Authentication error: ${error.message}`;
+      }
+    }
+
+    if (error?.status === 404) {
+      return 'No passkey found for this account.';
+    }
+
+    if (error?.status === 400) {
+      return 'Invalid passkey authentication.';
+    }
+
+    if (error?.status === 0) {
+      return 'Unable to connect to server. Please check your connection.';
+    }
+
+    return error?.message || 'An unexpected error occurred. Please try again.';
   }
 }

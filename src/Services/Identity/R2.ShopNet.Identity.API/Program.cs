@@ -48,6 +48,17 @@ try
     builder.Services.AddHealthChecks();
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
+
+    // Add Redis distributed cache for passkey challenge storage
+    // Aspire injects the connection string via .WithReference(redis) as ConnectionStrings:redis
+    var redisConnection = builder.Configuration.GetConnectionString("redis")
+        ?? throw new InvalidOperationException("Redis connection string not found. Ensure Aspire AppHost has .WithReference(redis) configured.");
+
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+        options.InstanceName = "R2ShopNet:Identity:";
+    });
     builder.Services.AddSwaggerGen(options =>
     {
         options.SwaggerDoc("v1", new()

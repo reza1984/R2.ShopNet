@@ -172,6 +172,9 @@ secrets.json
 *.pem
 *.pfx
 
+# SSL Certificates
+.certs/
+
 # Local development
 local/
 **/temp-tailadmin

@@ -67,6 +67,13 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "ssl": true,
+            "sslCert": "../../../.certs/localhost.crt",
+            "sslKey": "../../../.certs/localhost.key",
+            "port": 4200,
+            "host": "localhost"
+          },
           "configurations": {
             "production": {
               "buildTarget": "R2.ShopNet.Web.Admin:build:production"

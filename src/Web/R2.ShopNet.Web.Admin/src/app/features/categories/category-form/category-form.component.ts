@@ -152,7 +152,7 @@ export class CategoryFormComponent {
 			this.categoryService.updateCategory(this.categoryId()!, formData).subscribe({
 				next: () => {
 					this.loading.set(false);
-					this.router.navigate(['/products/categories']);
+					this.router.navigate(['/catalog/categories']);
 				},
 				error: (err) => {
 					this.loading.set(false);
@@ -165,7 +165,7 @@ export class CategoryFormComponent {
 			this.categoryService.createCategory(formData).subscribe({
 				next: () => {
 					this.loading.set(false);
-					this.router.navigate(['/products/categories']);
+					this.router.navigate(['/catalog/categories']);
 				},
 				error: (err) => {
 					this.loading.set(false);
@@ -178,7 +178,7 @@ export class CategoryFormComponent {
 	}
 
 	onCancel(): void {
-		this.router.navigate(['/products/categories']);
+		this.router.navigate(['/catalog/categories']);
 	}
 
 	/**

@@ -1,6 +1,6 @@
 <div class="p-6">
     <!-- Page Breadcrumb -->
-    <app-page-breadcrumb [pageTitle]="isEdit() ? 'Edit Product' : 'Add Product'" [parent]="{ title: 'Products', url: '/products' }">
+    <app-page-breadcrumb [pageTitle]="isEdit() ? 'Edit Product' : 'Add Product'" [parent]="{ title: 'Products', url: '/catalog/products' }">
     </app-page-breadcrumb>
 
     <!-- Error Alert -->
@@ -288,7 +288,7 @@
 
             <!-- Form Actions -->
             <div class="flex items-center justify-end gap-4">
-                <a [routerLink]="['/products']">
+                <a [routerLink]="['/catalog/products']">
                     <app-button variant="secondary" size="md" type="button">Cancel</app-button>
                 </a>
                 <app-button variant="primary" size="md" type="submit" [disabled]="form.invalid || loading()">

@@ -5,7 +5,7 @@ builder.AddDockerComposeEnvironment("shopnet");
 
 // Infrastructure Resources
 var consul = builder.AddContainer("consul", "hashicorp/consul", "1.19")
-    .WithHttpEndpoint(port: 8500, targetPort: 8500, name: "ui")
+    .WithHttpEndpoint(port: 8500, targetPort: 8500, name: "http")
     .WithEndpoint(port: 8600, targetPort: 8600, name: "dns", scheme: "udp")
     .WithArgs("agent", "-server", "-ui", "-node=server-1", "-bootstrap-expect=1", "-client=0.0.0.0")
     .WithEnvironment("CONSUL_BIND_INTERFACE", "eth0")
@@ -32,11 +32,11 @@ var pgAdmin = builder.AddContainer("pgadmin", "dpage/pgadmin4", "latest")
     .WithVolume("pgadmin-data", "/var/lib/pgadmin")
     .WithLifetime(ContainerLifetime.Persistent);
 
-// var redis = builder.AddRedis("redis")
-//     .WithImage("redis", "7-alpine")
-//     .WithRedisCommander()
-//     .WithVolume("redis-data", "/data")
-//     .WithLifetime(ContainerLifetime.Persistent);
+var redis = builder.AddRedis("redis")
+    .WithImage("redis", "7-alpine")
+    .WithRedisCommander()
+    .WithVolume("redis-data", "/data")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 // var rabbitmq = builder.AddRabbitMQ("rabbitmq")
 //     .WithManagementPlugin()
@@ -100,10 +100,9 @@ var catalogDb = postgres.AddDatabase("catalogdb");
 //   - https: https://localhost:5003
 var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("identity-service", "https")
     .WithReference(identityDb)
+    .WithReference(redis)
     // .WithReference(rabbitmq)
-    // .WithReference(redis)
-    .WithEnvironment("Consul__KeyValue__Address", "http://localhost:8500")  // Use localhost since Identity Service runs outside Docker
-    .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379");
+    .WithEnvironment("Consul__KeyValue__Address", consul.GetEndpoint("http"));  // Use localhost since Identity Service runs outside Docker
 
 // Catalog Service
 // launchSettings.json:
@@ -111,11 +110,10 @@ var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("iden
 //   - https: https://localhost:5005
 var catalogService = builder.AddProject<Projects.R2_ShopNet_Catalog_API>("catalog-service", "http")
     .WithReference(catalogDb)
+    .WithReference(redis)
     // .WithReference(rabbitmq)
-    // .WithReference(redis)
     .WaitFor(minio)
-    .WithEnvironment("Consul__KeyValue__Address", "http://localhost:8500")  // Use localhost since Catalog Service runs outside Docker
-    .WithEnvironment("Redis__KeyValue__ConnectionString", "redis:6379");
+    .WithEnvironment("Consul__KeyValue__Address", consul.GetEndpoint("http")); // Use localhost since Identity Service runs outside Docker
 
 // API Gateway (YARP with Consul service discovery)
 // launchSettings.json:
@@ -125,7 +123,7 @@ var catalogService = builder.AddProject<Projects.R2_ShopNet_Catalog_API>("catalo
 var gateway = builder.AddProject<Projects.R2_ShopNet_Gateway_API>("api-gateway", "https")
     .WithReference(identityService, "https")  // For health checks and testing
     .WithReference(catalogService, "http")   // For health checks and testing
-    .WithEnvironment("Consul__Address", "http://localhost:8500")  // Use localhost since Gateway runs outside Docker
+    .WithEnvironment("Consul__Address", consul.GetEndpoint("http"))
     .WaitFor(identityService)
     .WaitFor(catalogService)
     .WithExternalHttpEndpoints();

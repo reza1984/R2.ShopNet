@@ -245,7 +245,7 @@ export class ProductFormComponent implements OnInit {
           uploadedCount++;
           if (uploadedCount === files.length) {
             this.loading.set(false);
-            this.router.navigate(['/products']);
+            this.router.navigate(['/catalog/products']);
           }
         },
         error: (err) => {
@@ -253,7 +253,7 @@ export class ProductFormComponent implements OnInit {
           uploadedCount++;
           if (uploadedCount === files.length) {
             this.loading.set(false);
-            this.router.navigate(['/products']);
+            this.router.navigate(['/catalog/products']);
           }
         }
       });

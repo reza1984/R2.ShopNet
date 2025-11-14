@@ -94,16 +94,16 @@ export class LoginWithPasskeyComponent implements OnInit {
   }
 
   onSignInWithPasskey(): void {
-
     const email = this.loginForm.get('email')?.value;
 
     if (!email) {
       this.errorMessage.set('Please enter your email address');
+      this.loginForm.get('email')?.markAsTouched();
       return;
     }
 
     if (!this.passkeyService.isWebAuthnSupported()) {
-      this.errorMessage.set('Passkey authentication is not supported in this browser');
+      this.errorMessage.set('Passkey authentication is not supported on this browser or device. Please use a different sign-in method.');
       return;
     }
 
@@ -113,32 +113,18 @@ export class LoginWithPasskeyComponent implements OnInit {
     this.authService.loginWithPasskey(email).subscribe({
       next: () => {
         this.isPasskeyLoading.set(false);
+        console.log('✅ Passkey authentication successful');
         // Navigate to dashboard or return URL after successful login
         this.router.navigate([this.returnUrl]);
       },
       error: (error) => {
         this.isPasskeyLoading.set(false);
 
-        // Handle different error scenarios
-        if (error.name === 'NotAllowedError') {
-          console.error('📛 [LoginComponent] User cancelled or timeout');
-          this.errorMessage.set('Passkey authentication was cancelled or timed out');
-        } else if (error.name === 'NotSupportedError') {
-          console.error('📛 [LoginComponent] WebAuthn not supported');
-          this.errorMessage.set('Passkey authentication is not supported');
-        } else if (error.status === 404) {
-          console.error('📛 [LoginComponent] No passkey found');
-          this.errorMessage.set('No passkey found for this account');
-        } else if (error.status === 400) {
-          console.error('📛 [LoginComponent] Invalid passkey');
-          this.errorMessage.set('Invalid passkey authentication');
-        } else if (error.status === 0) {
-          console.error('📛 [LoginComponent] Network/CORS error');
-          this.errorMessage.set('Unable to connect to server. Please try again later.');
-        } else {
-          console.error('📛 [LoginComponent] Unknown error:', error);
-          this.errorMessage.set('Passkey login failed. Please try again.');
-        }
+        // Use the centralized error handling from PasskeyService
+        const errorMessage = this.passkeyService.getErrorMessage(error);
+        this.errorMessage.set(errorMessage);
+
+        console.error('❌ Passkey authentication failed:', error);
       }
     });
   }
