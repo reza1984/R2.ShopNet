@@ -138,10 +138,10 @@ public static class Products
         productImages.MapPost("", async (
             [FromServices] ICommandDispatcher commandDispatcher,
             Guid productId,
-            IFormFile file,
-            string? altText,
-            int displayOrder,
-            bool isPrimary,
+            [FromForm] IFormFile file,
+            [FromForm] string? altText,
+            [FromForm] int displayOrder,
+            [FromForm] bool isPrimary,
             CancellationToken cancellationToken) =>
         {
             if (file == null || file.Length == 0)
@@ -162,7 +162,8 @@ public static class Products
                 return Results.BadRequest(result.Error);
             }
             return Results.Created($"/api/v1/products/{productId}/images", result.Value);
-        });
+        })
+        .DisableAntiforgery();
 
         productImages.MapDelete("/{imageId}", async (
             [FromServices] ICommandDispatcher commandDispatcher,

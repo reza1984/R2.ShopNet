@@ -5,7 +5,6 @@ import { AuthService } from '../../../core/services/auth.service';
 import { PasskeyService } from '../../../core/services/passkey.service';
 import { AuthPageLayoutComponent } from '../auth-page-layout/auth-page-layout.component';
 import { ButtonComponent } from '../../../components/forms/button/button.component';
-import { CheckboxComponent } from '../../../components/forms/checkbox/checkbox.component';
 import { InputFieldComponent } from '../../../components/forms/input-field/input-field.component';
 import { LabelComponent } from '../../../components/forms/label/label.component';
 import { IconComponent } from '../../../components/icon/icon.component';
@@ -19,7 +18,6 @@ import { IconComponent } from '../../../components/icon/icon.component';
     LabelComponent,
     ButtonComponent,
     InputFieldComponent,
-    CheckboxComponent,
     IconComponent,
     AuthPageLayoutComponent
   ],

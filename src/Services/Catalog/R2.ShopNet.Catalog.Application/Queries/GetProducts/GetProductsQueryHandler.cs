@@ -6,21 +6,24 @@ using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
+using R2.ShopNet.Framework.Persistence.Storage.Abstractions;
 
 namespace R2.ShopNet.Catalog.Application.Queries.GetProducts;
 
 /// <summary>
 /// Handler for GetProductsQuery to retrieve paginated list of products.
 /// </summary>
-/// 
+///
 [GenerateHandler]
 public sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, Result<PagedResult<ProductDto>>>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMinIORepository<Product> _imageRepository;
 
-    public GetProductsQueryHandler(IUnitOfWork unitOfWork)
+    public GetProductsQueryHandler(IUnitOfWork unitOfWork, IMinIORepository<Product> imageRepository)
     {
         _unitOfWork = unitOfWork;
+        _imageRepository = imageRepository;
     }
 
     public async Task<Result<PagedResult<ProductDto>>> Handle(
@@ -88,11 +91,27 @@ public sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, Re
             // Get total count before pagination
             var totalCount = await queryable.CountAsync(cancellationToken);
 
-            // Apply pagination
-            var products = await queryable
+            // Apply pagination and get products
+            var productData = await queryable
                 .Skip((query.PageNumber - 1) * query.PageSize)
                 .Take(query.PageSize)
-                .Select(p => new ProductDto
+                .ToListAsync(cancellationToken);
+
+            // Fetch images for all products in parallel
+            var imageTasks = productData.Select(p =>
+                _imageRepository.GetFilesWithUrlsAsync(p.Id, expiryMinutes: 60, cancellationToken)
+            ).ToList();
+
+            var allImagesMetadata = await Task.WhenAll(imageTasks);
+
+            // Build DTOs with image URLs for each product
+            var products = new List<ProductDto>();
+            for (int i = 0; i < productData.Count; i++)
+            {
+                var p = productData[i];
+                var imageMetadata = allImagesMetadata[i];
+
+                var productDto = new ProductDto
                 {
                     Id = p.Id,
                     Name = p.Name,
@@ -102,9 +121,9 @@ public sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, Re
                     Sku = p.Sku,
                     Price = p.Price.Amount,
                     Currency = p.Price.Currency,
-                    DiscountPrice = p.DiscountPrice != null ? p.DiscountPrice.Amount : null,
+                    DiscountPrice = p.DiscountPrice?.Amount,
                     DiscountPercentage = p.DiscountPrice != null
-                        ? ((p.Price.Amount - p.DiscountPrice.Amount) / p.Price.Amount) * 100
+                        ? (p.Price.Amount - p.DiscountPrice.Amount) / p.Price.Amount * 100
                         : null,
                     StockQuantity = p.StockQuantity,
                     ReorderLevel = p.ReorderLevel,
@@ -114,30 +133,33 @@ public sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, Re
                     Brand = p.Brand,
                     Weight = p.Weight,
                     Dimensions = p.Dimensions,
-                    Images = p.Images.Select(i => new ProductImageDto
-                    {
-                        Id = i.Id,
-                        Url = string.Empty, // Will be populated with presigned URL
-                        FileName = i.FileName,
-                        ContentType = i.ContentType,
-                        SizeInBytes = i.SizeInBytes,
-                        AltText = i.AltText,
-                        DisplayOrder = i.DisplayOrder,
-                        IsPrimary = i.IsPrimary
-                    }).ToList(),
-                    Variants = p.Variants.Select(v => new ProductVariantDto
-                    {
-                        Id = v.Id,
-                        Name = v.Name,
-                        Sku = v.Sku,
-                        Price = v.Price != null ? v.Price.Amount : null,
-                        Currency = v.Price != null ? v.Price.Currency : null,
-                        StockQuantity = v.StockQuantity,
-                        Weight = v.Weight,
-                        Attributes = v.Attributes,
-                        ImageUrl = v.ImageUrl,
-                        IsActive = v.IsActive
-                    }).ToList(),
+                    Images = imageMetadata
+                        .OrderBy(m => m.DisplayOrder ?? 0)
+                        .Select(m => new ProductImageDto
+                        {
+                            Id = m.Id,
+                            Url = m.Url,
+                            FileName = m.FileName,
+                            ContentType = m.ContentType,
+                            SizeInBytes = m.SizeInBytes,
+                            AltText = m.Metadata.GetValueOrDefault("altText"),
+                            DisplayOrder = m.DisplayOrder ?? 0,
+                            IsPrimary = bool.TryParse(m.Metadata.GetValueOrDefault("isPrimary"), out var isPrimary) && isPrimary
+                        }).ToList(),
+                    Variants = p.Variants
+                        .Select(v => new ProductVariantDto
+                        {
+                            Id = v.Id,
+                            Name = v.Name,
+                            Sku = v.Sku,
+                            Price = v.Price?.Amount,
+                            Currency = v.Price?.Currency,
+                            StockQuantity = v.StockQuantity,
+                            Weight = v.Weight,
+                            Attributes = v.Attributes,
+                            ImageUrl = v.ImageUrl,
+                            IsActive = v.IsActive
+                        }).ToList(),
                     MetaTitle = p.MetaTitle,
                     MetaDescription = p.MetaDescription,
                     MetaKeywords = p.MetaKeywords,
@@ -146,8 +168,10 @@ public sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, Re
                     ReviewCount = p.ReviewCount,
                     CreatedAt = p.CreatedAt,
                     UpdatedAt = p.UpdatedAt
-                })
-                .ToListAsync(cancellationToken);
+                };
+
+                products.Add(productDto);
+            }
 
             var pagedResult = new PagedResult<ProductDto>(
                 products,

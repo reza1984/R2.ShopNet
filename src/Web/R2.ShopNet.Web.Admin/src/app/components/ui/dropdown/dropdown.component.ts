@@ -1,5 +1,6 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
+import { Inject, PLATFORM_ID } from '@angular/core';
 
 @Component({
   selector: 'app-dropdown',
@@ -12,6 +13,7 @@ export class DropdownComponent implements AfterViewInit, OnDestroy {
   @Input() className = '';
 
   @ViewChild('dropdownRef') dropdownRef!: ElementRef<HTMLDivElement>;
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   private handleClickOutside = (event: MouseEvent) => {
     if (
@@ -26,10 +28,14 @@ export class DropdownComponent implements AfterViewInit, OnDestroy {
   };
 
   ngAfterViewInit() {
-    document.addEventListener('mousedown', this.handleClickOutside);
+    if (isPlatformBrowser(this.platformId)) {
+      document.addEventListener('mousedown', this.handleClickOutside);
+    }
   }
 
   ngOnDestroy() {
-    document.removeEventListener('mousedown', this.handleClickOutside);
+    if (isPlatformBrowser(this.platformId)) {
+      document.removeEventListener('mousedown', this.handleClickOutside);
+    }
   }
 }

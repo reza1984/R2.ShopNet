@@ -26,6 +26,7 @@ try
 
     // Add Serilog
     builder.Host.UseSerilog();
+    builder.AddServiceDefaults();
 
     // Bind configuration options
     builder.Services.Configure<ConsulOptions>(

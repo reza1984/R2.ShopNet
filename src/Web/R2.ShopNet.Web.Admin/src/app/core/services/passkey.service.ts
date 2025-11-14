@@ -1,4 +1,5 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable, from, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
@@ -18,6 +19,7 @@ import { LoginResponse } from '../models/auth.model';
   providedIn: 'root'
 })
 export class PasskeyService {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
   private http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/passkey`;
 
@@ -177,6 +179,9 @@ export class PasskeyService {
    * Check if WebAuthn is supported in this browser
    */
   isWebAuthnSupported(): boolean {
+    if (!isPlatformBrowser(this.platformId)) {
+      return false;
+    }
     return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create);
   }
 
