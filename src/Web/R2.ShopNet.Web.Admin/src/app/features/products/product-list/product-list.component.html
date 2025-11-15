@@ -23,6 +23,7 @@
                 <div class="relative">
                     <input
                         type="text"
+                        id="products-search"
                         placeholder="Search products..."
                         (input)="onSearch($any($event.target).value)"
                         class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pl-10 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
@@ -175,7 +176,7 @@
                                     <app-icon name="edit" [size]="16" color="currentColor" />
                                 </a>
                                 <button
-                                    (click)="deleteProduct(product.id, product.name)"
+                                    (click)="confirmDeleteProduct(product.id, product.name)"
                                     class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-error-300 text-error-700 transition hover:bg-error-50 dark:border-error-700 dark:text-error-400 dark:hover:bg-error-900/20">
                                     <app-icon name="delete" [size]="16" color="currentColor" />
                                 </button>
@@ -218,3 +219,15 @@
         }
     </div>
 </div>
+
+<!-- Confirmation Modal -->
+<app-confirmation-modal
+    [isOpen]="showDeleteConfirmation()"
+    title="Delete Product"
+    [message]="'Are you sure you want to delete ' + (productToDelete()?.name ? '&quot;' + productToDelete()!.name + '&quot;' : 'this product') + '?<br> This action cannot be undone.'"
+    confirmText="Delete"
+    cancelText="Cancel"
+    confirmButtonType="danger"
+    (confirm)="deleteProduct()"
+    (cancel)="cancelDelete()">
+</app-confirmation-modal>

@@ -59,6 +59,19 @@ public abstract class FileStorageRepositoryBase<TEntity, TFileEntity, TDbContext
 
     #region Public Interface Methods
 
+    public async Task<string> GetDownloadUrlByObjectKeyAsync(
+        string objectKey,
+        int expiryMinutes = 60,
+        CancellationToken cancellationToken = default)
+    {
+        var url = await StorageService.GetPresignedUrlAsync(
+            objectKey,
+            expiryMinutes,
+            cancellationToken);
+
+        return url;
+    }
+
     public async Task<FileMetadataDto> UploadFileAsync(
         Guid entityId,
         IFormFile file,

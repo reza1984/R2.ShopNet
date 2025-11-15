@@ -6,6 +6,7 @@ import { ButtonComponent } from '../../../components/forms/button/button.compone
 import { IconComponent } from '../../../components/icon/icon.component';
 import { AlertComponent } from '../../../components/ui/alert/alert.component';
 import { SelectComponent, Option } from '../../../components/forms/select/select.component';
+import { ConfirmationModalComponent } from '../../../components/ui/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-product-list',
@@ -16,7 +17,8 @@ import { SelectComponent, Option } from '../../../components/forms/select/select
     ButtonComponent,
     IconComponent,
     AlertComponent,
-    SelectComponent
+    SelectComponent,
+    ConfirmationModalComponent
   ],
   templateUrl: './product-list.component.html'
 })
@@ -34,6 +36,10 @@ export class ProductListComponent implements OnInit {
   status = signal<string | undefined>(undefined);
   loading = signal(false);
   errorMessage = signal<string>('');
+
+  // Confirmation modal
+  showDeleteConfirmation = signal(false);
+  productToDelete = signal<{ id: string; name: string } | null>(null);
 
   Math = Math;
 
@@ -76,13 +82,18 @@ export class ProductListComponent implements OnInit {
     });
   }
 
-  deleteProduct(id: string, name: string): void {
-    if (!confirm(`Are you sure you want to delete "${name}"?`)) {
-      return;
-    }
+  confirmDeleteProduct(id: string, name: string): void {
+    this.productToDelete.set({ id, name });
+    this.showDeleteConfirmation.set(true);
+  }
+
+  deleteProduct(): void {
+    const product = this.productToDelete();
+    if (!product) return;
 
     this.errorMessage.set('');
-    this.productService.deleteProduct(id).subscribe({
+    this.showDeleteConfirmation.set(false);
+    this.productService.deleteProduct(product.id).subscribe({
       next: () => {
         this.loadProducts();
       },
@@ -91,6 +102,11 @@ export class ProductListComponent implements OnInit {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
+  }
+
+  cancelDelete(): void {
+    this.showDeleteConfirmation.set(false);
+    this.productToDelete.set(null);
   }
 
   onSearch(term: string): void {

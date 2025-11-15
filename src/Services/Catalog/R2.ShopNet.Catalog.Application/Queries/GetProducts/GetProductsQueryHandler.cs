@@ -97,19 +97,23 @@ public sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, Re
                 .Take(query.PageSize)
                 .ToListAsync(cancellationToken);
 
-            // Fetch images for all products in parallel
-            var imageTasks = productData.Select(p =>
-                _imageRepository.GetFilesWithUrlsAsync(p.Id, expiryMinutes: 60, cancellationToken)
-            ).ToList();
-
-            var allImagesMetadata = await Task.WhenAll(imageTasks);
-
             // Build DTOs with image URLs for each product
             var products = new List<ProductDto>();
-            for (int i = 0; i < productData.Count; i++)
+            foreach (var p in productData)
             {
-                var p = productData[i];
-                var imageMetadata = allImagesMetadata[i];
+                // Generate pre-signed URLs for all images in parallel
+                // Using the ObjectKey directly from the already-loaded images to avoid additional DB queries
+                var urlTasks = p.Images.Where(c => c.IsPrimary).Select(async image => new
+                {
+                    image.Id,
+                    Url = await _imageRepository.GetDownloadUrlByObjectKeyAsync(
+                        image.ObjectKey,
+                        expiryMinutes: 60,
+                        cancellationToken)
+                }).ToList();
+
+                var urlResults = await Task.WhenAll(urlTasks);
+                var imageUrls = urlResults.ToDictionary(x => x.Id, x => x.Url);
 
                 var productDto = new ProductDto
                 {
@@ -133,18 +137,19 @@ public sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, Re
                     Brand = p.Brand,
                     Weight = p.Weight,
                     Dimensions = p.Dimensions,
-                    Images = imageMetadata
-                        .OrderBy(m => m.DisplayOrder ?? 0)
-                        .Select(m => new ProductImageDto
+                    Images = p.Images
+                        .OrderBy(img => img.DisplayOrder)
+                        .ThenBy(img => img.CreatedAt)
+                        .Select(img => new ProductImageDto
                         {
-                            Id = m.Id,
-                            Url = m.Url,
-                            FileName = m.FileName,
-                            ContentType = m.ContentType,
-                            SizeInBytes = m.SizeInBytes,
-                            AltText = m.Metadata.GetValueOrDefault("altText"),
-                            DisplayOrder = m.DisplayOrder ?? 0,
-                            IsPrimary = bool.TryParse(m.Metadata.GetValueOrDefault("isPrimary"), out var isPrimary) && isPrimary,
+                            Id = img.Id,
+                            Url = imageUrls.GetValueOrDefault(img.Id, string.Empty),
+                            FileName = img.FileName,
+                            ContentType = img.ContentType,
+                            SizeInBytes = img.SizeInBytes,
+                            AltText = img.AltText,
+                            DisplayOrder = img.DisplayOrder,
+                            IsPrimary = img.IsPrimary,
                         }).ToList(),
                     Variants = p.Variants
                         .Select(v => new ProductVariantDto
@@ -175,9 +180,9 @@ public sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, Re
 
             var pagedResult = new PagedResult<ProductDto>(
                 products,
-                totalCount,
                 query.PageNumber,
-                query.PageSize);
+                query.PageSize,
+                totalCount);
 
             return Result<PagedResult<ProductDto>>.Success(pagedResult);
         }

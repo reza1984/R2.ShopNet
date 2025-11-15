@@ -24,7 +24,19 @@ public interface IMinIORepository<TEntity> where TEntity : class
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Get presigned download URL for a file
+    /// Get presigned download URL for a file by its ObjectKey (does not query the database)
+    /// </summary>
+    /// <param name="objectKey">Object key in MinIO storage</param>
+    /// <param name="expiryMinutes">URL expiry in minutes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Presigned URL</returns>
+    Task<string> GetDownloadUrlByObjectKeyAsync(
+        string objectKey,
+        int expiryMinutes = 60,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get presigned download URL for a file by its file ID (queries the database)
     /// </summary>
     /// <param name="fileId">File ID from database</param>
     /// <param name="expiryMinutes">URL expiry in minutes</param>

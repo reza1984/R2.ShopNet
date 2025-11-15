@@ -95,7 +95,7 @@
           {{ selectedUsers().size }} user(s) selected
         </span>
         <button
-          (click)="bulkDelete()"
+          (click)="confirmBulkDelete()"
           class="inline-flex items-center gap-2 rounded-lg bg-error-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-error-600"
         >
           <app-icon name="delete" [size]="16" color="currentColor" />
@@ -177,9 +177,6 @@
                       <div class="font-medium text-gray-900 dark:text-white">
                         {{ user.fullName || 'No name' }}
                       </div>
-                      <div class="text-sm text-gray-500 dark:text-gray-400">
-                        ID: {{ user.id.substring(0, 8) }}...
-                      </div>
                     </div>
                   </div>
                 </td>
@@ -243,7 +240,7 @@
                       }
                     </button>
                     <button
-                      (click)="deleteUser(user)"
+                      (click)="confirmDeleteUser(user)"
                       class="rounded-lg p-2 text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-950"
                       title="Delete user"
                     >
@@ -319,3 +316,27 @@
     </div>
   }
 </div>
+
+<!-- Delete User Confirmation Modal -->
+<app-confirmation-modal
+    [isOpen]="showDeleteUserConfirmation()"
+    title="Delete User"
+    [message]="'Are you sure you want to delete &quot;' + (userToDelete()?.fullName || userToDelete()?.email || ' this user') + '&quot;? <br>This action cannot be undone.'"
+    confirmText="Delete"
+    cancelText="Cancel"
+    confirmButtonType="danger"
+    (confirm)="deleteUser()"
+    (cancel)="cancelDeleteUser()">
+</app-confirmation-modal>
+
+<!-- Bulk Delete Confirmation Modal -->
+<app-confirmation-modal
+    [isOpen]="showBulkDeleteConfirmation()"
+    title="Delete Multiple Users"
+    [message]="'Are you sure you want to delete ' + selectedUsers().size + ' user(s)? <br>This action cannot be undone.'"
+    confirmText="Delete All"
+    cancelText="Cancel"
+    confirmButtonType="danger"
+    (confirm)="bulkDelete()"
+    (cancel)="cancelBulkDelete()">
+</app-confirmation-modal>

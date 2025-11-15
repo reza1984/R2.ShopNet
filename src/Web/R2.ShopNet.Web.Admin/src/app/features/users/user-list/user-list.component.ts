@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../core/services/user.service';
 import { User } from '../../../core/models/user.model';
 import { IconComponent } from '../../../components/icon/icon.component';
+import { ConfirmationModalComponent } from '../../../components/ui/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-user-list',
@@ -13,7 +14,8 @@ import { IconComponent } from '../../../components/icon/icon.component';
     CommonModule,
     RouterModule,
     FormsModule,
-    IconComponent
+    IconComponent,
+    ConfirmationModalComponent
   ],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss']
@@ -24,7 +26,12 @@ export class UserListComponent implements OnInit {
   searchTerm = '';
   filterStatus = signal<'all' | 'active' | 'inactive'>('all');
   selectedUsers = signal<Set<string>>(new Set());
-  
+
+  // Confirmation modals
+  showDeleteUserConfirmation = signal(false);
+  showBulkDeleteConfirmation = signal(false);
+  userToDelete = signal<User | null>(null);
+
   constructor(public userService: UserService) {}
 
   ngOnInit(): void {
@@ -138,24 +145,43 @@ export class UserListComponent implements OnInit {
     }
   }
 
-  deleteUser(user: User): void {
-    if (confirm(`Are you sure you want to delete ${user.fullName || user.email}?`)) {
-      this.userService.deleteUser(user.id).subscribe({
-        next: () => this.loadUsers(),
-        error: (error) => console.error('Error deleting user:', error)
-      });
-    }
+  confirmDeleteUser(user: User): void {
+    this.userToDelete.set(user);
+    this.showDeleteUserConfirmation.set(true);
+  }
+
+  deleteUser(): void {
+    const user = this.userToDelete();
+    if (!user) return;
+
+    this.showDeleteUserConfirmation.set(false);
+    this.userService.deleteUser(user.id).subscribe({
+      next: () => this.loadUsers(),
+      error: (error) => console.error('Error deleting user:', error)
+    });
+  }
+
+  cancelDeleteUser(): void {
+    this.showDeleteUserConfirmation.set(false);
+    this.userToDelete.set(null);
+  }
+
+  confirmBulkDelete(): void {
+    const count = this.selectedUsers().size;
+    if (count === 0) return;
+
+    this.showBulkDeleteConfirmation.set(true);
   }
 
   bulkDelete(): void {
-    const count = this.selectedUsers().size;
-    if (count === 0) return;
-    
-    if (confirm(`Are you sure you want to delete ${count} user(s)?`)) {
-      // Implement bulk delete logic
-      console.log('Bulk delete:', Array.from(this.selectedUsers()));
-      this.selectedUsers.set(new Set());
-    }
+    this.showBulkDeleteConfirmation.set(false);
+    // Implement bulk delete logic
+    console.log('Bulk delete:', Array.from(this.selectedUsers()));
+    this.selectedUsers.set(new Set());
+  }
+
+  cancelBulkDelete(): void {
+    this.showBulkDeleteConfirmation.set(false);
   }
 
   exportUsers(): void {

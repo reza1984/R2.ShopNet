@@ -11,6 +11,7 @@ import { SelectComponent } from '../../../components/forms/select/select.compone
 import { IconComponent } from '../../../components/icon/icon.component';
 import { AlertComponent } from '../../../components/ui/alert/alert.component';
 import { PageBreadcrumbComponent } from '../../../components/ui/page-breadcrumb/page-breadcrumb.component';
+import { ConfirmationModalComponent } from '../../../components/ui/confirmation-modal/confirmation-modal.component';
 import { SlugHelper } from '../../../core/utils/slug.helper';
 import { environment } from '../../../../environments/environment';
 
@@ -27,7 +28,8 @@ import { environment } from '../../../../environments/environment';
     SelectComponent,
     IconComponent,
     AlertComponent,
-    PageBreadcrumbComponent
+    PageBreadcrumbComponent,
+    ConfirmationModalComponent
   ],
   templateUrl: './product-form.component.html'
 })
@@ -47,6 +49,10 @@ export class ProductFormComponent implements OnInit {
   imagePreviewUrls = signal<string[]>([]);
   existingImages = signal<any[]>([]);
   primaryNewImageIndex = signal<number | null>(null);
+
+  // Confirmation modal
+  showDeleteImageConfirmation = signal(false);
+  imageToDelete = signal<string | null>(null);
 
   categoriesApiUrl = `${environment.apiUrl}/api/catalog/Categories`;
 
@@ -310,11 +316,16 @@ export class ProductFormComponent implements OnInit {
     this.imagePreviewUrls.set([...previews]);
   }
 
-  removeExistingImage(imageId: string): void {
-    if (!confirm('Are you sure you want to delete this image?')) {
-      return;
-    }
+  confirmRemoveExistingImage(imageId: string): void {
+    this.imageToDelete.set(imageId);
+    this.showDeleteImageConfirmation.set(true);
+  }
 
+  removeExistingImage(): void {
+    const imageId = this.imageToDelete();
+    if (!imageId) return;
+
+    this.showDeleteImageConfirmation.set(false);
     this.productService.deleteProductImage(this.productId()!, imageId).subscribe({
       next: () => {
         const images = this.existingImages().filter(img => img.id !== imageId);
@@ -325,6 +336,11 @@ export class ProductFormComponent implements OnInit {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
+  }
+
+  cancelDeleteImage(): void {
+    this.showDeleteImageConfirmation.set(false);
+    this.imageToDelete.set(null);
   }
 
   setPrimaryNewImage(index: number): void {

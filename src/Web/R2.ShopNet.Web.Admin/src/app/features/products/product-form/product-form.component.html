@@ -207,7 +207,7 @@
                                     title="Set as primary image">
                                     <app-icon name="star" [size]="20" [filled]="img.isPrimary"></app-icon>
                                 </button>
-                                <button type="button" (click)="removeExistingImage(img.id)"
+                                <button type="button" (click)="confirmRemoveExistingImage(img.id)"
                                     class="absolute end-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-error-500 text-white shadow-lg hover:bg-error-600">
                                     <app-icon name="close" [size]="20"></app-icon>
                                 </button>
@@ -311,3 +311,15 @@
         </div>
     </form>
 </div>
+
+<!-- Confirmation Modal -->
+<app-confirmation-modal
+    [isOpen]="showDeleteImageConfirmation()"
+    title="Delete Image"
+    message="Are you sure you want to delete this image?<br>This action cannot be undone."
+    confirmText="Delete"
+    cancelText="Cancel"
+    confirmButtonType="danger"
+    (confirm)="removeExistingImage()"
+    (cancel)="cancelDeleteImage()">
+</app-confirmation-modal>

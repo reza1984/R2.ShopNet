@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { ButtonComponent } from '../../../components/forms/button/button.component';
 import { IconComponent } from '../../../components/icon/icon.component';
 import { AlertComponent } from '../../../components/ui/alert/alert.component';
+import { ConfirmationModalComponent } from '../../../components/ui/confirmation-modal/confirmation-modal.component';
 
 @Component({
 	selector: 'app-category-list',
@@ -14,7 +15,8 @@ import { AlertComponent } from '../../../components/ui/alert/alert.component';
 		RouterModule,
 		ButtonComponent,
 		IconComponent,
-		AlertComponent
+		AlertComponent,
+		ConfirmationModalComponent
 	]
 })
 export class CategoryListComponent implements OnInit {
@@ -28,7 +30,11 @@ export class CategoryListComponent implements OnInit {
 	parentCategoryId = signal<string | undefined>(undefined);
 	loading = signal(false);
 	errorMessage = signal<string>('');
-	
+
+	// Confirmation modal
+	showDeleteConfirmation = signal(false);
+	categoryToDelete = signal<string | null>(null);
+
 	// Expose Math to template
 	Math = Math;
 
@@ -62,9 +68,17 @@ export class CategoryListComponent implements OnInit {
 		});
 	}
 
-	deleteCategory(id: string): void {
-		if (!confirm('Delete this category?')) return;
+	confirmDeleteCategory(id: string): void {
+		this.categoryToDelete.set(id);
+		this.showDeleteConfirmation.set(true);
+	}
+
+	deleteCategory(): void {
+		const id = this.categoryToDelete();
+		if (!id) return;
+
 		this.errorMessage.set('');
+		this.showDeleteConfirmation.set(false);
 		this.categoryService.deleteCategory(id).subscribe({
 			next: () => this.loadCategories(),
 			error: (err) => {
@@ -73,6 +87,11 @@ export class CategoryListComponent implements OnInit {
 				window.scrollTo({ top: 0, behavior: 'smooth' });
 			}
 		});
+	}
+
+	cancelDelete(): void {
+		this.showDeleteConfirmation.set(false);
+		this.categoryToDelete.set(null);
 	}
 
 	onSearch(term: string): void {

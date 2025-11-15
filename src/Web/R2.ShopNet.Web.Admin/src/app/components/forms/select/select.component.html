@@ -19,41 +19,49 @@
     </button>
 
     <!-- Clear button for searchable select -->
-    <button *ngIf="clearable() && selectedValue() && !disabled()" type="button" (click)="clearValue($event)" (mousedown)="$event.preventDefault()"
+    @if (clearable() && selectedValue() && !disabled()) {
+    <button type="button" (click)="clearValue($event)" (mousedown)="$event.preventDefault()"
       class="absolute right-10 top-1/2 -translate-y-1/2 z-10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-hidden"
       tabindex="-1">
       <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
+    }
 
     <!-- Dropdown panel -->
-    <div *ngIf="isOpen()" class="absolute z-50 mt-1 w-full rounded-lg border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900 max-h-80 overflow-hidden">
+    @if (isOpen()) {
+    <div class="absolute z-50 mt-1 w-full rounded-lg border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900 max-h-80 overflow-hidden">
       <!-- Search input -->
       <div class="p-2 border-b border-gray-200 dark:border-gray-800">
         <div class="relative">
           <input
             type="text"
+            [id]="id"
             [value]="searchTerm()"
             (input)="onSearch($event)"
             (click)="$event.stopPropagation()"
             (mousedown)="$event.stopPropagation()"
             placeholder="Search..."
             class="h-10 w-full appearance-none rounded-lg border border-gray-300 bg-white px-4 py-2 pr-10 text-sm placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800" />
-          <button *ngIf="searchTerm()" type="button" (click)="clearSearch(); $event.stopPropagation()" (mousedown)="$event.preventDefault()"
+          @if (searchTerm()) {
+          <button type="button" (click)="clearSearch(); $event.stopPropagation()" (mousedown)="$event.preventDefault()"
             class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
+          }
         </div>
       </div>
 
       <!-- Options list -->
       <div class="overflow-y-auto max-h-60" (scroll)="onScroll($event)">
-        <div *ngIf="isLoading() && dynamicOptions().length === 0" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Loading...</div>
+        @if (isLoading() && dynamicOptions().length === 0) {
+        <div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Loading...</div>
+        }
+        @for (option of getAllOptions(); track trackByValue($index, option)) {
         <button
-          *ngFor="let option of getAllOptions(); trackBy: trackByValue"
           type="button"
           (click)="selectOption(option.value); $event.stopPropagation()"
           (mousedown)="$event.preventDefault()"
@@ -66,10 +74,16 @@
           [class.dark:text-gray-300]="option.value !== selectedValue()">
           {{ option.label }}
         </button>
-        <div *ngIf="getAllOptions().length === 0 && !isLoading()" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No results found</div>
-        <div *ngIf="isLoading() && dynamicOptions().length > 0" class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">Loading more...</div>
+        }
+        @if (getAllOptions().length === 0 && !isLoading()) {
+        <div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No results found</div>
+        }
+        @if (isLoading() && dynamicOptions().length > 0) {
+        <div class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">Loading more...</div>
+        }
       </div>
     </div>
+    }
   </div>
   }
 
@@ -77,7 +91,7 @@
   @if (!searchable()) {
   <div class="relative">
     <!-- Select element -->
-    <select class="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+    <select [id]="id" class="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
       [ngClass]="selectedValue() ? 'text-gray-800 dark:text-white/90' : 'text-gray-400 dark:text-gray-400'"
       [class.pr-20]="clearable() && selectedValue()"
       [class.pr-11]="!clearable() || !selectedValue()"
@@ -88,19 +102,23 @@
         {{ placeholder() }}
       </option>
       <!-- Map over options -->
-      <option *ngFor="let option of getAllOptions(); trackBy: trackByValue" [value]="option.value" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">
+      @for (option of getAllOptions(); track trackByValue($index, option)) {
+      <option [value]="option.value" class="text-gray-700 dark:bg-gray-900 dark:text-gray-400">
         {{ option.label }}
       </option>
+      }
     </select>
 
     <!-- Clear button -->
-    <button *ngIf="clearable() && selectedValue() && !disabled()" type="button" (click)="clearValue($event)" (mousedown)="$event.preventDefault()"
+    @if (clearable() && selectedValue() && !disabled()) {
+    <button type="button" (click)="clearValue($event)" (mousedown)="$event.preventDefault()"
       class="absolute right-3 top-1/2 -translate-y-1/2 z-10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-hidden"
       tabindex="-1">
       <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
+    }
   </div>
   }
 </div>

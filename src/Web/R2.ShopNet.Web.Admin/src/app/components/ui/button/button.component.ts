@@ -17,7 +17,7 @@ import { SafeHtmlPipe } from '../../../core/pipes/safe-html.pipe';
 export class ButtonComponent {
 
   @Input() size: 'sm' | 'md' = 'md';
-  @Input() variant: 'primary' | 'outline' = 'primary';
+  @Input() variant: 'primary' | 'outline' | 'danger' = 'primary'; 
   @Input() disabled = false;
   @Input() className = '';
   @Input() startIcon?: string; // SVG or icon class, or use ng-content for more flexibility
@@ -32,9 +32,13 @@ export class ButtonComponent {
   }
 
   get variantClasses(): string {
-    return this.variant === 'primary'
-      ? 'bg-brand-500 text-white shadow-theme-xs hover:bg-brand-600 disabled:bg-brand-300'
-      : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] dark:hover:text-gray-300';
+    if (this.variant === 'primary') {
+      return 'bg-brand-500 text-white shadow-theme-xs hover:bg-brand-600 disabled:bg-brand-300';
+    } else if (this.variant === 'danger') {
+      return 'bg-error-500 text-white shadow-theme-xs hover:bg-error-600 disabled:bg-error-300';
+    } else {
+      return 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] dark:hover:text-gray-300';
+    }
   }
 
   get disabledClasses(): string {

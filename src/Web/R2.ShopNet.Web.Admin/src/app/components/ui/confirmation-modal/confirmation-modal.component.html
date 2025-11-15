@@ -1,0 +1,28 @@
+<app-modal [isOpen]="isOpen" (close)="onCancel()" className="max-w-md">
+  <div class="p-6 sm:p-8">
+    <!-- Title -->
+    <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+      {{ title }}
+    </h2>
+
+    <!-- Message -->
+    <p class="mb-6 text-gray-600 dark:text-gray-400" [innerHTML]="message">
+    </p>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-3">
+      <app-button
+        [variant]="'outline'"
+        (btnClick)="onCancel()"
+      >
+        {{ cancelText }}
+      </app-button>
+      <app-button
+        [variant]="confirmButtonType"
+        (btnClick)="onConfirm()"
+      >
+        {{ confirmText }}
+      </app-button>
+    </div>
+  </div>
+</app-modal>

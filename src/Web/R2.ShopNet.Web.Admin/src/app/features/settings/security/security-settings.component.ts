@@ -5,12 +5,13 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 import { PasskeyService } from '../../../core/services/passkey.service';
 import { Passkey } from '../../../core/models/passkey.model';
+import { ConfirmationModalComponent } from '../../../components/ui/confirmation-modal/confirmation-modal.component';
 import { environment } from '../../../../environments/environment.development';
 
 @Component({
   selector: 'app-security-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ConfirmationModalComponent],
   templateUrl: './security-settings.component.html'
 })
 export class SecuritySettingsComponent implements OnInit {
@@ -38,6 +39,10 @@ export class SecuritySettingsComponent implements OnInit {
   passkeyFriendlyName = signal<string>('');
   isWebAuthnSupported = signal<boolean>(false);
   isPlatformAuthAvailable = signal<boolean>(false);
+
+  // Confirmation modal
+  showDeletePasskeyConfirmation = signal(false);
+  passkeyToDelete = signal<Passkey | null>(null);
 
   user = this.auth.currentUser;
 
@@ -224,11 +229,16 @@ export class SecuritySettingsComponent implements OnInit {
     });
   }
 
-  deletePasskey(passkey: Passkey): void {
-    if (!confirm(`Are you sure you want to remove "${passkey.deviceName}"?`)) {
-      return;
-    }
+  confirmDeletePasskey(passkey: Passkey): void {
+    this.passkeyToDelete.set(passkey);
+    this.showDeletePasskeyConfirmation.set(true);
+  }
 
+  deletePasskey(): void {
+    const passkey = this.passkeyToDelete();
+    if (!passkey) return;
+
+    this.showDeletePasskeyConfirmation.set(false);
     this.deletingPasskeyId.set(passkey.id);
     this.passkeyErrorMessage.set('');
 
@@ -248,6 +258,11 @@ export class SecuritySettingsComponent implements OnInit {
         this.passkeyErrorMessage.set('Failed to remove passkey');
       }
     });
+  }
+
+  cancelDeletePasskey(): void {
+    this.showDeletePasskeyConfirmation.set(false);
+    this.passkeyToDelete.set(null);
   }
 
   getDefaultPasskeyName(): string {

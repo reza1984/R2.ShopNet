@@ -56,12 +56,13 @@ var redis = builder.AddRedis("redis")
 //     .WithLifetime(ContainerLifetime.Persistent);
 
 var minio = builder.AddContainer("minio", "minio/minio", "latest")
-    .WithHttpEndpoint(port: 9000, targetPort: 9000, name: "api")
-    .WithHttpEndpoint(port: 9001, targetPort: 9001, name: "console")
-    .WithArgs("server", "/data", "--console-address", ":9001")
+    .WithHttpsEndpoint(port: 9000, targetPort: 9000, name: "api")
+    .WithHttpsEndpoint(port: 9001, targetPort: 9001, name: "console")
+    .WithArgs("server", "/data", "--console-address", ":9001", "--certs-dir", "/root/.minio/certs")
     .WithEnvironment("MINIO_ROOT_USER", "minioadmin")
     .WithEnvironment("MINIO_ROOT_PASSWORD", "minioadmin")
     .WithVolume("minio-data", "/data")
+    .WithBindMount("../../../.certs", "/root/.minio/certs", isReadOnly: true)
     .WithLifetime(ContainerLifetime.Persistent);
 
 // // Observability Resources
@@ -113,7 +114,13 @@ var catalogService = builder.AddProject<Projects.R2_ShopNet_Catalog_API>("catalo
     .WithReference(redis)
     // .WithReference(rabbitmq)
     .WaitFor(minio)
-    .WithEnvironment("Consul__KeyValue__Address", consul.GetEndpoint("http")); // Use localhost since Identity Service runs outside Docker
+    .WithEnvironment("Consul__KeyValue__Address", consul.GetEndpoint("http")) // Use localhost since Identity Service runs outside Docker
+    .WithEnvironment("MinIO__Endpoint", "localhost:9000")
+    .WithEnvironment("MinIO__AccessKey", "minioadmin")
+    .WithEnvironment("MinIO__SecretKey", "minioadmin")
+    .WithEnvironment("MinIO__BucketName", "product-images")
+    .WithEnvironment("MinIO__UseSSL", "true")
+    .WithEnvironment("MinIO__Region", "us-east-1");
 
 // API Gateway (YARP with Consul service discovery)
 // launchSettings.json:

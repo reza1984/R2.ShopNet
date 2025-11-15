@@ -32,9 +32,10 @@ public sealed class GetProductByIdQueryHandler : IQueryHandler<GetProductByIdQue
         {
             var repository = _unitOfWork.ReadOnlyRepository<Product>();
 
-            // First, get the product without images
+            // Get the product with all related entities including images
             var productData = await repository.AsQueryable()
                 .Include(p => p.Category)
+                .Include(p => p.Images)
                 .Include(p => p.Variants)
                 .AsNoTracking()
                 .Where(p => p.Id == query.ProductId && !p.IsDeleted)
@@ -45,11 +46,18 @@ public sealed class GetProductByIdQueryHandler : IQueryHandler<GetProductByIdQue
                 return Error.NotFound("Product.NotFound", $"Product with ID '{query.ProductId}' not found");
             }
 
-            // Get images with presigned URLs from MinIO
-            var imageMetadata = await _imageRepository.GetFilesWithUrlsAsync(
-                query.ProductId,
-                expiryMinutes: 60, // URLs valid for 60 minutes
-                cancellationToken);
+            // Generate pre-signed URLs for all images in parallel using the already-loaded data
+            var urlTasks = productData.Images.Select(async image => new
+            {
+                image.Id,
+                Url = await _imageRepository.GetDownloadUrlByObjectKeyAsync(
+                    image.ObjectKey,
+                    expiryMinutes: 60,
+                    cancellationToken)
+            }).ToList();
+
+            var urlResults = await Task.WhenAll(urlTasks);
+            var imageUrls = urlResults.ToDictionary(x => x.Id, x => x.Url);
 
             // Build the DTO with images
             var product = new ProductDto
@@ -74,18 +82,19 @@ public sealed class GetProductByIdQueryHandler : IQueryHandler<GetProductByIdQue
                 Brand = productData.Brand,
                 Weight = productData.Weight,
                 Dimensions = productData.Dimensions,
-                Images = imageMetadata
-                    .OrderBy(m => m.DisplayOrder ?? 0)
-                    .Select(m => new ProductImageDto
+                Images = productData.Images
+                    .OrderBy(img => img.DisplayOrder)
+                    .ThenBy(img => img.CreatedAt)
+                    .Select(img => new ProductImageDto
                     {
-                        Id = m.Id,
-                        Url = m.Url,
-                        FileName = m.FileName,
-                        ContentType = m.ContentType,
-                        SizeInBytes = m.SizeInBytes,
-                        AltText = m.Metadata.GetValueOrDefault("altText"),
-                        DisplayOrder = m.DisplayOrder ?? 0,
-                        IsPrimary = bool.TryParse(m.Metadata.GetValueOrDefault("isPrimary"), out var isPrimary) && isPrimary
+                        Id = img.Id,
+                        Url = imageUrls.GetValueOrDefault(img.Id, string.Empty),
+                        FileName = img.FileName,
+                        ContentType = img.ContentType,
+                        SizeInBytes = img.SizeInBytes,
+                        AltText = img.AltText,
+                        DisplayOrder = img.DisplayOrder,
+                        IsPrimary = img.IsPrimary
                     }).ToList(),
                 Variants = productData.Variants
                     .Where(v => v.IsActive)

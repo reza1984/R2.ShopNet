@@ -4,6 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { UuidHelper } from '../../../core/utils/uuid.helper';
 
 export interface Option {
   value: string;
@@ -114,6 +115,7 @@ export class SelectComponent implements ControlValueAccessor {
   private onChangeFn: (value: string) => void = () => {};
   private onTouchedFn: () => void = () => {};
 
+  id = `select-${UuidHelper.generate()}`;
   constructor() {
     // Initialize with default value or value input
     effect(() => {
