@@ -10,7 +10,7 @@ using R2.ShopNet.Framework.Events;
 using R2.ShopNet.Framework.Persistence.Storage.Abstractions;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 
-namespace R2.ShopNet.Catalog.Application.Commands.CreateCategory;
+namespace R2.ShopNet.Catalog.Application.Commands;
 
 /// <summary>
 /// Handler for creating a new category.

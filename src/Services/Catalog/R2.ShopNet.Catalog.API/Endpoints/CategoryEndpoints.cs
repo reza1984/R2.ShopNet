@@ -1,13 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using R2.ShopNet.Catalog.Application.Commands.CreateCategory;
-using R2.ShopNet.Catalog.Application.Commands.DeleteCategory;
-using R2.ShopNet.Catalog.Application.Commands.DeleteCategoryImage;
-using R2.ShopNet.Catalog.Application.Commands.UpdateCategory;
-using R2.ShopNet.Catalog.Application.Commands.UploadCategoryImage;
+using R2.ShopNet.Catalog.Application.Commands;
+using R2.ShopNet.Catalog.Application.Queries;
 using R2.ShopNet.Catalog.Application.DTOs;
-using R2.ShopNet.Catalog.Application.Queries.GetCategories;
-using R2.ShopNet.Catalog.Application.Queries.GetCategoryById;
-using R2.ShopNet.Catalog.Application.Queries.GetCategoryHierarchy;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 

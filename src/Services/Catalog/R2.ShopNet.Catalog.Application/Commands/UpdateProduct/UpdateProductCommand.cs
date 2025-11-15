@@ -2,7 +2,7 @@ using R2.ShopNet.Catalog.Application.DTOs;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 
-namespace R2.ShopNet.Catalog.Application.Commands.UpdateProduct;
+namespace R2.ShopNet.Catalog.Application.Commands;
 
 /// <summary>
 /// Command to update an existing product.
@@ -27,4 +27,5 @@ public record UpdateProductCommand(
     string? Dimensions = null,
     string? MetaTitle = null,
     string? MetaDescription = null,
-    string? MetaKeywords = null) : ICommand<Result<ProductDto>>;
+    string? MetaKeywords = null,
+    Guid? PrimaryImageId = null) : ICommand<Result<ProductDto>>;

@@ -6,7 +6,7 @@ using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Framework.Persistence.Storage.Abstractions;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 
-namespace R2.ShopNet.Catalog.Application.Commands.DeleteCategoryImage;
+namespace R2.ShopNet.Catalog.Application.Commands;
 
 /// <summary>
 /// Handler for deleting category images from MinIO and database

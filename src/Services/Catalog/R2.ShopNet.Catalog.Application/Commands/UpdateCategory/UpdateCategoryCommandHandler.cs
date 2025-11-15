@@ -7,7 +7,7 @@ using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Framework.Events;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 
-namespace R2.ShopNet.Catalog.Application.Commands.UpdateCategory;
+namespace R2.ShopNet.Catalog.Application.Commands;
 
 /// <summary>
 /// Handler for updating an existing category.

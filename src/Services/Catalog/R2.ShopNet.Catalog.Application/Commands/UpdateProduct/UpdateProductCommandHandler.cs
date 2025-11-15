@@ -9,7 +9,7 @@ using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Framework.Events;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 
-namespace R2.ShopNet.Catalog.Application.Commands.UpdateProduct;
+namespace R2.ShopNet.Catalog.Application.Commands;
 
 /// <summary>
 /// Handler for updating an existing product.
@@ -129,6 +129,28 @@ public class UpdateProductCommandHandler : ICommandHandler<UpdateProductCommand,
         // Save changes
         await productRepository.UpdateAsync(product, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Set primary image if specified
+        if (command.PrimaryImageId.HasValue)
+        {
+            var imageRepository = _unitOfWork.Repository<ProductImage>();
+            var image = await imageRepository.GetByIdAsync(command.PrimaryImageId.Value, cancellationToken);
+            if (image != null && image.ProductId == product.Id)
+            {
+                // Unmark any existing primary images
+                var existingPrimaryImages = await imageRepository.FindAsync(
+                    pi => pi.ProductId == product.Id && pi.IsPrimary,
+                    cancellationToken);
+                foreach (var existingImage in existingPrimaryImages)
+                {
+                    existingImage.UnmarkAsPrimary();
+                }
+
+                // Mark the new primary image
+                image.MarkAsPrimary();
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+        }
 
         // Publish domain event
         await _eventPublisher.Publish(

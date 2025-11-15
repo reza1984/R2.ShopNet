@@ -2,7 +2,7 @@ using R2.ShopNet.Catalog.Application.DTOs;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 
-namespace R2.ShopNet.Catalog.Application.Commands.CreateProduct;
+namespace R2.ShopNet.Catalog.Application.Commands;
 
 /// <summary>
 /// Command to create a new product.
@@ -21,4 +21,5 @@ public record CreateProductCommand(
     int ReorderLevel = 10,
     string? Brand = null,
     decimal? Weight = null,
-    string? Dimensions = null) : ICommand<Result<ProductDto>>;
+    string? Dimensions = null,
+    Guid? PrimaryImageId = null) : ICommand<Result<ProductDto>>;

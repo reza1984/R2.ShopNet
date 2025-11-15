@@ -4,7 +4,7 @@ using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.Persistence.Storage.Abstractions;
 
-namespace R2.ShopNet.Catalog.Application.Commands.UploadProductImage;
+namespace R2.ShopNet.Catalog.Application.Commands;
 
 /// <summary>
 /// Handler for uploading product images to MinIO

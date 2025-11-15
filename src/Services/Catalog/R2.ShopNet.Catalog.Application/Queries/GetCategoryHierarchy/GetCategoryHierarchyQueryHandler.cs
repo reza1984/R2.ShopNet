@@ -6,7 +6,7 @@ using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 
-namespace R2.ShopNet.Catalog.Application.Queries.GetCategoryHierarchy;
+namespace R2.ShopNet.Catalog.Application.Queries;
 
 /// <summary>
 /// Handler for GetCategoryHierarchyQuery to retrieve the full category tree structure.

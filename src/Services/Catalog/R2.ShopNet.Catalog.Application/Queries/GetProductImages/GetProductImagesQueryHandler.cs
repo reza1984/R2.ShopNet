@@ -1,10 +1,11 @@
 using Microsoft.Extensions.Logging;
+using R2.ShopNet.Catalog.Application.DTOs;
 using R2.ShopNet.Catalog.Domain.Entities;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.Persistence.Storage.Abstractions;
 
-namespace R2.ShopNet.Catalog.Application.Queries.GetProductImages;
+namespace R2.ShopNet.Catalog.Application.Queries;
 
 /// <summary>
 /// Handler for getting product images with presigned URLs
@@ -49,7 +50,6 @@ public class GetProductImagesQueryHandler : IQueryHandler<GetProductImagesQuery,
                 AltText = fm.Metadata.GetValueOrDefault("altText"),
                 DisplayOrder = fm.DisplayOrder ?? 0,
                 IsPrimary = bool.TryParse(fm.Metadata.GetValueOrDefault("isPrimary"), out var isPrimary) && isPrimary,
-                UploadedAt = fm.UploadedAt
             }).ToList();
 
             _logger.LogInformation(

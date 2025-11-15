@@ -12,29 +12,33 @@ namespace R2.ShopNet.Gateway.API.Services;
 /// </summary>
 public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisposable
 {
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<ConsulOptions> _consulOptions;
     private readonly ILogger<ConsulServiceDiscoveryProvider> _logger;
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly ConfigurationChangeTokenSource _changeTokenSource;
-    
+
     private volatile InMemoryConfig _config;
 
     public ConsulServiceDiscoveryProvider(
-        IHttpClientFactory httpClientFactory,
         IOptionsMonitor<ConsulOptions> consulOptions,
         ILogger<ConsulServiceDiscoveryProvider> logger)
     {
-        _httpClientFactory = httpClientFactory;
+        // Use a dedicated HttpClient to avoid service discovery circular dependency
+        // Do NOT use IHttpClientFactory here as it applies service discovery by default
+        _httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(10)
+        };
         _consulOptions = consulOptions;
         _logger = logger;
         _cancellationTokenSource = new CancellationTokenSource();
         _changeTokenSource = new ConfigurationChangeTokenSource();
         _config = new InMemoryConfig(new List<RouteConfig>(), new List<ClusterConfig>());
-        
+
         // Initial load
         _ = RefreshConfigurationAsync();
-        
+
         // Start background refresh
         _ = StartRefreshLoopAsync();
     }
@@ -158,15 +162,14 @@ public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisp
 
     private async Task<List<ServiceInstance>> GetHealthyServiceInstancesAsync(string serviceName)
     {
-        using var client = _httpClientFactory.CreateClient("consul");
         var consulAddress = _consulOptions.CurrentValue.Address;
         // Temporarily bypass health check requirement for testing
         var url = $"{consulAddress}/v1/health/service/{serviceName}";
 
-        _logger.LogDebug("Querying Consul for instances of {ServiceName}: {Url}", 
+        _logger.LogDebug("Querying Consul for instances of {ServiceName}: {Url}",
             serviceName, url);
 
-        var response = await client.GetAsync(url);
+        var response = await _httpClient.GetAsync(url);
         
         if (!response.IsSuccessStatusCode)
         {
@@ -231,6 +234,7 @@ public sealed class ConsulServiceDiscoveryProvider : IProxyConfigProvider, IDisp
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _changeTokenSource?.Dispose();
+        _httpClient?.Dispose();
     }
 
     private sealed class InMemoryConfig : IProxyConfig

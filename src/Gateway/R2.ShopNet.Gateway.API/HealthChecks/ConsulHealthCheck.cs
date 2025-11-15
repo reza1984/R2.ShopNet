@@ -7,18 +7,22 @@ namespace R2.ShopNet.Gateway.API.HealthChecks;
 /// <summary>
 /// Health check that verifies Consul is reachable
 /// </summary>
-public sealed class ConsulHealthCheck : IHealthCheck
+public sealed class ConsulHealthCheck : IHealthCheck, IDisposable
 {
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<ConsulOptions> _consulOptions;
     private readonly ILogger<ConsulHealthCheck> _logger;
 
     public ConsulHealthCheck(
-        IHttpClientFactory httpClientFactory,
         IOptionsMonitor<ConsulOptions> consulOptions,
         ILogger<ConsulHealthCheck> logger)
     {
-        _httpClientFactory = httpClientFactory;
+        // Use a dedicated HttpClient to avoid service discovery circular dependency
+        // Do NOT use IHttpClientFactory here as it applies service discovery by default
+        _httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(10)
+        };
         _consulOptions = consulOptions;
         _logger = logger;
     }
@@ -29,12 +33,11 @@ public sealed class ConsulHealthCheck : IHealthCheck
     {
         try
         {
-            using var client = _httpClientFactory.CreateClient("consul");
             var consulAddress = _consulOptions.CurrentValue.Address;
-            
+
             _logger.LogDebug("Checking Consul health at {ConsulAddress}", consulAddress);
-            
-            var response = await client.GetAsync(
+
+            var response = await _httpClient.GetAsync(
                 $"{consulAddress}/v1/status/leader",
                 cancellationToken);
 
@@ -56,5 +59,10 @@ public sealed class ConsulHealthCheck : IHealthCheck
             _logger.LogError(ex, "Unexpected error checking Consul health");
             return HealthCheckResult.Unhealthy("Unexpected error checking Consul", ex);
         }
+    }
+
+    public void Dispose()
+    {
+        _httpClient?.Dispose();
     }
 }

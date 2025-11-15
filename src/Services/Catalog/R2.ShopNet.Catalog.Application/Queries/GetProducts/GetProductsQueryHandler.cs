@@ -8,7 +8,7 @@ using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 using R2.ShopNet.Framework.Persistence.Storage.Abstractions;
 
-namespace R2.ShopNet.Catalog.Application.Queries.GetProducts;
+namespace R2.ShopNet.Catalog.Application.Queries;
 
 /// <summary>
 /// Handler for GetProductsQuery to retrieve paginated list of products.
@@ -144,7 +144,7 @@ public sealed class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, Re
                             SizeInBytes = m.SizeInBytes,
                             AltText = m.Metadata.GetValueOrDefault("altText"),
                             DisplayOrder = m.DisplayOrder ?? 0,
-                            IsPrimary = bool.TryParse(m.Metadata.GetValueOrDefault("isPrimary"), out var isPrimary) && isPrimary
+                            IsPrimary = bool.TryParse(m.Metadata.GetValueOrDefault("isPrimary"), out var isPrimary) && isPrimary,
                         }).ToList(),
                     Variants = p.Variants
                         .Select(v => new ProductVariantDto

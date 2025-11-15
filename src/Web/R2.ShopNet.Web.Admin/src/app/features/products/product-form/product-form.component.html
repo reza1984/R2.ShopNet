@@ -148,10 +148,11 @@
                     </div>
 
                     <!-- Status -->
-                    <div> 
+                    <div>
                         <app-label for="status">Status <span class="text-error-500">*</span></app-label>
-                        <app-select id="status" valueField="value" labelField="label" formControlName="status" [options]="productStatuses"></app-select>
-                               
+                        <app-select id="status" valueField="value" labelField="label" formControlName="status"
+                            [options]="productStatuses"></app-select>
+
                     </div>
                 </div>
             </div>
@@ -199,12 +200,16 @@
                             <div class="relative">
                                 <img [src]="img.url" [alt]="img.altText || 'Product image'"
                                     class="h-32 w-full rounded-lg border border-gray-200 object-cover dark:border-gray-800" />
-                                @if (img.isPrimary) {
-                                <span class="absolute top-2 left-2 bg-brand-500 text-white text-xs px-2 py-1 rounded">Primary</span>
-                                }
+
+                                <button type="button" (click)="setPrimaryExistingImage(img.id)" [class.text-yellow-500]="img.isPrimary"
+                                    [class.text-gray-400]="!img.isPrimary"
+                                    class="absolute -top-2 start-2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-lg hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                    title="Set as primary image">
+                                    <app-icon name="star" [size]="20" [filled]="img.isPrimary"></app-icon>
+                                </button>
                                 <button type="button" (click)="removeExistingImage(img.id)"
-                                    class="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-error-500 text-white shadow-lg hover:bg-error-600">
-                                    <app-icon name="x" [size]="16"></app-icon>
+                                    class="absolute end-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-error-500 text-white shadow-lg hover:bg-error-600">
+                                    <app-icon name="close" [size]="20"></app-icon>
                                 </button>
                             </div>
                             }
@@ -221,12 +226,18 @@
                             <div class="relative">
                                 <img [src]="preview" alt="Preview"
                                     class="h-32 w-full rounded-lg border border-gray-200 object-cover dark:border-gray-800" />
-                                @if ($index === 0 && existingImages().length === 0) {
-                                <span class="absolute top-2 left-2 bg-brand-500 text-white text-xs px-2 py-1 rounded">Primary</span>
-                                }
+
+                                <button type="button" (click)="setPrimaryNewImage($index)"
+                                    [class.text-yellow-500]="$index === (primaryNewImageIndex() ?? (existingImages().length === 0 ? 0 : null))"
+                                    [class.text-gray-400]="$index !== (primaryNewImageIndex() ?? (existingImages().length === 0 ? 0 : null))"
+                                    class="absolute -top-2 start-2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-lg hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+                                    title="Set as primary image">
+                                    <app-icon name="star" [size]="20"
+                                        [filled]="$index === (primaryNewImageIndex() ?? (existingImages().length === 0 ? 0 : null))"></app-icon>
+                                </button>
                                 <button type="button" (click)="removeNewImage($index)"
-                                    class="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-error-500 text-white shadow-lg hover:bg-error-600">
-                                    <app-icon name="x" [size]="16"></app-icon>
+                                    class="absolute end-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-error-500 text-white shadow-lg hover:bg-error-600">
+                                    <app-icon name="close" [size]="20"></app-icon>
                                 </button>
                             </div>
                             }
@@ -292,6 +303,8 @@
                     <app-button variant="secondary" size="md" type="button">Cancel</app-button>
                 </a>
                 <app-button variant="primary" size="md" type="submit" [disabled]="form.invalid || loading()">
+                    <app-icon [name]="isEdit() ? 'save' : 'add'" [size]="20" class="mr-2"></app-icon>
+
                     {{ isEdit() ? 'Update Product' : 'Create Product' }}
                 </app-button>
             </div>

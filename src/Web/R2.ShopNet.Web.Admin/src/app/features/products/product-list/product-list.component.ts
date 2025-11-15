@@ -5,6 +5,7 @@ import { ProductService, Product } from '../product.service';
 import { ButtonComponent } from '../../../components/forms/button/button.component';
 import { IconComponent } from '../../../components/icon/icon.component';
 import { AlertComponent } from '../../../components/ui/alert/alert.component';
+import { SelectComponent, Option } from '../../../components/forms/select/select.component';
 
 @Component({
   selector: 'app-product-list',
@@ -14,7 +15,8 @@ import { AlertComponent } from '../../../components/ui/alert/alert.component';
     RouterModule,
     ButtonComponent,
     IconComponent,
-    AlertComponent
+    AlertComponent,
+    SelectComponent
   ],
   templateUrl: './product-list.component.html'
 })
@@ -34,6 +36,15 @@ export class ProductListComponent implements OnInit {
   errorMessage = signal<string>('');
 
   Math = Math;
+
+  statusOptions: Option[] = [
+    { value: '', label: 'All Status' },
+    { value: 'Active', label: 'Active' },
+    { value: 'Draft', label: 'Draft' },
+    { value: 'Inactive', label: 'Inactive' },
+    { value: 'OutOfStock', label: 'Out of Stock' },
+    { value: 'Discontinued', label: 'Discontinued' }
+  ];
 
   ngOnInit(): void {
     this.loadProducts();

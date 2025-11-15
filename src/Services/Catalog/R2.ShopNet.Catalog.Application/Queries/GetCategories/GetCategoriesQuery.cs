@@ -2,7 +2,7 @@ using R2.ShopNet.Catalog.Application.DTOs;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.Common;
 
-namespace R2.ShopNet.Catalog.Application.Queries.GetCategories;
+namespace R2.ShopNet.Catalog.Application.Queries;
 
 /// <summary>
 /// Query to retrieve a paginated list of categories with optional filtering.

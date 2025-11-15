@@ -5,12 +5,10 @@ using R2.ShopNet.Framework.Configuration.Integration;
 using R2.ShopNet.Framework.Events;
 using Serilog;
 using OpenIddict.Validation.AspNetCore;
+using R2.ShopNet.Framework.Logging;
 
-// Configure Serilog
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .WriteTo.File("logs/catalog-service-.txt", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
+// Configure Serilog with R2.ShopNet defaults
+Log.Logger = LoggingConfiguration.CreateBootstrapLogger("Catalog.API");
 
 try
 {
@@ -21,8 +19,8 @@ try
     // Add key-value store (Consul) as configuration source
     builder.Configuration.AddKeyValueConfiguration("catalog/");
 
-    // Add Serilog
-    builder.Host.UseSerilog();
+    // Add Serilog with R2.ShopNet configuration
+    builder.AddSerilog("Catalog.API");
 
     builder.AddServiceDefaults();
 

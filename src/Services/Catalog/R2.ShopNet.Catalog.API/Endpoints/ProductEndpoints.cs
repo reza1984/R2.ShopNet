@@ -1,12 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using R2.ShopNet.Catalog.Application.Commands.CreateProduct;
-using R2.ShopNet.Catalog.Application.Commands.UpdateProduct;
-using R2.ShopNet.Catalog.Application.Commands.DeleteProduct;
-using R2.ShopNet.Catalog.Application.Commands.DeleteProductImage;
-using R2.ShopNet.Catalog.Application.Commands.UploadProductImage;
-using R2.ShopNet.Catalog.Application.Queries.GetProductById;
-using R2.ShopNet.Catalog.Application.Queries.GetProductImages;
-using R2.ShopNet.Catalog.Application.Queries.GetProducts;
+using R2.ShopNet.Catalog.Application.Commands;
+using R2.ShopNet.Catalog.Application.Queries;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.Common;
 
@@ -181,6 +175,26 @@ public static class Products
                 return Results.BadRequest(result.Error);
             }
             return result.Value.Success ? Results.Ok(result.Value) : Results.NotFound(result.Value);
+        });
+
+        productImages.MapPatch("/{imageId}/set-primary", async (
+            [FromServices] ICommandDispatcher commandDispatcher,
+            Guid productId,
+            Guid imageId,
+            CancellationToken cancellationToken) =>
+        {
+            var command = new SetPrimaryProductImageCommand(productId, imageId);
+            var result = await commandDispatcher.Dispatch(command, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                return result.Error.Type switch
+                {
+                    ErrorType.NotFound => Results.NotFound(result.Error),
+                    ErrorType.Validation => Results.BadRequest(result.Error),
+                    _ => Results.BadRequest(result.Error)
+                };
+            }
+            return Results.Ok(result.Value);
         });
 
         #endregion

@@ -6,7 +6,7 @@ using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 
-namespace R2.ShopNet.Catalog.Application.Queries.GetCategoryById;
+namespace R2.ShopNet.Catalog.Application.Queries;
 
 /// <summary>
 /// Handler for GetCategoryByIdQuery to retrieve a single category by ID.

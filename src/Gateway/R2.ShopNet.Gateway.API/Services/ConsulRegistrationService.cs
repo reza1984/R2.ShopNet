@@ -8,21 +8,25 @@ namespace R2.ShopNet.Gateway.API.Services;
 /// <summary>
 /// Background service that registers the gateway with Consul and deregisters on shutdown
 /// </summary>
-public sealed class ConsulRegistrationService : IHostedService
+public sealed class ConsulRegistrationService : IHostedService, IDisposable
 {
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<ConsulOptions> _consulOptions;
     private readonly IOptionsMonitor<GatewayOptions> _gatewayOptions;
     private readonly ILogger<ConsulRegistrationService> _logger;
     private string? _serviceId;
 
     public ConsulRegistrationService(
-        IHttpClientFactory httpClientFactory,
         IOptionsMonitor<ConsulOptions> consulOptions,
         IOptionsMonitor<GatewayOptions> gatewayOptions,
         ILogger<ConsulRegistrationService> logger)
     {
-        _httpClientFactory = httpClientFactory;
+        // Use a dedicated HttpClient to avoid service discovery circular dependency
+        // Do NOT use IHttpClientFactory here as it applies service discovery by default
+        _httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(10)
+        };
         _consulOptions = consulOptions;
         _gatewayOptions = gatewayOptions;
         _logger = logger;
@@ -53,17 +57,16 @@ public sealed class ConsulRegistrationService : IHostedService
                 }
             };
 
-            using var client = _httpClientFactory.CreateClient("consul");
             var json = JsonSerializer.Serialize(registration, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
+
             var url = $"{consulAddress}/v1/agent/service/register";
             _logger.LogInformation("Registering gateway with Consul: {ServiceId} at {Url}", _serviceId, url);
-            
-            var response = await client.PutAsync(url, content, cancellationToken);
+
+            var response = await _httpClient.PutAsync(url, content, cancellationToken);
             
             if (response.IsSuccessStatusCode)
             {
@@ -93,12 +96,11 @@ public sealed class ConsulRegistrationService : IHostedService
         try
         {
             var consulAddress = _consulOptions.CurrentValue.Address;
-            using var client = _httpClientFactory.CreateClient("consul");
-            
+
             var url = $"{consulAddress}/v1/agent/service/deregister/{_serviceId}";
             _logger.LogInformation("Deregistering gateway from Consul: {ServiceId}", _serviceId);
-            
-            var response = await client.PutAsync(url, null, cancellationToken);
+
+            var response = await _httpClient.PutAsync(url, null, cancellationToken);
             
             if (response.IsSuccessStatusCode)
             {
@@ -113,5 +115,10 @@ public sealed class ConsulRegistrationService : IHostedService
         {
             _logger.LogError(ex, "Error deregistering gateway from Consul");
         }
+    }
+
+    public void Dispose()
+    {
+        _httpClient?.Dispose();
     }
 }

@@ -7,7 +7,7 @@ using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 using R2.ShopNet.Framework.Persistence.Storage.Abstractions;
 
-namespace R2.ShopNet.Catalog.Application.Queries.GetProductById;
+namespace R2.ShopNet.Catalog.Application.Queries;
 
 /// <summary>
 /// Handler for GetProductByIdQuery to retrieve a single product by its ID.

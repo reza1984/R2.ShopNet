@@ -46,6 +46,7 @@ export class ProductFormComponent implements OnInit {
   selectedImages = signal<File[]>([]);
   imagePreviewUrls = signal<string[]>([]);
   existingImages = signal<any[]>([]);
+  primaryNewImageIndex = signal<number | null>(null);
 
   categoriesApiUrl = `${environment.apiUrl}/api/catalog/Categories`;
 
@@ -218,7 +219,7 @@ export class ProductFormComponent implements OnInit {
         if (this.selectedImages().length > 0) {
           this.uploadImages(product.id);
         } else {
-          this.router.navigate(['/products']);
+          this.router.navigate(['/catalog/products']);
         }
       },
       error: (err) => {
@@ -231,6 +232,7 @@ export class ProductFormComponent implements OnInit {
 
   uploadImages(productId: string): void {
     const files = this.selectedImages();
+    const primaryIndex = this.primaryNewImageIndex() ?? 0;
     let uploadedCount = 0;
 
     files.forEach((file, index) => {
@@ -239,7 +241,7 @@ export class ProductFormComponent implements OnInit {
         file,
         file.name,
         index,
-        index === 0
+        index === primaryIndex
       ).subscribe({
         next: () => {
           uploadedCount++;
@@ -320,6 +322,29 @@ export class ProductFormComponent implements OnInit {
       },
       error: (err) => {
         this.errorMessage.set(err.error?.message || 'Failed to delete image');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  }
+
+  setPrimaryNewImage(index: number): void {
+    this.primaryNewImageIndex.set(index);
+  }
+
+  setPrimaryExistingImage(imageId: string): void {
+    if (!this.productId()) return;
+
+    this.productService.setPrimaryImage(this.productId()!, imageId).subscribe({
+      next: () => {
+        // Update the existing images to reflect the new primary
+        const images = this.existingImages().map(img => ({
+          ...img,
+          isPrimary: img.id === imageId
+        }));
+        this.existingImages.set(images);
+      },
+      error: (err) => {
+        this.errorMessage.set(err.error?.message || 'Failed to set primary image');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });

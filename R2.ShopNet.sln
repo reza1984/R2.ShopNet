@@ -57,6 +57,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "R2.ShopNet.Catalog.Integrat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.ServiceDefaults", "src\Aspire\R2.ShopNet.ServiceDefaults\R2.ShopNet.ServiceDefaults.csproj", "{893F8DE0-74ED-4843-A987-C0EFF6181646}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "R2.ShopNet.Framework.Logging", "src\Framework\R2.ShopNet.Framework.Logging\R2.ShopNet.Framework.Logging.csproj", "{105603AA-8C35-4009-8BFA-8D871F0B4AFF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -307,6 +309,18 @@ Global
 		{893F8DE0-74ED-4843-A987-C0EFF6181646}.Release|x64.Build.0 = Release|Any CPU
 		{893F8DE0-74ED-4843-A987-C0EFF6181646}.Release|x86.ActiveCfg = Release|Any CPU
 		{893F8DE0-74ED-4843-A987-C0EFF6181646}.Release|x86.Build.0 = Release|Any CPU
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF}.Debug|x64.Build.0 = Debug|Any CPU
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF}.Debug|x86.Build.0 = Debug|Any CPU
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF}.Release|x64.ActiveCfg = Release|Any CPU
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF}.Release|x64.Build.0 = Release|Any CPU
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF}.Release|x86.ActiveCfg = Release|Any CPU
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -338,5 +352,6 @@ Global
 		{9B0EFCEB-3110-4E53-8E2F-6E4901D10CD2} = {C91C1CF1-1625-0789-F869-53D87D6277BA}
 		{48D2EC1D-C573-4226-8E8D-B2375E37E30B} = {C91C1CF1-1625-0789-F869-53D87D6277BA}
 		{893F8DE0-74ED-4843-A987-C0EFF6181646} = {0AC0A089-B435-98F7-DEB3-FA7281AB09B8}
+		{105603AA-8C35-4009-8BFA-8D871F0B4AFF} = {E0AD1809-C64F-3D39-45E0-E424261CE16D}
 	EndGlobalSection
 EndGlobal

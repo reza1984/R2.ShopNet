@@ -7,7 +7,7 @@ using R2.ShopNet.Framework.Events;
 using R2.ShopNet.Framework.Persistence.Auditing;
 using R2.ShopNet.Framework.Persistence.UnitOfWork;
 
-namespace R2.ShopNet.Catalog.Application.Commands.DeleteProduct;
+namespace R2.ShopNet.Catalog.Application.Commands;
 
 /// <summary>
 /// Handler for deleting a product (soft delete).

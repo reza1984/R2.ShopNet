@@ -33,22 +33,6 @@ try
     builder.Services.Configure<GatewayOptions>(
         builder.Configuration.GetSection(GatewayOptions.SectionName));
 
-    // Add Aspire service discovery
-    builder.Services.AddServiceDiscovery();
-    
-    // Configure HTTP client to use service discovery
-    builder.Services.ConfigureHttpClientDefaults(http =>
-    {
-        http.AddStandardResilienceHandler();
-        http.AddServiceDiscovery();
-    });
-
-    // Add HTTP client for Consul
-    builder.Services.AddHttpClient("consul", client =>
-    {
-        client.Timeout = TimeSpan.FromSeconds(10);
-    });
-
     // Add YARP reverse proxy with Consul service discovery
     // Register Consul service discovery provider BEFORE AddReverseProxy
     builder.Services.AddSingleton<ConsulServiceDiscoveryProvider>();

@@ -173,4 +173,11 @@ export class ProductService {
   deleteProductImage(productId: string, imageId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${productId}/images/${imageId}`);
   }
+
+  setPrimaryImage(productId: string, imageId: string): Observable<boolean> {
+    return this.http.patch<boolean>(
+      `${this.baseUrl}/${productId}/images/${imageId}/set-primary`,
+      {}
+    );
+  }
 }

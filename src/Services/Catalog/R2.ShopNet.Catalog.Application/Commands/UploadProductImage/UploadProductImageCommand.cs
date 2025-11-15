@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 
-namespace R2.ShopNet.Catalog.Application.Commands.UploadProductImage;
+namespace R2.ShopNet.Catalog.Application.Commands;
 
 /// <summary>
 /// Command to upload a product image to MinIO storage

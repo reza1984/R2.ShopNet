@@ -22,12 +22,10 @@ using R2.ShopNet.Identity.Infrastructure.Events;
 using R2.ShopNet.Identity.Infrastructure.Persistence;
 using R2.ShopNet.Identity.Infrastructure.Seed;
 using Serilog;
+using R2.ShopNet.Framework.Logging;
 
-// Configure Serilog
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .WriteTo.File("logs/identity-service-.txt", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
+// Configure Serilog with R2.ShopNet defaults
+Log.Logger = LoggingConfiguration.CreateBootstrapLogger("Identity.API");
 
 try
 {
@@ -39,8 +37,8 @@ try
     // This integrates Consul KV directly into IConfiguration
     builder.Configuration.AddKeyValueConfiguration("identity/");
 
-    // Add Serilog
-    builder.Host.UseSerilog();
+    // Add Serilog with R2.ShopNet configuration
+    builder.AddSerilog("Identity.API");
 
     builder.AddServiceDefaults();
 

@@ -22,5 +22,6 @@
     <ProjectReference Include="..\R2.ShopNet.Identity.Infrastructure\R2.ShopNet.Identity.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Framework\R2.ShopNet.Framework.ServiceDiscovery\R2.ShopNet.Framework.ServiceDiscovery.csproj" />
     <ProjectReference Include="..\..\..\Framework\R2.ShopNet.Framework.Configuration\R2.ShopNet.Framework.Configuration.csproj" />
+    <ProjectReference Include="..\..\..\Framework\R2.ShopNet.Framework.Logging\R2.ShopNet.Framework.Logging.csproj" />
   </ItemGroup>
 </Project>
