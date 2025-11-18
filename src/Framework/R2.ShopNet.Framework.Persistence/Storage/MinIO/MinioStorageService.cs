@@ -51,12 +51,20 @@ public class MinioStorageService : IObjectStorageService
         {
             await EnsureBucketExistsAsync(cancellationToken);
 
+            var metadata = new Dictionary<string, string>
+            {
+                // Cache images for 1 year (31536000 seconds)
+                // Images are immutable (unique filenames with GUIDs)
+                { "Cache-Control", "public, max-age=31536000, immutable" }
+            };
+
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(_bucketName)
                 .WithObject(objectKey)
                 .WithStreamData(fileStream)
                 .WithObjectSize(fileStream.Length)
-                .WithContentType(contentType);
+                .WithContentType(contentType)
+                .WithHeaders(metadata);
 
             await _minioClient.PutObjectAsync(putObjectArgs, cancellationToken);
 
