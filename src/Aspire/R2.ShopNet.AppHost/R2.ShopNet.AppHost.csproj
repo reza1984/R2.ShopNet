@@ -18,5 +18,6 @@
     <ProjectReference Include="../../Services/Catalog/R2.ShopNet.Catalog.API/R2.ShopNet.Catalog.API.csproj" />
     <ProjectReference Include="../../Services/Identity/R2.ShopNet.Identity.API/R2.ShopNet.Identity.API.csproj" />
     <ProjectReference Include="../../Gateway/R2.ShopNet.Gateway.API/R2.ShopNet.Gateway.API.csproj" />
+    <ProjectReference Include="..\..\Web\R2.ShopNet.Web.Portal\R2.ShopNet.Web.Portal.csproj" />
   </ItemGroup>
 </Project>

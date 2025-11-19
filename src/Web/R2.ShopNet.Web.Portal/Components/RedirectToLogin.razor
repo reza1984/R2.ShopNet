@@ -1,0 +1,10 @@
+@inject NavigationManager Navigation
+
+@code {
+    protected override void OnInitialized()
+    {
+        // This will trigger the OIDC authentication flow
+        var returnUrl = Uri.EscapeDataString(Navigation.Uri);
+        Navigation.NavigateTo($"/login?returnUrl={returnUrl}", forceLoad: true);
+    }
+}

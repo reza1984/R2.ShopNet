@@ -138,6 +138,77 @@ public class OpenIddictSeeder
             _logger.LogInformation("Created client: customer-web");
         }
 
+        // Blazor Portal Application (Authorization Code Flow with PKCE)
+        var blazorPortalClient = await _applicationManager.FindByClientIdAsync("blazor-portal");
+        var blazorPortalDescriptor = new OpenIddictApplicationDescriptor
+        {
+            ClientId = "blazor-portal",
+            ClientSecret = "portal-secret-change-in-production", // TODO: Change in production
+            DisplayName = "R2.ShopNet Blazor Portal",
+            ClientType = ClientTypes.Confidential, // Confidential client with secret
+            ConsentType = ConsentTypes.Implicit, // No consent required for first-party app
+            Permissions =
+            {
+                // Authorization Code Flow endpoints
+                Permissions.Endpoints.Authorization,
+                Permissions.Endpoints.Token,
+                Permissions.Endpoints.Logout,
+
+                // Grant types
+                Permissions.GrantTypes.AuthorizationCode,
+                Permissions.GrantTypes.RefreshToken,
+
+                // Scopes
+                Permissions.Prefixes.Scope + "openid",
+                Permissions.Scopes.Email,
+                Permissions.Scopes.Profile,
+                Permissions.Scopes.Roles,
+                Permissions.Prefixes.Scope + "api",
+
+                // Response types
+                Permissions.ResponseTypes.Code
+            },
+            Requirements =
+            {
+                Requirements.Features.ProofKeyForCodeExchange // Require PKCE for security
+            },
+            RedirectUris =
+            {
+                new Uri("https://localhost:5007/signin-oidc"), // Development
+                new Uri("https://portal.shopnet.com/signin-oidc") // Production
+            },
+            PostLogoutRedirectUris =
+            {
+                new Uri("https://localhost:5007/signout-callback-oidc"), // Development
+                new Uri("https://localhost:5007/"), // Development root
+                new Uri("https://portal.shopnet.com/signout-callback-oidc"), // Production
+                new Uri("https://portal.shopnet.com/") // Production root
+            }
+        };
+
+        _logger.LogInformation("Registering/updating blazor-portal client:");
+        _logger.LogInformation("  RedirectUris:");
+        foreach (var uri in blazorPortalDescriptor.RedirectUris)
+        {
+            _logger.LogInformation("    - {RedirectUri}", uri);
+        }
+        _logger.LogInformation("  PostLogoutRedirectUris:");
+        foreach (var uri in blazorPortalDescriptor.PostLogoutRedirectUris)
+        {
+            _logger.LogInformation("    - {PostLogoutRedirectUri}", uri);
+        }
+
+        if (blazorPortalClient is null)
+        {
+            await _applicationManager.CreateAsync(blazorPortalDescriptor);
+            _logger.LogInformation("Created client: blazor-portal");
+        }
+        else
+        {
+            await _applicationManager.UpdateAsync(blazorPortalClient, blazorPortalDescriptor);
+            _logger.LogInformation("Updated client: blazor-portal");
+        }
+
         // Mobile Application Client (for future use)
         if (await _applicationManager.FindByClientIdAsync("mobile-app") is null)
         {

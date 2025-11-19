@@ -149,4 +149,13 @@ var adminPortal = builder.AddJavaScriptApp("admin-portal", "../../Web/R2.ShopNet
     .WithNpm(install: true)
     .WithRunScript("start");
 
+// Blazor Portal (Customer-facing portal)
+// launchSettings.json:
+//   - https: https://localhost:5007
+// Uses OpenID Connect with Authorization Code Flow + PKCE for authentication
+var blazorPortal = builder.AddProject<Projects.R2_ShopNet_Web_Portal>("blazor-portal", "https")
+    .WaitFor(identityService)
+    .WaitFor(gateway)
+    .WithExternalHttpEndpoints();
+
 builder.Build().Run();

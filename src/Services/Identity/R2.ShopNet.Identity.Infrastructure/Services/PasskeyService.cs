@@ -788,7 +788,26 @@ public class PasskeyService : IPasskeyService
                 }
             });
 
-            return ecdsa.VerifyData(signedData, signature, HashAlgorithmName.SHA256);
+            // Hash the signed data first
+            var hash = SHA256.HashData(signedData);
+
+            // WebAuthn ES256 signatures can be in either DER or raw format depending on the authenticator
+            // Chrome/macOS typically uses DER format (70-72 bytes), while some others use raw format (64 bytes)
+            byte[] rawSignature;
+
+            if (signature.Length == 64)
+            {
+                // Already in raw format (r || s)
+                rawSignature = signature;
+            }
+            else
+            {
+                // Likely DER format, need to convert to raw
+                rawSignature = ConvertDerToRawSignature(signature);
+            }
+
+            // VerifyHash expects the signature in IEEE P1363 format (which is the raw r||s format)
+            return ecdsa.VerifyHash(hash, rawSignature, DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
         }
         catch (Exception ex)
         {
@@ -830,6 +849,99 @@ public class PasskeyService : IPasskeyService
         // EdDSA is not natively supported in .NET, would need a library like BouncyCastle
         _logger.LogWarning("EdDSA signature verification not implemented");
         return false;
+    }
+
+    /// <summary>
+    /// Convert DER-encoded ECDSA signature to raw format (r || s)
+    /// DER format: 0x30 [total-length] 0x02 [r-length] [r] 0x02 [s-length] [s]
+    /// Raw format: [r (32 bytes)] [s (32 bytes)]
+    /// </summary>
+    private byte[] ConvertDerToRawSignature(byte[] derSignature)
+    {
+        try
+        {
+            if (derSignature.Length < 8 || derSignature[0] != 0x30)
+            {
+                _logger.LogWarning("Invalid DER signature format");
+                return derSignature; // Return as-is if not valid DER
+            }
+
+            var offset = 2; // Skip 0x30 and total length
+
+            // Read r
+            if (derSignature[offset] != 0x02)
+            {
+                _logger.LogWarning("Invalid DER signature: expected INTEGER tag for r");
+                return derSignature;
+            }
+            offset++;
+
+            var rLength = derSignature[offset];
+            offset++;
+
+            var r = derSignature[offset..(offset + rLength)];
+            offset += rLength;
+
+            // Read s
+            if (derSignature[offset] != 0x02)
+            {
+                _logger.LogWarning("Invalid DER signature: expected INTEGER tag for s");
+                return derSignature;
+            }
+            offset++;
+
+            var sLength = derSignature[offset];
+            offset++;
+
+            var s = derSignature[offset..(offset + sLength)];
+
+            // DER integers may have a leading 0x00 byte if the high bit is set (to indicate positive)
+            // Remove it for raw format
+            r = RemoveLeadingZero(r);
+            s = RemoveLeadingZero(s);
+
+            // Ensure both r and s are exactly 32 bytes (pad with leading zeros if needed)
+            var rawR = PadTo32Bytes(r);
+            var rawS = PadTo32Bytes(s);
+
+            // Concatenate r and s
+            var rawSignature = new byte[64];
+            Buffer.BlockCopy(rawR, 0, rawSignature, 0, 32);
+            Buffer.BlockCopy(rawS, 0, rawSignature, 32, 32);
+
+            return rawSignature;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to convert DER signature to raw format");
+            return derSignature; // Return as-is on error
+        }
+    }
+
+    private byte[] RemoveLeadingZero(byte[] data)
+    {
+        if (data.Length > 32 && data[0] == 0x00)
+        {
+            return data[1..];
+        }
+        return data;
+    }
+
+    private byte[] PadTo32Bytes(byte[] data)
+    {
+        if (data.Length == 32)
+            return data;
+
+        if (data.Length > 32)
+        {
+            _logger.LogWarning("Data length {Length} exceeds 32 bytes", data.Length);
+            return data[^32..]; // Take last 32 bytes
+        }
+
+        // Pad with leading zeros
+        var padded = new byte[32];
+        Buffer.BlockCopy(data, 0, padded, 32 - data.Length, data.Length);
+        return padded;
     }
 
     #endregion

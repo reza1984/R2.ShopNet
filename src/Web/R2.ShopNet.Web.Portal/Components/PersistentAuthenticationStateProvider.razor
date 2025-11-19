@@ -1,0 +1,82 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject PersistentComponentState PersistentState
+@implements IDisposable
+
+<CascadingAuthenticationState>
+    @ChildContent
+</CascadingAuthenticationState>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private PersistingComponentStateSubscription? _subscription;
+
+    protected override Task OnInitializedAsync()
+    {
+        _subscription = PersistentState.RegisterOnPersisting(PersistAuthenticationState, RenderMode.InteractiveWebAssembly);
+        return Task.CompletedTask;
+    }
+
+    private async Task PersistAuthenticationState()
+    {
+        if (AuthenticationState == null)
+        {
+            return;
+        }
+
+        var authenticationState = await AuthenticationState;
+        var user = authenticationState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            PersistentState.PersistAsJson(nameof(UserInfo), UserInfo.FromClaimsPrincipal(user));
+        }
+    }
+
+    public void Dispose()
+    {
+        _subscription?.Dispose();
+    }
+
+    private class UserInfo
+    {
+        public required string UserId { get; set; }
+        public required string Email { get; set; }
+        public required string Name { get; set; }
+        public required IEnumerable<string> Roles { get; set; }
+        public required Dictionary<string, string> Claims { get; set; }
+
+        public static UserInfo FromClaimsPrincipal(ClaimsPrincipal principal)
+        {
+            return new UserInfo
+            {
+                UserId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty,
+                Email = principal.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty,
+                Name = principal.FindFirst(ClaimTypes.Name)?.Value ?? principal.FindFirst("name")?.Value ?? string.Empty,
+                Roles = principal.FindAll(ClaimTypes.Role).Select(c => c.Value).ToArray(),
+                Claims = principal.Claims
+                    .Where(c => c.Type != ClaimTypes.NameIdentifier)
+                    .GroupBy(c => c.Type)
+                    .ToDictionary(g => g.Key, g => g.First().Value)
+            };
+        }
+
+        public ClaimsPrincipal ToClaimsPrincipal()
+        {
+            var identity = new ClaimsIdentity(
+                Claims.Select(kvp => new Claim(kvp.Key, kvp.Value))
+                    .Concat(Roles.Select(role => new Claim(ClaimTypes.Role, role)))
+                    .Append(new Claim(ClaimTypes.NameIdentifier, UserId)),
+                authenticationType: "PersistentAuthenticationState",
+                nameType: ClaimTypes.Name,
+                roleType: ClaimTypes.Role);
+
+            return new ClaimsPrincipal(identity);
+        }
+    }
+}

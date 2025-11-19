@@ -1,0 +1,44 @@
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView>
+    <Authorized>
+        <div class="user-info">
+            <span class="user-name">Hello, @context.User.Identity?.Name!</span>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <a href="/login" class="btn-login">Login</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+<style>
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .user-name {
+        font-size: 14px;
+        color: #374151;
+    }
+
+    .btn-logout,
+    .btn-login {
+        padding: 8px 16px;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+
+    .btn-logout:hover,
+    .btn-login:hover {
+        background: #5568d3;
+        color: white;
+    }
+</style>

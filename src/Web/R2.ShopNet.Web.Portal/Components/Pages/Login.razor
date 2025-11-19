@@ -1,0 +1,34 @@
+@page "/login"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.OpenIdConnect
+@inject NavigationManager Navigation
+
+<PageTitle>Signing in...</PageTitle>
+
+<div style="text-align: center; margin-top: 100px;">
+    <h3>Redirecting to login...</h3>
+    <p>Please wait while we redirect you to the authentication page.</p>
+</div>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpContext is not null)
+        {
+            // Trigger OIDC challenge
+            await HttpContext.ChallengeAsync(
+                OpenIdConnectDefaults.AuthenticationScheme,
+                new AuthenticationProperties
+                {
+                    RedirectUri = ReturnUrl ?? "/"
+                });
+        }
+    }
+}

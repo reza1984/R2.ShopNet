@@ -45,6 +45,8 @@ try
     // Add services to the container
     builder.Services.AddHealthChecks();
     builder.Services.AddControllers();
+    builder.Services.AddControllersWithViews();  // Add MVC for authorization UI
+    builder.Services.AddRazorPages();             // Add Razor Pages for login UI
     builder.Services.AddEndpointsApiExplorer();
 
     // Add Redis distributed cache for passkey challenge storage
@@ -116,10 +118,33 @@ try
     });
 
     // Configure Authentication to use OpenIddict validation as the default scheme
+    // Also add Cookie authentication for authorization flow login page
     builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+    })
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.LoginPath = "/account/login";
+        options.LogoutPath = "/account/logout";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+        options.SlidingExpiration = true;
+        options.Cookie.Name = "R2.ShopNet.Identity";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+
+        // Ensure proper redirect on challenge (not 401)
+        options.Events = new Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents
+        {
+            OnRedirectToLogin = context =>
+            {
+                Console.WriteLine($"Cookie Auth: Redirecting to login: {context.RedirectUri}");
+                context.Response.Redirect(context.RedirectUri);
+                return Task.CompletedTask;
+            }
+        };
     });
 
     // Register Consul KV Store for Configuration
@@ -146,18 +171,33 @@ try
         // Register the OpenIddict server components
         .AddServer(options =>
         {
-            // Enable the token endpoint (required for Resource Owner Password flow)
-            options.SetTokenEndpointUris("/connect/token");
-            // Enable the OIDC logout endpoint
-            options.SetLogoutEndpointUris("/connect/endsession");
+            // Enable endpoints for both password flow (Angular) and authorization code flow (Blazor)
+            options.SetAuthorizationEndpointUris("/connect/authorize")
+                   .SetTokenEndpointUris("/connect/token")
+                   .SetUserinfoEndpointUris("/connect/userinfo")
+                   .SetLogoutEndpointUris("/connect/endsession");
 
-            // Enable the Resource Owner Password Credentials flow (for login in Angular)
-         options.AllowPasswordFlow()
-             .AllowRefreshTokenFlow()
-             .AllowCustomFlow("urn:ietf:params:oauth:grant-type:passkey");
+            // Enable flows: Authorization Code (Blazor), Password (Angular), Refresh Token, Custom Passkey
+            options.AllowAuthorizationCodeFlow()
+                   .AllowPasswordFlow()
+                   .AllowRefreshTokenFlow()
+                   .AllowCustomFlow("urn:ietf:params:oauth:grant-type:passkey");
 
-            // Accept anonymous clients (clients without a client_secret)
+            // Require PKCE for public clients (enhanced security for authorization code flow)
+            options.RequireProofKeyForCodeExchange();
+
+            // Accept anonymous clients for backward compatibility (Angular uses anonymous)
+            // Blazor portal will use confidential client with secret
             options.AcceptAnonymousClients();
+
+            // Register scopes
+            options.RegisterScopes(
+                OpenIddictConstants.Scopes.OpenId,
+                OpenIddictConstants.Scopes.Profile,
+                OpenIddictConstants.Scopes.Email,
+                OpenIddictConstants.Scopes.Roles,
+                "api",
+                "admin");
 
             // Register the signing and encryption credentials
             // Note: Encryption certificate is still required by OpenIddict even when encryption is disabled
@@ -169,7 +209,9 @@ try
 
             // Register the ASP.NET Core host and configure options
             options.UseAspNetCore()
+                   .EnableAuthorizationEndpointPassthrough()
                    .EnableTokenEndpointPassthrough()
+                   .EnableUserinfoEndpointPassthrough()
                    .EnableLogoutEndpointPassthrough()
                    .DisableTransportSecurityRequirement(); // Only for development!
 
@@ -216,10 +258,15 @@ try
     {
         options.AddPolicy("AllowAll", policy =>
         {
-            policy.WithOrigins("http://localhost:4200", "https://localhost:4200", "https://localhost:5000")
-                  .AllowAnyMethod()
-                  .AllowAnyHeader()
-                  .AllowCredentials();
+            policy.WithOrigins(
+                "http://localhost:4200",   // Angular admin (dev)
+                "https://localhost:4200",  // Angular admin (SSL)
+                "https://localhost:5000",  // Gateway
+                "https://localhost:5007"   // Blazor portal (NEW)
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
         });
     });
 
@@ -275,8 +322,59 @@ try
 
     app.UseSerilogRequestLogging();
 
+    // Add detailed request logging middleware for debugging
+    app.Use(async (context, next) =>
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+
+        // Also log to console for immediate visibility
+        Console.WriteLine($"=== Incoming Request ===");
+        Console.WriteLine($"Method: {context.Request.Method}");
+        Console.WriteLine($"Path: {context.Request.Path}");
+        Console.WriteLine($"QueryString: {context.Request.QueryString}");
+        Console.WriteLine($"Scheme: {context.Request.Scheme}");
+        Console.WriteLine($"Host: {context.Request.Host}");
+
+        logger.LogInformation("=== Incoming Request ===");
+        logger.LogInformation("Method: {Method}", context.Request.Method);
+        logger.LogInformation("Path: {Path}", context.Request.Path);
+        logger.LogInformation("QueryString: {QueryString}", context.Request.QueryString);
+        logger.LogInformation("Scheme: {Scheme}", context.Request.Scheme);
+        logger.LogInformation("Host: {Host}", context.Request.Host);
+
+        // Log cookies
+        if (context.Request.Cookies.Any())
+        {
+            var cookieInfo = string.Join(", ", context.Request.Cookies.Select(c => $"{c.Key}=[Present]"));
+            Console.WriteLine($"Cookies: {cookieInfo}");
+            logger.LogInformation("Cookies: {Cookies}", cookieInfo);
+        }
+        else
+        {
+            Console.WriteLine("No cookies present");
+            logger.LogInformation("No cookies present");
+        }
+
+        await next();
+
+        Console.WriteLine($"Response Status: {context.Response.StatusCode}");
+        logger.LogInformation("Response Status: {StatusCode}", context.Response.StatusCode);
+
+        // Log redirect location if present
+        if (context.Response.Headers.ContainsKey("Location"))
+        {
+            Console.WriteLine($"Redirect Location: {context.Response.Headers["Location"]}");
+            logger.LogInformation("Redirect Location: {Location}", context.Response.Headers["Location"]);
+        }
+
+        Console.WriteLine(); // Empty line for readability
+    });
+
     // Redirect HTTP to HTTPS
     app.UseHttpsRedirection();
+
+    // Enable static files (required for wwwroot folder - CSS, JS, images)
+    app.UseStaticFiles();
 
     app.UseCors("AllowAll");
 
@@ -284,6 +382,7 @@ try
     app.UseAuthorization();
     app.MapHealthChecks("/health");
     app.MapControllers();
+    app.MapRazorPages();  // Enable Razor Pages for login UI
 
     Log.Information("Identity Service started successfully");
 

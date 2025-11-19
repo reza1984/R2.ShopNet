@@ -1,0 +1,124 @@
+@page "/"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Home - R2.ShopNet Portal</PageTitle>
+
+<h1>Welcome to R2.ShopNet Portal</h1>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="welcome-message">
+            <p class="greeting">Hello, <strong>@context.User.Identity?.Name</strong>!</p>
+            <p>You are successfully authenticated via OpenID Connect with passkey support.</p>
+        </div>
+
+        <div class="info-section">
+            <h2>Render Mode: Interactive Server (SSR + SignalR)</h2>
+            <p>This page uses the Interactive Server render mode, which provides:</p>
+            <ul>
+                <li>✅ Pre-rendered on server (fast initial load)</li>
+                <li>✅ Interactive via SignalR (immediate interactivity)</li>
+                <li>✅ Server-side processing (secure authentication state)</li>
+            </ul>
+
+            <h2>Your Claims:</h2>
+            <div class="claims-list">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var claim in context.User.Claims)
+                        {
+                            <tr>
+                                <td><strong>@claim.Type</strong></td>
+                                <td>@claim.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authenticated. Please <a href="/login">login</a>.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+<style>
+    .welcome-message {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+    }
+
+    .greeting {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .info-section {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-section h2 {
+        color: #667eea;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        font-size: 20px;
+    }
+
+    .info-section h2:first-child {
+        margin-top: 0;
+    }
+
+    .info-section ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .info-section ul li {
+        padding: 8px 0;
+        font-size: 16px;
+    }
+
+    .claims-list {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+    }
+
+    .table {
+        margin: 0;
+    }
+
+    .table thead {
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 1;
+    }
+
+    .table th {
+        background: #f3f4f6;
+        font-weight: 600;
+        padding: 12px;
+    }
+
+    .table td {
+        padding: 10px 12px;
+        word-break: break-all;
+    }
+</style>

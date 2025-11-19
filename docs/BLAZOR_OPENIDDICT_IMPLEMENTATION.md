@@ -1,9 +1,9 @@
 # Blazor + OpenIddict Implementation Guide
 ## Authorization Code Flow with PKCE and Passkey Support
 
-**Document Version:** 1.0
-**Last Updated:** 2025-01-19
-**Status:** Implementation Guide
+**Document Version:** 2.0
+**Last Updated:** 2025-11-19
+**Status:** Implementation Guide (.NET 10)
 
 ---
 
@@ -24,7 +24,7 @@
 
 ## Executive Summary
 
-This document provides a comprehensive guide for implementing **OAuth 2.0 Authorization Code Flow with PKCE (Proof Key for Code Exchange)** and **WebAuthn Passkey support** in the R2.ShopNet Identity Server, enabling secure authentication for Blazor Server applications.
+This document provides a comprehensive guide for implementing **OAuth 2.0 Authorization Code Flow with PKCE (Proof Key for Code Exchange)** and **WebAuthn Passkey support** in the R2.ShopNet Identity Server, enabling secure authentication for Blazor Server applications using **.NET 10**.
 
 ### Goals
 
@@ -33,6 +33,7 @@ This document provides a comprehensive guide for implementing **OAuth 2.0 Author
 - ✅ Enable secure authentication for Blazor Server applications
 - ✅ Follow security best practices (PKCE, HTTPS, secure token handling)
 - ✅ Maintain existing passkey infrastructure
+- ✅ Leverage .NET 10 performance and security improvements
 
 ### Key Benefits
 
@@ -41,6 +42,14 @@ This document provides a comprehensive guide for implementing **OAuth 2.0 Author
 3. **Standards Compliance**: Full OAuth 2.0 and OpenID Connect support
 4. **Flexibility**: Works with multiple client types (Blazor, Angular, mobile)
 5. **Production Ready**: Battle-tested authentication patterns
+6. **.NET 10 Performance**: Benefits from latest runtime optimizations and security features
+7. **SSR + WebAssembly Architecture**:
+   - **Fast Initial Load**: Static SSR pre-renders content (< 100ms)
+   - **Immediate Interactivity**: SignalR enables real-time features instantly
+   - **Rich Client Experience**: WebAssembly provides offline-capable, responsive UI
+   - **Progressive Enhancement**: Gracefully upgrades from static → server → WASM
+   - **SEO-Friendly**: Server-rendered content is indexable by search engines
+   - **Best of Both Worlds**: Server for security-critical operations, WASM for UX
 
 ---
 
@@ -137,38 +146,150 @@ sequenceDiagram
     Identity->>Browser: Return authorization code
 ```
 
+### Blazor SSR + WebAssembly Rendering Flow
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant Server as Blazor Server
+    participant WASM as WebAssembly Runtime
+
+    Note over Browser,WASM: Phase 1: Static SSR (0-100ms)
+    Browser->>Server: GET /
+    Server->>Server: Pre-render component (SSR)
+    Server->>Browser: HTML + CSS (static content)
+    Browser->>Browser: Display page instantly
+
+    Note over Browser,WASM: Phase 2: Server Interactivity (100-500ms)
+    Browser->>Server: Establish SignalR connection
+    Server->>Browser: Component now interactive
+    Browser->>Browser: Enable buttons, forms, events
+
+    Note over Browser,WASM: Phase 3: WebAssembly Download (Background)
+    Browser->>Server: Download WebAssembly runtime
+    Server->>Browser: .NET WASM + DLLs
+    Browser->>WASM: Initialize WebAssembly
+    WASM->>Browser: Ready for client-side rendering
+
+    Note over Browser,WASM: Phase 4: Client-Side Mode (After WASM loaded)
+    Browser->>WASM: User interaction
+    WASM->>WASM: Process locally (no server round-trip)
+    WASM->>Browser: Update UI instantly
+```
+
+---
+
+## .NET 10 Improvements & Compatibility
+
+### What's New in .NET 10
+
+This implementation leverages the following .NET 10 improvements:
+
+1. **Enhanced Performance**
+   - Improved JIT compiler optimizations
+   - Reduced memory allocations in ASP.NET Core
+   - Faster JSON serialization for token handling
+   - Better startup time for Blazor Server applications
+
+2. **Security Enhancements**
+   - Updated cryptographic libraries
+   - Improved TLS 1.3 support
+   - Enhanced certificate validation
+   - Better security defaults for cookies and authentication
+
+3. **Developer Experience**
+   - Improved diagnostics and error messages
+   - Better async/await performance
+   - Enhanced debugging capabilities
+   - Streamlined dependency injection
+
+4. **Blazor Improvements**
+   - Better SignalR performance for server-side rendering
+   - Improved component lifecycle management
+   - Enhanced streaming rendering capabilities
+   - Reduced payload sizes
+   - **New: Auto render mode** - Seamlessly transitions from SSR → Server → WebAssembly
+   - **New: Per-component render mode** - Mix static, server, and WASM in one app
+
+### Package Compatibility Matrix
+
+| Package | .NET 10 Version | Notes |
+|---------|----------------|-------|
+| OpenIddict.AspNetCore | 6.0.0+ | Full .NET 10 support with latest OpenID Connect specs |
+| OpenIddict.EntityFrameworkCore | 6.0.0+ | Compatible with EF Core 10.0 |
+| Microsoft.AspNetCore.Authentication.OpenIdConnect | 10.0.0 | Built-in .NET 10 package |
+| Microsoft.AspNetCore.Authentication.Cookies | 10.0.0 | Built-in .NET 10 package |
+| Microsoft.EntityFrameworkCore | 10.0.0 | Full .NET 10 support |
+| Npgsql.EntityFrameworkCore.PostgreSQL | 10.0.0+ | PostgreSQL provider for EF Core 10 |
+
+### Migration from .NET 9 to .NET 10
+
+If you're upgrading from .NET 9:
+
+1. **Update Target Framework**
+   ```xml
+   <TargetFramework>net10.0</TargetFramework>
+   ```
+
+2. **Update Package References**
+   - OpenIddict: 5.8.0 → 6.0.0
+   - ASP.NET Core packages: 9.0.0 → 10.0.0
+   - Entity Framework Core: 9.0.0 → 10.0.0
+
+3. **Breaking Changes to Consider**
+   - Review OpenIddict 6.0 migration guide
+   - Check for deprecated ASP.NET Core middleware
+   - Verify EF Core migration compatibility
+
+4. **Test Thoroughly**
+   - Authentication flows still work
+   - Token validation is correct
+   - Passkey integration functions properly
+   - Database migrations apply successfully
+
 ---
 
 ## Prerequisites
 
 ### Required Software
 
-- .NET 9 SDK
+- .NET 10 SDK (latest version)
 - PostgreSQL 16+
-- Node.js 20+ (for Angular admin)
-- Modern browser with WebAuthn support
+- Node.js 20+ LTS (for Angular admin)
+- Modern browser with WebAuthn support (Chrome 90+, Edge 90+, Safari 14+, Firefox 90+)
 
 ### Required NuGet Packages
 
-**Identity Server:**
+**Identity Server (.NET 10):**
 ```xml
-<PackageReference Include="OpenIddict.AspNetCore" Version="5.8.0" />
-<PackageReference Include="OpenIddict.EntityFrameworkCore" Version="5.8.0" />
-<PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="9.0.0" />
+<PackageReference Include="OpenIddict.AspNetCore" Version="6.0.0" />
+<PackageReference Include="OpenIddict.EntityFrameworkCore" Version="6.0.0" />
+<PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="10.0.0" />
+<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
 ```
 
-**Blazor Application:**
+**Blazor Application (.NET 10):**
 ```xml
-<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.0" />
-<PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="9.0.0" />
+<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.0" />
+<PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="10.0.0" />
 ```
+
+**Note:** OpenIddict 6.0.0 is compatible with .NET 10 and includes support for the latest OpenID Connect specifications.
 
 ### Development Certificates
 
-Ensure HTTPS certificates are trusted:
+Ensure HTTPS certificates are trusted (required for WebAuthn and OIDC):
 ```bash
+# Generate and trust development certificates
+dotnet dev-certs https --clean
 dotnet dev-certs https --trust
+
+# Verify certificate installation
+dotnet dev-certs https --check --trust
 ```
+
+**Note for macOS users:** You may need to manually trust the certificate in Keychain Access if the automatic trust fails.
 
 ---
 
@@ -203,7 +324,7 @@ dotnet dev-certs https --trust
 })
 ```
 
-**Updated Configuration:**
+**Updated Configuration (.NET 10 + OpenIddict 6.0):**
 ```csharp
 .AddServer(options =>
 {
@@ -219,7 +340,7 @@ dotnet dev-certs https --trust
            .AllowPasswordFlow() // Keep for backward compatibility if needed
            .AllowCustomFlow("urn:ietf:params:oauth:grant-type:passkey");
 
-    // Require PKCE for public clients
+    // Require PKCE for public clients (OpenIddict 6.0 enhanced PKCE support)
     options.RequireProofKeyForCodeExchange();
 
     options.RegisterScopes(
@@ -1342,38 +1463,101 @@ builder.Services.AddCors(options =>
 
 ## Phase 2: Blazor Application Setup
 
-### Step 2.1: Create Blazor Project
+### Step 2.1: Create Blazor Web App Project
 
-Run the following commands:
+Create a Blazor Web App with SSR + WebAssembly support:
 
 ```bash
 cd src/Web
-dotnet new blazor -n R2.ShopNet.Web.BlazorAdmin --interactivity Server --framework net9.0
+
+# Create the main Blazor Web App project directory
+mkdir -p R2.ShopNet.Web.BlazorAdmin
 cd R2.ShopNet.Web.BlazorAdmin
+
+# Create the server project (SSR + hosting)
+dotnet new blazor -n R2.ShopNet.Web.BlazorAdmin --interactivity Auto --framework net10.0
+
+# Create the WebAssembly client project
+dotnet new blazorwasm -n R2.ShopNet.Web.BlazorAdmin.Client --framework net10.0
+
+# Optional: Create shared project for common code
+dotnet new classlib -n R2.ShopNet.Web.BlazorAdmin.Shared --framework net10.0
 ```
 
-### Step 2.2: Install Required Packages
+**Project Structure:**
+```
+R2.ShopNet.Web.BlazorAdmin/
+├── R2.ShopNet.Web.BlazorAdmin/          # Server project (SSR + hosting)
+│   ├── Components/
+│   ├── Program.cs
+│   └── R2.ShopNet.Web.BlazorAdmin.csproj
+├── R2.ShopNet.Web.BlazorAdmin.Client/   # WebAssembly client project
+│   ├── Program.cs
+│   └── R2.ShopNet.Web.BlazorAdmin.Client.csproj
+└── R2.ShopNet.Web.BlazorAdmin.Shared/   # Shared DTOs, models (optional)
+    └── R2.ShopNet.Web.BlazorAdmin.Shared.csproj
+```
+
+**Interactivity Model:**
+- `--interactivity Auto` - Combines SSR, Server interactivity, and WebAssembly
+- SSR for initial page load (fast first render, SEO-friendly)
+- Server-side rendering with SignalR for immediate interactivity
+- WebAssembly downloads in background for rich client-side experience
+- Automatic selection of best rendering mode per component
+
+### Step 2.2: Configure Project References
+
+First, add project references to link the projects:
 
 ```bash
-dotnet add package Microsoft.AspNetCore.Authentication.OpenIdConnect --version 9.0.0
-dotnet add package Microsoft.AspNetCore.Authentication.Cookies --version 9.0.0
+# From the R2.ShopNet.Web.BlazorAdmin directory
+cd R2.ShopNet.Web.BlazorAdmin
+
+# Add reference to Client project
+dotnet add reference ../R2.ShopNet.Web.BlazorAdmin.Client/R2.ShopNet.Web.BlazorAdmin.Client.csproj
+
+# Optional: Add reference to Shared project
+dotnet add reference ../R2.ShopNet.Web.BlazorAdmin.Shared/R2.ShopNet.Web.BlazorAdmin.Shared.csproj
+
+# Add reference to Shared in Client project as well
+cd ../R2.ShopNet.Web.BlazorAdmin.Client
+dotnet add reference ../R2.ShopNet.Web.BlazorAdmin.Shared/R2.ShopNet.Web.BlazorAdmin.Shared.csproj
 ```
 
-### Step 2.3: Configure Authentication
+### Step 2.3: Install Required Packages
 
-**File:** `src/Web/R2.ShopNet.Web.BlazorAdmin/Program.cs`
+**Server Project (R2.ShopNet.Web.BlazorAdmin):**
+```bash
+cd ../R2.ShopNet.Web.BlazorAdmin
+dotnet add package Microsoft.AspNetCore.Authentication.OpenIdConnect --version 10.0.0
+dotnet add package Microsoft.AspNetCore.Authentication.Cookies --version 10.0.0
+```
+
+**Client Project (R2.ShopNet.Web.BlazorAdmin.Client):**
+```bash
+cd ../R2.ShopNet.Web.BlazorAdmin.Client
+dotnet add package Microsoft.AspNetCore.Components.WebAssembly.Authentication --version 10.0.0
+```
+
+**Note:** Authentication is handled on the server for security. The WebAssembly client will receive authentication state via cascading parameters.
+
+### Step 2.4: Configure Authentication
+
+**File:** `R2.ShopNet.Web.BlazorAdmin/R2.ShopNet.Web.BlazorAdmin/Program.cs`
 
 ```csharp
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System.IdentityModel.Tokens.Jwt;
+using R2.ShopNet.Web.BlazorAdmin.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
 
 // Configure authentication
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
@@ -1420,6 +1604,7 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters.RoleClaimType = "role";
 
     // For development: accept self-signed certificates
+    // Note: In .NET 10, prefer using dev certificates with dotnet dev-certs https --trust
     if (builder.Environment.IsDevelopment())
     {
         options.BackchannelHttpHandler = new HttpClientHandler
@@ -1450,6 +1635,11 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 
+// IMPORTANT: Authentication state persistence for SSR + WebAssembly
+// DO NOT register AuthenticationStateProvider directly on the server
+// The server uses the built-in cookie authentication
+// Authentication state is persisted via PersistentAuthenticationStateProvider component
+
 // Configure HTTPS
 builder.WebHost.UseUrls("https://localhost:7000");
 
@@ -1470,7 +1660,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(R2.ShopNet.Web.BlazorAdmin.Client._Imports).Assembly);
 
 // Add logout endpoint
 app.MapGet("/logout", async (HttpContext context) =>
@@ -1483,9 +1675,305 @@ app.MapGet("/logout", async (HttpContext context) =>
 app.Run();
 ```
 
-### Step 2.4: Update App Configuration
+### Step 2.5: Configure WebAssembly Client
 
-**File:** `src/Web/R2.ShopNet.Web.BlazorAdmin/appsettings.json`
+**File:** `R2.ShopNet.Web.BlazorAdmin/R2.ShopNet.Web.BlazorAdmin.Client/Program.cs`
+
+```csharp
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using R2.ShopNet.Web.BlazorAdmin.Client;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+// Add services for the WebAssembly client
+builder.Services.AddAuthorizationCore();
+builder.Services.AddCascadingAuthenticationState();
+
+// IMPORTANT: Register authentication state provider for WebAssembly
+// This provider reads the persisted authentication state from the server
+builder.Services.AddScoped<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
+
+// Add HTTP client for API calls
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+});
+
+await builder.Build().RunAsync();
+```
+
+**Create the PersistentAuthenticationStateProvider for WebAssembly:**
+
+**File:** `R2.ShopNet.Web.BlazorAdmin.Client/PersistentAuthenticationStateProvider.cs`
+
+```csharp
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
+using System.Security.Claims;
+
+namespace R2.ShopNet.Web.BlazorAdmin.Client;
+
+/// <summary>
+/// Authentication state provider for WebAssembly that reads persisted state from the server
+/// </summary>
+public class PersistentAuthenticationStateProvider : AuthenticationStateProvider
+{
+    private static readonly Task<AuthenticationState> _unauthenticatedTask =
+        Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
+
+    private readonly Task<AuthenticationState> _authenticationStateTask = _unauthenticatedTask;
+
+    public PersistentAuthenticationStateProvider(PersistentComponentState persistentState)
+    {
+        // Try to read the authentication state persisted by the server
+        if (!persistentState.TryTakeFromJson<UserInfo>(nameof(UserInfo), out var userInfo) || userInfo is null)
+        {
+            return;
+        }
+
+        // Reconstruct the authentication state from the persisted user info
+        _authenticationStateTask = Task.FromResult(
+            new AuthenticationState(userInfo.ToClaimsPrincipal()));
+    }
+
+    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    {
+        return _authenticationStateTask;
+    }
+
+    private class UserInfo
+    {
+        public required string UserId { get; set; }
+        public required string Email { get; set; }
+        public required string Name { get; set; }
+        public required IEnumerable<string> Roles { get; set; }
+        public required Dictionary<string, string> Claims { get; set; }
+
+        public ClaimsPrincipal ToClaimsPrincipal()
+        {
+            var identity = new ClaimsIdentity(
+                Claims.Select(kvp => new Claim(kvp.Key, kvp.Value))
+                    .Concat(Roles.Select(role => new Claim(ClaimTypes.Role, role)))
+                    .Append(new Claim(ClaimTypes.NameIdentifier, UserId)),
+                authenticationType: nameof(PersistentAuthenticationStateProvider),
+                nameType: ClaimTypes.Name,
+                roleType: ClaimTypes.Role);
+
+            return new ClaimsPrincipal(identity);
+        }
+    }
+}
+```
+
+### Step 2.6: Create Authentication State Persistence Component (Server)
+
+For SSR + WebAssembly hybrid apps, you need a component that persists authentication state from the server to the client during prerendering.
+
+**File:** `R2.ShopNet.Web.BlazorAdmin/Components/PersistentAuthenticationStateProvider.razor`
+
+```razor
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject PersistentComponentState PersistentState
+@implements IDisposable
+
+<CascadingAuthenticationState>
+    @ChildContent
+</CascadingAuthenticationState>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private PersistingComponentStateSubscription? _subscription;
+
+    protected override Task OnInitializedAsync()
+    {
+        // Register callback to persist authentication state when transitioning to WebAssembly
+        _subscription = PersistentState.RegisterOnPersisting(PersistAuthenticationState, RenderMode.InteractiveWebAssembly);
+        return Task.CompletedTask;
+    }
+
+    private async Task PersistAuthenticationState()
+    {
+        if (AuthenticationState == null)
+        {
+            return;
+        }
+
+        var authenticationState = await AuthenticationState;
+        var user = authenticationState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            // Serialize user information to be read by the WebAssembly client
+            PersistentState.PersistAsJson(nameof(UserInfo), UserInfo.FromClaimsPrincipal(user));
+        }
+    }
+
+    public void Dispose()
+    {
+        _subscription?.Dispose();
+    }
+
+    private class UserInfo
+    {
+        public required string UserId { get; set; }
+        public required string Email { get; set; }
+        public required string Name { get; set; }
+        public required IEnumerable<string> Roles { get; set; }
+        public required Dictionary<string, string> Claims { get; set; }
+
+        public static UserInfo FromClaimsPrincipal(ClaimsPrincipal principal)
+        {
+            return new UserInfo
+            {
+                UserId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty,
+                Email = principal.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty,
+                Name = principal.FindFirst(ClaimTypes.Name)?.Value ?? principal.FindFirst("name")?.Value ?? string.Empty,
+                Roles = principal.FindAll(ClaimTypes.Role).Select(c => c.Value).ToArray(),
+                Claims = principal.Claims
+                    .Where(c => c.Type != ClaimTypes.NameIdentifier)
+                    .GroupBy(c => c.Type)
+                    .ToDictionary(g => g.Key, g => g.First().Value)
+            };
+        }
+
+        public ClaimsPrincipal ToClaimsPrincipal()
+        {
+            var identity = new ClaimsIdentity(
+                Claims.Select(kvp => new Claim(kvp.Key, kvp.Value))
+                    .Concat(Roles.Select(role => new Claim(ClaimTypes.Role, role)))
+                    .Append(new Claim(ClaimTypes.NameIdentifier, UserId)),
+                authenticationType: "PersistentAuthenticationState",
+                nameType: ClaimTypes.Name,
+                roleType: ClaimTypes.Role);
+
+            return new ClaimsPrincipal(identity);
+        }
+    }
+}
+```
+
+**Update Routes.razor to use the persistence component:**
+
+**File:** `R2.ShopNet.Web.BlazorAdmin/Components/Routes.razor`
+
+```razor
+<PersistentAuthenticationStateProvider>
+    <Router AppAssembly="typeof(Program).Assembly"
+            AdditionalAssemblies="new[] { typeof(R2.ShopNet.Web.BlazorAdmin.Client._Imports).Assembly }">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    @if (context.User?.Identity?.IsAuthenticated != true)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <p>You are not authorized to access this page.</p>
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+    </Router>
+</PersistentAuthenticationStateProvider>
+```
+
+**How it works:**
+
+1. **Server-side (SSR):** The `PersistentAuthenticationStateProvider` component wraps your app and registers a callback
+2. **Persisting:** During the server → WebAssembly transition, the callback is invoked and serializes the authentication state
+3. **Client-side (WASM):** The `PersistentAuthenticationStateProvider` in the client reads the serialized state
+4. **Result:** Seamless authentication state across render modes without re-authentication
+
+### Step 2.7: Understanding Render Modes
+
+**Blazor .NET 10 supports multiple render modes that can be mixed in a single application:**
+
+1. **Static SSR (Server-Side Rendering)**
+   ```razor
+   @* No render mode attribute - static by default *@
+   <MyComponent />
+   ```
+   - Pre-rendered on server, no interactivity
+   - Best for: Static content, SEO-critical pages
+   - Fast initial load, minimal bandwidth
+
+2. **Interactive Server**
+   ```razor
+   @rendermode InteractiveServer
+   <MyComponent />
+   ```
+   - Uses SignalR for real-time updates
+   - Best for: Forms, real-time dashboards
+   - Low latency, server resources required
+
+3. **Interactive WebAssembly**
+   ```razor
+   @rendermode InteractiveWebAssembly
+   <MyComponent />
+   ```
+   - Runs in browser using WebAssembly
+   - Best for: Rich client interactions, offline capability
+   - Higher initial load, no server round-trips
+
+4. **Interactive Auto** (Recommended)
+   ```razor
+   @rendermode InteractiveAuto
+   <MyComponent />
+   ```
+   - Starts with Server, switches to WebAssembly when downloaded
+   - Best for: Most scenarios - combines benefits of both
+   - Fast initial render, rich client experience after load
+
+**Example Component with Auto Rendering:**
+
+**File:** `R2.ShopNet.Web.BlazorAdmin/R2.ShopNet.Web.BlazorAdmin/Components/Pages/Home.razor`
+
+```razor
+@page "/"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@rendermode InteractiveAuto
+
+<PageTitle>Home</PageTitle>
+
+<h1>Welcome to R2.ShopNet Admin</h1>
+
+<AuthorizeView>
+    <Authorized>
+        <p>Hello, @context.User.Identity?.Name!</p>
+        <p>You are authenticated via OpenID Connect with passkey support.</p>
+
+        <h2>Render Mode: Auto (SSR → Server → WebAssembly)</h2>
+        <p>This page:</p>
+        <ul>
+            <li>✅ Pre-rendered on server (fast initial load)</li>
+            <li>✅ Interactive via SignalR (immediate interactivity)</li>
+            <li>✅ Downloads WebAssembly in background (rich client experience)</li>
+        </ul>
+
+        <h2>Your Claims:</h2>
+        <ul>
+            @foreach (var claim in context.User.Claims)
+            {
+                <li><strong>@claim.Type:</strong> @claim.Value</li>
+            }
+        </ul>
+    </Authorized>
+</AuthorizeView>
+```
+
+### Step 2.7: Update App Configuration
+
+**File:** `R2.ShopNet.Web.BlazorAdmin/R2.ShopNet.Web.BlazorAdmin/appsettings.json`
 
 ```json
 {
@@ -1631,38 +2119,67 @@ app.Run();
 </div>
 ```
 
-### Step 2.7: Protect Pages with Authorization
+### Step 2.8: Configure App Root Component
 
-**File:** `src/Web/R2.ShopNet.Web.BlazorAdmin/Components/Pages/Home.razor`
+**File:** `R2.ShopNet.Web.BlazorAdmin/R2.ShopNet.Web.BlazorAdmin/Components/App.razor`
+
+Ensure the App component supports all render modes and authentication:
 
 ```razor
-@page "/"
-@using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
+<!DOCTYPE html>
+<html lang="en">
 
-<PageTitle>Home</PageTitle>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="R2.ShopNet.Web.BlazorAdmin.styles.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet @rendermode="InteractiveAuto" />
+</head>
 
-<h1>Welcome to R2.ShopNet Admin</h1>
+<body>
+    <Routes @rendermode="InteractiveAuto" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
 
-<AuthorizeView>
-    <Authorized>
-        <p>Hello, @context.User.Identity?.Name!</p>
-        <p>You are authenticated via OpenID Connect with passkey support.</p>
-
-        <h2>Your Claims:</h2>
-        <ul>
-            @foreach (var claim in context.User.Claims)
-            {
-                <li><strong>@claim.Type:</strong> @claim.Value</li>
-            }
-        </ul>
-    </Authorized>
-</AuthorizeView>
+</html>
 ```
 
-### Step 2.8: Add Passkey Management Component
+**File:** `R2.ShopNet.Web.BlazorAdmin/R2.ShopNet.Web.BlazorAdmin/Components/Routes.razor`
 
-**File:** `src/Web/R2.ShopNet.Web.BlazorAdmin/Components/Pages/PasskeyManagement.razor`
+```razor
+<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Program).Assembly"
+            AdditionalAssemblies="new[] { typeof(R2.ShopNet.Web.BlazorAdmin.Client._Imports).Assembly }">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    @if (context.User?.Identity?.IsAuthenticated != true)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <p>You are not authorized to access this page.</p>
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+    </Router>
+</CascadingAuthenticationState>
+```
+
+### Step 2.9: Protect Pages with Authorization
+
+Pages can now use different render modes based on their needs. See Step 2.6 for the updated Home.razor example with `@rendermode InteractiveAuto`.
+
+### Step 2.10: Add Passkey Management Component
+
+**File:** `R2.ShopNet.Web.BlazorAdmin/R2.ShopNet.Web.BlazorAdmin/Components/Pages/PasskeyManagement.razor`
 
 ```razor
 @page "/account/passkeys"
@@ -1670,6 +2187,7 @@ app.Run();
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Net.Http.Json
 @attribute [Authorize]
+@rendermode InteractiveAuto
 @inject HttpClient Http
 @inject IJSRuntime JS
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -1899,11 +2417,13 @@ cd src/Services/Identity/R2.ShopNet.Identity.API
 dotnet run
 ```
 
-3. Start Blazor application:
+3. Start Blazor application (both Server and Client):
 ```bash
-cd src/Web/R2.ShopNet.Web.BlazorAdmin
+cd src/Web/R2.ShopNet.Web.BlazorAdmin/R2.ShopNet.Web.BlazorAdmin
 dotnet run
 ```
+
+**Note:** The server project automatically serves both the SSR components and the WebAssembly client.
 
 ### Step 3.3: Test Authorization Code Flow
 
@@ -1913,20 +2433,58 @@ dotnet run
 4. After successful authentication, you should be redirected back to Blazor app
 5. Verify claims and user information display correctly
 
-### Step 3.4: Test Passkey Authentication
+### Step 3.4: Test SSR + WebAssembly Rendering
+
+**Open Browser DevTools and observe the rendering phases:**
+
+1. **Phase 1 - Static SSR (Immediate)**
+   - Open Network tab in DevTools
+   - Navigate to `https://localhost:7000`
+   - Observe: Initial HTML response contains fully rendered content
+   - Page is visible and readable immediately
+   - **Expected:** < 100ms time to first contentful paint
+
+2. **Phase 2 - Server Interactivity (Fast)**
+   - Open Console tab
+   - Look for: `[Blazor] SignalR connection established`
+   - Try clicking interactive elements (buttons, forms)
+   - **Expected:** Immediate response via SignalR
+
+3. **Phase 3 - WebAssembly Download (Background)**
+   - Check Network tab for `_framework/blazor.*.js` downloads
+   - Monitor `.wasm` and `.dll` files downloading
+   - **Expected:** Downloads in background without blocking interaction
+
+4. **Phase 4 - Client-Side Mode (After WASM loads)**
+   - Console shows: `[Blazor] WebAssembly runtime initialized`
+   - Subsequent interactions run client-side
+   - Open Network tab - no server requests for interactions
+   - **Expected:** Instant UI updates, offline capability
+
+**Verify Render Modes:**
+
+```bash
+# Open browser console and check component render modes
+# Static SSR: No Blazor runtime, just HTML
+# Server: SignalR messages in Network tab
+# WebAssembly: No server calls, runs in browser
+# Auto: Transitions from Server → WebAssembly automatically
+```
+
+### Step 3.5: Test Passkey Authentication
 
 1. On the login page, click "Sign in with Passkey"
 2. Enter your email
 3. Browser should prompt for biometric authentication
 4. After successful authentication, verify redirect to Blazor app
 
-### Step 3.5: Test Token Refresh
+### Step 3.6: Test Token Refresh
 
 1. Wait for access token to expire (1 hour default)
 2. Verify that Blazor automatically refreshes the token
 3. Check that user remains authenticated
 
-### Step 3.6: Test Logout
+### Step 3.7: Test Logout
 
 1. Click logout button
 2. Verify redirect to Identity Server logout endpoint
@@ -2009,7 +2567,68 @@ ClientSecret = builder.Configuration["Authentication:ClientSecret"]
 - Ensure HTTPS is enabled
 - Verify client redirect URIs match exactly
 
-#### 2. CORS Errors
+#### 2. Logout Loop (Auto Re-login After Logout)
+
+**Symptoms:** User is immediately logged back in after clicking logout
+
+**Root Cause:**
+The Identity Server maintains TWO authentication cookies:
+1. ASP.NET Core Identity cookie (for user authentication)
+2. Cookie Authentication Scheme cookie (`R2.ShopNet.Identity`) used for the authorization flow
+
+When only the Identity cookie is cleared during logout, the authorization cookie remains valid. After the user is redirected back to the Blazor app, it challenges authentication again, and since the authorization cookie is still valid, the user is automatically re-authenticated via SSO without seeing a login page.
+
+**Solution:**
+
+The `/connect/endsession` endpoint must explicitly sign out **both** cookies:
+
+```csharp
+[HttpGet("~/connect/endsession")]
+[HttpPost("~/connect/endsession")]
+public async Task<IActionResult> Logout()
+{
+    var request = HttpContext.GetOpenIddictServerRequest() ??
+        throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+
+    // Sign out from ASP.NET Core Identity (ApplicationCookie)
+    await _signInManager.SignOutAsync();
+
+    // CRITICAL: Also sign out from the Cookie authentication scheme used for authorization flow
+    // Without this, the R2.ShopNet.Identity cookie remains valid and causes auto re-login
+    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+    // Return a SignOutResult that will redirect to post_logout_redirect_uri
+    return SignOut(
+        authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+        properties: new AuthenticationProperties
+        {
+            RedirectUri = request.PostLogoutRedirectUri
+        });
+}
+```
+
+Additionally, configure the Blazor Portal to prevent automatic re-authentication after signout callback:
+
+```csharp
+options.Events = new OpenIdConnectEvents
+{
+    // ... other events ...
+
+    OnSignedOutCallbackRedirect = context =>
+    {
+        // After signout callback, redirect to home page without challenging
+        // This prevents the automatic re-authentication loop
+        context.Response.Redirect(context.Options.SignedOutRedirectUri);
+        context.HandleResponse();
+        return Task.CompletedTask;
+    }
+};
+```
+
+**Verification:**
+After logout, check browser cookies - both `R2.ShopNet.Portal` and `R2.ShopNet.Identity` should be cleared.
+
+#### 3. CORS Errors
 
 **Symptoms:** Browser console shows CORS errors
 
@@ -2018,7 +2637,7 @@ ClientSecret = builder.Configuration["Authentication:ClientSecret"]
 - Enable `AllowCredentials()` in CORS policy
 - Verify HTTPS usage (mixed content not allowed)
 
-#### 3. Token Validation Errors
+#### 4. Token Validation Errors
 
 **Symptoms:** 401 Unauthorized when calling APIs
 
@@ -2028,17 +2647,144 @@ ClientSecret = builder.Configuration["Authentication:ClientSecret"]
 - Verify audience (`aud`) claim matches
 - Ensure clock skew tolerance is configured
 
-#### 4. Passkey Not Working
+#### 5. Passkey Authentication Issues
 
-**Symptoms:** WebAuthn ceremony fails
+##### 5.1. "No passkeys registered for this account"
+
+**Symptoms:** Error when attempting to authenticate with passkey
+
+**Solution:**
+Users must register a passkey before they can authenticate with it:
+1. Login with email/password first
+2. Navigate to account settings
+3. Register a passkey using `/passkey/register/begin` and `/passkey/register/complete`
+
+##### 5.2. "The provided value cannot be converted to a sequence" (transports error)
+
+**Symptoms:** JavaScript error when calling WebAuthn API
+
+**Root Cause:** The `transports` property in `PublicKeyCredentialDescriptor` is serialized as `null`, but WebAuthn expects it to be omitted.
+
+**Solution:**
+Add `JsonIgnore` attribute to the `Transports` property:
+
+```csharp
+public class PublicKeyCredentialDescriptor
+{
+    public string Type { get; set; } = "public-key";
+    public string Id { get; set; } = string.Empty;
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public List<string>? Transports { get; set; }
+}
+```
+
+##### 5.3. "Invalid encoding format" error
+
+**Symptoms:** Server returns "Invalid encoding format" during passkey authentication
+
+**Root Cause:** Mismatch between base64 and base64url encoding. WebAuthn spec requires:
+- `rawId` and `userHandle`: base64url encoding
+- `clientDataJSON`, `authenticatorData`, `signature`: standard base64 encoding
+
+**Solution:**
+Update JavaScript to use correct encoding for each field:
+
+```javascript
+const assertion = {
+    id: credential.id,
+    rawId: base64UrlEncode(credential.rawId),
+    type: credential.type,
+    response: {
+        clientDataJSON: base64Encode(credential.response.clientDataJSON),    // Standard base64
+        authenticatorData: base64Encode(credential.response.authenticatorData), // Standard base64
+        signature: base64Encode(credential.response.signature),              // Standard base64
+        userHandle: credential.response.userHandle ?
+            base64UrlEncode(credential.response.userHandle) : null           // Base64url
+    }
+};
+```
+
+##### 5.4. "Origin verification failed"
+
+**Symptoms:** Server rejects passkey authentication with origin mismatch error
+
+**Root Cause:** The `WebAuthn:Origin` configuration doesn't match the actual origin of the login page.
+
+**Solution:**
+Update `appsettings.json` to match your environment:
+
+```json
+{
+  "WebAuthn": {
+    "RelyingPartyId": "localhost",
+    "RelyingPartyName": "R2.ShopNet",
+    "Origin": "https://localhost:5003",  // Must match the actual origin
+    "Timeout": 60000,
+    "ChallengeSize": 32
+  }
+}
+```
+
+**Note:** For production, you'll need to support multiple origins (Identity Server, Angular app, Blazor portal) by modifying the origin validation logic.
+
+##### 5.5. "Signature verification failed"
+
+**Symptoms:** Passkey authentication fails at signature verification step
+
+**Root Cause:** WebAuthn ES256 signatures can be in either DER format (Chrome/Safari, ~70-72 bytes) or raw format (~64 bytes), but .NET's ECDSA verification expects IEEE P1363 format.
+
+**Solution:**
+The signature verification code now automatically detects and converts DER format to raw format:
+
+```csharp
+private bool VerifyES256Signature(CoseKey coseKey, byte[] signedData, byte[] signature)
+{
+    // ... setup ECDSA ...
+
+    var hash = SHA256.HashData(signedData);
+
+    // Auto-detect signature format
+    byte[] rawSignature;
+    if (signature.Length == 64)
+    {
+        // Already in raw format (r || s)
+        rawSignature = signature;
+    }
+    else
+    {
+        // DER format, convert to raw
+        rawSignature = ConvertDerToRawSignature(signature);
+    }
+
+    // Verify with IEEE P1363 format
+    return ecdsa.VerifyHash(hash, rawSignature, DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
+}
+```
+
+##### 5.6. General Passkey Debugging
+
+**Symptoms:** WebAuthn ceremony fails or behaves unexpectedly
 
 **Solutions:**
-- Verify browser supports WebAuthn (use Chrome/Edge/Safari)
+- Verify browser supports WebAuthn (Chrome/Edge/Safari)
 - Check HTTPS is enabled (WebAuthn requires secure context)
-- Verify `RelyingPartyId` matches domain
-- Check authenticator is registered
+- Verify `RelyingPartyId` matches domain (use "localhost" for local dev)
+- Check authenticator is registered and accessible
+- Use browser DevTools Console to see detailed WebAuthn errors
+- Enable debug logging in appsettings.Development.json:
 
-#### 5. Claims Not Appearing
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "R2.ShopNet.Identity.Infrastructure.Services.PasskeyService": "Debug"
+    }
+  }
+}
+```
+
+#### 6. Claims Not Appearing
 
 **Symptoms:** User claims missing from token
 
@@ -2184,9 +2930,11 @@ This implementation guide provides a complete, production-ready solution for:
 ✅ **OAuth 2.0 / OpenID Connect** authentication with Authorization Code Flow
 ✅ **PKCE** for enhanced security
 ✅ **WebAuthn Passkey** support for passwordless authentication
-✅ **Blazor Server** integration with Identity Server
+✅ **Blazor Web App (.NET 10)** with SSR + Server + WebAssembly (Auto render mode)
 ✅ **Existing passkey infrastructure** reuse
 ✅ **Security best practices** throughout
+✅ **.NET 10 & OpenIddict 6.0** - Latest stable versions with improved performance
+✅ **Flexible rendering** - Static SSR for fast loads, Server for real-time, WASM for rich client interactions
 
 ### Key Files Modified/Created
 
@@ -2198,12 +2946,21 @@ This implementation guide provides a complete, production-ready solution for:
 - `Controllers/PasskeyController.cs` - Cookie-based passkey auth
 - `OpenIddictSeeder.cs` - Blazor client registration
 
-**Blazor Application:**
-- `Program.cs` - OIDC authentication configuration
-- `appsettings.json` - Identity Server settings
-- `Components/Layout/LoginDisplay.razor` - Login/logout UI
-- `Components/Pages/Login.razor` - Login page
-- `Components/Pages/PasskeyManagement.razor` - Passkey management
+**Blazor Web App:**
+- **Server Project (R2.ShopNet.Web.BlazorAdmin):**
+  - `Program.cs` - OIDC authentication, SSR + Server + WASM configuration
+  - `appsettings.json` - Identity Server settings
+  - `Components/App.razor` - Root component with render mode support
+  - `Components/Routes.razor` - Routing with authentication
+  - `Components/Layout/LoginDisplay.razor` - Login/logout UI
+  - `Components/Pages/Login.razor` - Login page
+  - `Components/Pages/Home.razor` - Home page with Auto render mode
+  - `Components/Pages/PasskeyManagement.razor` - Passkey management
+- **Client Project (R2.ShopNet.Web.BlazorAdmin.Client):**
+  - `Program.cs` - WebAssembly client configuration
+  - Authentication state from server via cascading parameters
+- **Shared Project (R2.ShopNet.Web.BlazorAdmin.Shared):**
+  - Common DTOs and models (optional)
 
 ### Next Steps
 
@@ -2220,11 +2977,22 @@ This implementation guide provides a complete, production-ready solution for:
 **Questions or Issues?**
 
 Refer to:
-- OpenIddict documentation: https://documentation.openiddict.com/
-- OpenID Connect spec: https://openid.net/specs/openid-connect-core-1_0.html
-- WebAuthn spec: https://www.w3.org/TR/webauthn-2/
-- ASP.NET Core authentication: https://learn.microsoft.com/en-us/aspnet/core/security/authentication/
+- **.NET 10 Documentation:** https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-10/overview
+- **OpenIddict 6.0 Documentation:** https://documentation.openiddict.com/
+- **OpenIddict 6.0 Migration Guide:** https://documentation.openiddict.com/guides/migration/60.html
+- **OpenID Connect Specification:** https://openid.net/specs/openid-connect-core-1_0.html
+- **WebAuthn Level 2 Specification:** https://www.w3.org/TR/webauthn-2/
+- **ASP.NET Core 10 Authentication:** https://learn.microsoft.com/en-us/aspnet/core/security/authentication/
+- **Blazor .NET 10 Guide:** https://learn.microsoft.com/en-us/aspnet/core/blazor/
+- **EF Core 10 Documentation:** https://learn.microsoft.com/en-us/ef/core/
+
+### Additional Resources
+
+- **PKCE RFC:** https://datatracker.ietf.org/doc/html/rfc7636
+- **OAuth 2.0 Security Best Practices:** https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics
+- **FIDO Alliance:** https://fidoalliance.org/
+- **.NET Performance Improvements:** https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-10/
 
 ---
 
-*End of Implementation Guide*
+*End of Implementation Guide - Updated for .NET 10*

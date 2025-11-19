@@ -1,7 +1,11 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using R2.ShopNet.Identity.Application.Interfaces;
 using R2.ShopNet.Identity.Application.DTOs.Passkey;
+using R2.ShopNet.Identity.Domain.Entities;
 using System.Security.Claims;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Identity.Application.Commands.Passkey.RegisterPasskey;
@@ -18,17 +22,20 @@ public class PasskeyController : ControllerBase
     private readonly IPasskeyService _passkeyService;
     private readonly ICommandDispatcher _commandDispatcher;
     private readonly IQueryDispatcher _queryDispatcher;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<PasskeyController> _logger;
 
     public PasskeyController(
         IPasskeyService passkeyService,
         ICommandDispatcher commandDispatcher,
         IQueryDispatcher queryDispatcher,
+        UserManager<ApplicationUser> userManager,
         ILogger<PasskeyController> logger)
     {
         _passkeyService = passkeyService;
         _commandDispatcher = commandDispatcher;
         _queryDispatcher = queryDispatcher;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -85,10 +92,105 @@ public class PasskeyController : ControllerBase
     [HttpPost("authenticate/begin")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PasskeyAuthenticationOptions), 200)]
+    [ProducesResponseType(400)]
     public async Task<ActionResult<PasskeyAuthenticationOptions>> BeginAuthentication([FromBody] BeginAuthenticationRequest? request = null)
     {
-        var options = await _passkeyService.BeginAuthenticationAsync(request?.Username);
-        return Ok(options);
+        try
+        {
+            var options = await _passkeyService.BeginAuthenticationAsync(request?.Username);
+            return Ok(options);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning("BeginAuthentication failed: {Message}", ex.Message);
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning("BeginAuthentication failed: {Message}", ex.Message);
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Completes passkey authentication and sets authentication cookie for Blazor portal login
+    /// </summary>
+    [HttpPost("authenticate/complete")]
+    [AllowAnonymous]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    public async Task<ActionResult> CompleteAuthentication([FromBody] CompleteAuthenticationRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Username))
+        {
+            return BadRequest(new { message = "Username is required" });
+        }
+
+        if (request.Assertion == null)
+        {
+            return BadRequest(new { message = "Passkey assertion is required" });
+        }
+
+        // Verify the passkey assertion
+        var result = await _passkeyService.CompleteAuthenticationAsync(request.Assertion);
+
+        if (!result.Success || result.UserId == null)
+        {
+            _logger.LogWarning("Passkey authentication failed for user {Username}: {Error}",
+                request.Username, result.ErrorMessage);
+            return BadRequest(new { message = result.ErrorMessage ?? "Passkey authentication failed" });
+        }
+
+        // Find the user
+        var user = await _userManager.FindByIdAsync(result.UserId.Value.ToString());
+        if (user == null)
+        {
+            _logger.LogWarning("User not found after successful passkey authentication: {UserId}", result.UserId);
+            return BadRequest(new { message = "User account not found" });
+        }
+
+        // Check if user is active
+        if (!user.IsActive)
+        {
+            _logger.LogWarning("Inactive user attempted login: {UserId}", user.Id);
+            return BadRequest(new { message = "User account is not active" });
+        }
+
+        // Create claims for the authentication cookie
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.UserName!),
+            new Claim(ClaimTypes.Email, user.Email!)
+        };
+
+        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+        var authProperties = new AuthenticationProperties
+        {
+            IsPersistent = true,
+            ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30)
+        };
+
+        // Sign in the user with cookie authentication
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            claimsPrincipal,
+            authProperties);
+
+        // Update last login timestamp
+        user.LastLoginAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        _logger.LogInformation("User {Email} successfully authenticated with passkey", user.Email);
+
+        return Ok(new
+        {
+            success = true,
+            message = "Authentication successful",
+            userId = user.Id
+        });
     }
 
     [HttpGet("credentials")]
@@ -138,4 +240,9 @@ public record PasskeyRegistrationRequest(
 
 public record BeginAuthenticationRequest(
     string? Username = null
+);
+
+public record CompleteAuthenticationRequest(
+    string Username,
+    PasskeyAuthenticationResponse Assertion
 );

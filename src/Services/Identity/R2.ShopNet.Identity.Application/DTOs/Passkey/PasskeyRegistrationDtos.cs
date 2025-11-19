@@ -33,6 +33,8 @@ public class PublicKeyCredentialDescriptor
 {
     public string Type { get; set; } = "public-key";
     public string Id { get; set; } = string.Empty;
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public List<string>? Transports { get; set; }
 }
 
