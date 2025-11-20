@@ -1,23 +1,63 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@inject SidebarService SidebarService
+@implements IDisposable
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+<div class="min-h-screen xl:flex">
+    <div>
+        <Sidebar />
+        <Backdrop />
     </div>
-
-    <main>
-        <div class="top-row px-4">
-            <LoginDisplay />
-        </div>
-
-        <article class="content px-4">
+    <div class="@GetContentClasses()">
+        <Header />
+        <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
             @Body
-        </article>
-    </main>
+        </div>
+    </div>
 </div>
 
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+<ReconnectModal />
+
+<div id="blazor-error-ui" data-nosnippet class="fixed bottom-0 left-0 right-0 bg-error-600 text-white p-4 z-999999 shadow-theme-xl">
+    <div class="flex items-center justify-between max-w-7xl mx-auto">
+        <div class="flex items-center gap-3">
+            <span class="material-symbols-rounded">error</span>
+            <span>An unhandled error has occurred.</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="." class="px-4 py-2 bg-white text-error-600 rounded-lg hover:bg-gray-100 transition">Reload</a>
+            <button class="px-4 py-2 text-white hover:bg-error-700 rounded-lg transition dismiss">Close</button>
+        </div>
+    </div>
 </div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        SidebarService.OnChange += StateHasChanged;
+    }
+
+    private string GetContentClasses()
+    {
+        var classes = new List<string>
+        {
+            "flex-1", "transition-all", "duration-300", "ease-in-out"
+        };
+
+        // Desktop: adjust margin based on expanded/hovered state
+        if (SidebarService.IsExpanded || SidebarService.IsHovered)
+            classes.Add("xl:ml-[290px]");
+        else
+            classes.Add("xl:ml-[90px]");
+
+        // Mobile: no margin when sidebar is open
+        if (SidebarService.IsMobileOpen)
+            classes.Add("ml-0");
+
+        return string.Join(" ", classes);
+    }
+
+    public void Dispose()
+    {
+        SidebarService.OnChange -= StateHasChanged;
+    }
+}

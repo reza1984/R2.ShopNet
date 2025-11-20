@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <HotReloadEnabled>true</HotReloadEnabled>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,5 +14,13 @@
     <ProjectReference Include="..\R2.ShopNet.Web.Portal.Client\R2.ShopNet.Web.Portal.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0" />
   </ItemGroup>
+
+  <Target Name="BuildTailwindCSS" BeforeTargets="Build" Condition="'$(Configuration)' != 'Debug'">
+    <Exec Command="npm run build:css" WorkingDirectory="$(ProjectDir)" />
+  </Target>
+
+  <!-- <Target Name="WatchTailwindCSS" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+    <Exec Command="npm run watch:css" WorkingDirectory="$(ProjectDir)" ContinueOnError="true" IgnoreExitCode="true" />
+  </Target> -->
 
 </Project>

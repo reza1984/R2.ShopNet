@@ -1,0 +1,416 @@
+@inject NavigationManager NavigationManager
+@inject SidebarService SidebarService
+@implements IDisposable
+
+<aside class="@SidebarClasses"
+       @onmouseenter="OnMouseEnter"
+       @onmouseleave="OnMouseLeave">
+    <div class="@GetLogoContainerClasses()">
+        <a href="/dashboard">
+            @if (IsExpandedOrHovered || IsMobileOpen)
+            {
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl font-bold text-brand-600 dark:text-brand-400">R2</span>
+                    <span class="text-xl font-semibold text-gray-800 dark:text-gray-200">ShopNet</span>
+                </div>
+            }
+            else
+            {
+                <span class="text-2xl font-bold text-brand-600 dark:text-brand-400">R2</span>
+            }
+        </a>
+    </div>
+
+    <div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+        <nav class="mb-6">
+            <div class="flex flex-col gap-4">
+                <!-- Menu Section -->
+                <div>
+                    <h2 class="@GetSectionHeaderClasses()">
+                        @if (IsExpandedOrHovered || IsMobileOpen)
+                        {
+                            <text>Menu</text>
+                        }
+                        else
+                        {
+                            <Icon Name="more_horiz" Size="24" Color="currentColor" />
+                        }
+                    </h2>
+                    <ul class="flex flex-col gap-1">
+                        @foreach (var (item, index) in NavItems.Select((item, i) => (item, i)))
+                        {
+                            <li>
+                                @if (item.SubItems != null && item.SubItems.Any())
+                                {
+                                    <button @onclick="@(() => ToggleSubmenu("main", index))"
+                                            class="@GetMenuItemClasses(IsSubmenuOpen("main", index))"
+                                            style="@GetMenuItemStyles()">
+                                        <span class="@GetMenuIconClasses(IsSubmenuOpen("main", index))">
+                                            <Icon Name="@item.Icon" Size="24" Color="currentColor" />
+                                        </span>
+                                        @if (IsExpandedOrHovered || IsMobileOpen)
+                                        {
+                                            <span class="menu-item-text">@item.Name</span>
+                                            @if (item.IsNew)
+                                            {
+                                                <span class="@GetBadgeClasses(IsSubmenuOpen("main", index))">new</span>
+                                            }
+                                            <span class="@GetExpandIconClasses(IsSubmenuOpen("main", index))">
+                                                <Icon Name="expand_more" Size="20" Color="currentColor" />
+                                            </span>
+                                        }
+                                    </button>
+                                    @if (IsExpandedOrHovered || IsMobileOpen)
+                                    {
+                                        <div class="overflow-hidden transition-all duration-300"
+                                             style="height: @(IsSubmenuOpen("main", index) ? "auto" : "0")">
+                                            <ul class="mt-2 space-y-1 ml-9">
+                                                @foreach (var subItem in item.SubItems)
+                                                {
+                                                    <li>
+                                                        <a href="@subItem.Path"
+                                                           @onclick="OnSubmenuClick"
+                                                           class="@GetDropdownItemClasses(subItem.Path)">
+                                                            @subItem.Name
+                                                            @if (subItem.IsNew)
+                                                            {
+                                                                <span class="@GetDropdownBadgeClasses(subItem.Path)">new</span>
+                                                            }
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+                                }
+                                else if (!string.IsNullOrEmpty(item.Path))
+                                {
+                                    <a href="@item.Path"
+                                       class="@GetMenuItemClasses(IsActivePath(item.Path))">
+                                        <span class="@GetMenuIconClasses(IsActivePath(item.Path))">
+                                            <Icon Name="@item.Icon" Size="24" Color="currentColor" />
+                                        </span>
+                                        @if (IsExpandedOrHovered || IsMobileOpen)
+                                        {
+                                            <span class="menu-item-text">@item.Name</span>
+                                        }
+                                    </a>
+                                }
+                            </li>
+                        }
+                    </ul> 
+                </div>
+
+                <!-- Others Section -->
+                <div>
+                    <h2 class="@GetSectionHeaderClasses()">
+                        @if (IsExpandedOrHovered || IsMobileOpen)
+                        {
+                            <text>Others</text>
+                        }
+                        else
+                        {
+                            <Icon Name="more_horiz" Size="24" Color="currentColor" />
+                        }
+                    </h2>
+                    <ul class="flex flex-col gap-1">
+                        @foreach (var (item, index) in OthersItems.Select((item, i) => (item, i)))
+                        {
+                            <li>
+                                @if (item.SubItems != null && item.SubItems.Any())
+                                {
+                                    <button @onclick="@(() => ToggleSubmenu("others", index))"
+                                            class="@GetMenuItemClasses(IsSubmenuOpen("others", index))"
+                                            style="@GetMenuItemStyles()">
+                                        <span class="@GetMenuIconClasses(IsSubmenuOpen("others", index))">
+                                            <Icon Name="@item.Icon" Size="24" Color="currentColor" />
+                                        </span>
+                                        @if (IsExpandedOrHovered || IsMobileOpen)
+                                        {
+                                            <span class="menu-item-text">@item.Name</span>
+                                            @if (item.IsNew)
+                                            {
+                                                <span class="@GetBadgeClasses(IsSubmenuOpen("others", index))">new</span>
+                                            }
+                                            <span class="@GetExpandIconClasses(IsSubmenuOpen("others", index))">
+                                                <Icon Name="expand_more" Size="20" Color="currentColor" />
+                                            </span>
+                                        }
+                                    </button>
+                                    @if (IsExpandedOrHovered || IsMobileOpen)
+                                    {
+                                        <div class="overflow-hidden transition-all duration-300"
+                                             style="height: @(IsSubmenuOpen("others", index) ? "auto" : "0")">
+                                            <ul class="mt-2 space-y-1 ml-9">
+                                                @foreach (var subItem in item.SubItems)
+                                                {
+                                                    <li>
+                                                        <a href="@subItem.Path"
+                                                           @onclick="OnSubmenuClick"
+                                                           class="@GetDropdownItemClasses(subItem.Path)">
+                                                            @subItem.Name
+                                                            @if (subItem.IsNew)
+                                                            {
+                                                                <span class="@GetDropdownBadgeClasses(subItem.Path)">new</span>
+                                                            }
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+                                }
+                                else if (!string.IsNullOrEmpty(item.Path))
+                                {
+                                    <a href="@item.Path"
+                                       class="@GetMenuItemClasses(IsActivePath(item.Path))">
+                                        <span class="@GetMenuIconClasses(IsActivePath(item.Path))">
+                                            <Icon Name="@item.Icon" Size="24" Color="currentColor" />
+                                        </span>
+                                        @if (IsExpandedOrHovered || IsMobileOpen)
+                                        {
+                                            <span class="menu-item-text">@item.Name</span>
+                                        }
+                                    </a>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+</aside>
+
+@code {
+    private string? OpenSubmenu { get; set; }
+
+    private bool IsExpanded => SidebarService.IsExpanded;
+    private bool IsMobileOpen => SidebarService.IsMobileOpen;
+    private bool IsHovered => SidebarService.IsHovered;
+    private bool IsExpandedOrHovered => IsExpanded || IsHovered;
+
+    private string CurrentPath => new Uri(NavigationManager.Uri).AbsolutePath;
+
+    public class NavItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string? Path { get; set; }
+        public bool IsNew { get; set; }
+        public List<SubNavItem>? SubItems { get; set; }
+    }
+
+    public class SubNavItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Path { get; set; } = string.Empty;
+        public bool IsNew { get; set; }
+    }
+
+    private List<NavItem> NavItems = new()
+    {
+        new() { Icon = "dashboard", Name = "Dashboard", Path = "/dashboard" },
+        new()
+        {
+            Icon = "person",
+            Name = "Users",
+            SubItems = new()
+            {
+                new() { Name = "All Users", Path = "/users" },
+                new() { Name = "Roles & Permissions", Path = "/users/roles" }
+            }
+        },
+        new()
+        {
+            Icon = "category",
+            Name = "Catalog",
+            SubItems = new()
+            {
+                new() { Name = "Products", Path = "/catalog/products" },
+                new() { Name = "Categories", Path = "/catalog/categories" },
+                new() { Name = "Inventory", Path = "/catalog/inventory" }
+            }
+        },
+        new()
+        {
+            Icon = "shopping_bag",
+            Name = "Orders",
+            SubItems = new()
+            {
+                new() { Name = "All Orders", Path = "/orders" },
+                new() { Name = "Pending", Path = "/orders/pending" },
+                new() { Name = "Completed", Path = "/orders/completed" }
+            }
+        },
+        new() { Icon = "calendar_month", Name = "Reports", Path = "/reports" }
+    };
+
+    private List<NavItem> OthersItems = new()
+    {
+        new() { Icon = "analytics", Name = "Analytics", Path = "/analytics" },
+        new()
+        {
+            Icon = "settings",
+            Name = "Settings",
+            SubItems = new()
+            {
+                new() { Name = "General", Path = "/settings" },
+                new() { Name = "Configuration", Path = "/settings/configuration" }
+            }
+        }
+    };
+
+    private string SidebarClasses
+    {
+        get
+        {
+            var width = IsExpandedOrHovered || IsMobileOpen ? "w-[290px]" : "w-[90px]";
+            var translate = IsMobileOpen ? "translate-x-0" : "-translate-x-full";
+            return $"fixed flex flex-col top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 {width} {translate} xl:translate-x-0";
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+        SidebarService.OnChange += StateHasChanged;
+        SetActiveMenuFromRoute();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        SetActiveMenuFromRoute();
+        StateHasChanged();
+    }
+
+    private void SetActiveMenuFromRoute()
+    {
+        var currentPath = CurrentPath;
+
+        CheckAndOpenSubmenu(NavItems, "main", currentPath);
+        CheckAndOpenSubmenu(OthersItems, "others", currentPath);
+    }
+
+    private void CheckAndOpenSubmenu(List<NavItem> items, string prefix, string currentPath)
+    {
+        for (int i = 0; i < items.Count; i++)
+        {
+            var item = items[i];
+            if (item.SubItems != null)
+            {
+                foreach (var subItem in item.SubItems)
+                {
+                    if (currentPath == subItem.Path)
+                    {
+                        OpenSubmenu = $"{prefix}-{i}";
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    private bool IsActivePath(string path)
+    {
+        return CurrentPath == path;
+    }
+
+    private bool IsSubmenuOpen(string section, int index)
+    {
+        return OpenSubmenu == $"{section}-{index}";
+    }
+
+    private void ToggleSubmenu(string section, int index)
+    {
+        var key = $"{section}-{index}";
+        OpenSubmenu = OpenSubmenu == key ? null : key;
+    }
+
+    private void OnMouseEnter()
+    {
+        if (!SidebarService.IsExpanded)
+        {
+            SidebarService.SetHovered(true);
+        }
+    }
+
+    private void OnMouseLeave()
+    {
+        SidebarService.SetHovered(false);
+    }
+
+    private void OnSubmenuClick()
+    {
+        if (SidebarService.IsMobileOpen)
+        {
+            SidebarService.SetMobileOpen(false);
+        }
+    }
+
+    private string GetLogoContainerClasses()
+    {
+        var justify = IsExpandedOrHovered ? "justify-start" : "xl:justify-center";
+        return $"py-8 flex {justify}";
+    }
+
+    private string GetSectionHeaderClasses()
+    {
+        var justify = IsExpandedOrHovered ? "justify-start" : "xl:justify-center";
+        return $"mb-4 text-xs uppercase flex leading-[20px] text-gray-400 {justify}";
+    }
+
+    private string GetMenuItemClasses(bool isActive)
+    {
+        var baseClasses = "menu-item group cursor-pointer";
+        var stateClasses = isActive ? "menu-item-active" : "menu-item-inactive";
+        var justify = IsExpandedOrHovered ? "xl:justify-start" : "xl:justify-center";
+        return $"{baseClasses} {stateClasses} {justify}";
+    }
+
+    private string GetMenuItemStyles()
+    {
+        return "cursor: pointer;";
+    }
+
+    private string GetMenuIconClasses(bool isActive)
+    {
+        var baseClasses = "menu-item-icon-size";
+        var stateClasses = isActive ? "menu-item-icon-active" : "menu-item-icon-inactive";
+        return $"{baseClasses} {stateClasses}";
+    }
+
+    private string GetBadgeClasses(bool isActive)
+    {
+        var baseClasses = "ml-auto absolute right-10 menu-dropdown-badge";
+        var stateClasses = isActive ? "menu-dropdown-badge-active" : "menu-dropdown-badge-inactive";
+        return $"{baseClasses} {stateClasses}";
+    }
+
+    private string GetExpandIconClasses(bool isActive)
+    {
+        var baseClasses = "ml-auto transition-transform duration-200";
+        var rotateClass = isActive ? "rotate-180 text-brand-500" : "";
+        return $"{baseClasses} {rotateClass}";
+    }
+
+    private string GetDropdownItemClasses(string path)
+    {
+        var baseClasses = "menu-dropdown-item";
+        var stateClasses = IsActivePath(path) ? "menu-dropdown-item-active" : "menu-dropdown-item-inactive";
+        return $"{baseClasses} {stateClasses}";
+    }
+
+    private string GetDropdownBadgeClasses(string path)
+    {
+        var baseClasses = "menu-dropdown-badge";
+        var stateClasses = IsActivePath(path) ? "menu-dropdown-badge-active" : "menu-dropdown-badge-inactive";
+        return $"{baseClasses} {stateClasses}";
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        SidebarService.OnChange -= StateHasChanged;
+    }
+}

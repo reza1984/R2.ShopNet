@@ -1,0 +1,17 @@
+@if (!string.IsNullOrEmpty(Name))
+{
+    <span class="material-symbols-rounded flex!" style="font-size: @(Size)px; color: @Color;">
+        @Name
+    </span>
+}
+
+@code {
+    [Parameter]
+    public string Name { get; set; } = string.Empty;
+
+    [Parameter]
+    public int Size { get; set; } = 24;
+
+    [Parameter]
+    public string Color { get; set; } = "currentColor";
+}

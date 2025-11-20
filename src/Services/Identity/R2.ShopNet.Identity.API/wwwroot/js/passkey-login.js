@@ -51,15 +51,15 @@
 
     // Show/hide loading state
     const showLoading = (show) => {
-        const form = document.getElementById('login-form');
-        const loading = document.getElementById('loading');
-        if (show) {
-            form.style.display = 'none';
-            loading.style.display = 'block';
-        } else {
-            form.style.display = 'block';
-            loading.style.display = 'none';
-        }
+        // const form = document.getElementById('login-form');
+        // const loading = document.getElementById('loading');
+        // if (show) {
+        //     form.style.display = 'none';
+        //     loading.style.display = 'block';
+        // } else {
+        //     form.style.display = 'block';
+        //     loading.style.display = 'none';
+        // }
     };
 
     // Show error message
@@ -73,19 +73,64 @@
         }
     };
 
+    // Toggle between regular login and passkey login forms
+    const showPasskeyForm = () => {
+        const regularContainer = document.getElementById('regular-login-container');
+        const passkeyContainer = document.getElementById('passkey-login-container');
+        const loginForm = document.getElementById('login-form');
+        const title = document.getElementById('login-title');
+        const subtitle = document.getElementById('login-subtitle');
+
+        if (regularContainer) regularContainer.style.display = 'none';
+        if (loginForm) loginForm.style.display = 'none';
+        if (passkeyContainer) passkeyContainer.style.display = 'block';
+
+        if (title) title.textContent = 'Sign in with Passkey';
+        if (subtitle) subtitle.textContent = 'Enter your email to authenticate with your passkey';
+    };
+
+    const showRegularForm = () => {
+        const regularContainer = document.getElementById('regular-login-container');
+        const passkeyContainer = document.getElementById('passkey-login-container');
+        const loginForm = document.getElementById('login-form');
+        const title = document.getElementById('login-title');
+        const subtitle = document.getElementById('login-subtitle');
+
+        if (regularContainer) regularContainer.style.display = 'block';
+        if (loginForm) loginForm.style.display = 'block';
+        if (passkeyContainer) passkeyContainer.style.display = 'none';
+
+        if (title) title.textContent = 'Sign In';
+        if (subtitle) subtitle.textContent = 'Enter your email and password to sign in!';
+
+        // Clear passkey form
+        const passkeyEmailInput = document.getElementById('passkey-email');
+        const passkeyEmailError = document.getElementById('passkey-email-error');
+        if (passkeyEmailInput) passkeyEmailInput.value = '';
+        if (passkeyEmailError) passkeyEmailError.textContent = '';
+    };
+
     // Handle passkey login
     const handlePasskeyLogin = async () => {
         try {
             showLoading(true);
 
-            // Get email from the form
-            const emailInput = document.querySelector('input[name="Input.Email"]');
+            // Get email from the passkey form
+            const emailInput = document.getElementById('passkey-email');
             const email = emailInput?.value?.trim();
+            const emailError = document.getElementById('passkey-email-error');
 
             if (!email) {
-                showError('Please enter your email address.');
+                if (emailError) {
+                    emailError.textContent = 'Please enter your email address.';
+                }
                 showLoading(false);
                 return;
+            }
+
+            // Clear any previous error
+            if (emailError) {
+                emailError.textContent = '';
             }
 
             // Step 1: Begin authentication - get challenge from server
@@ -185,9 +230,30 @@
         }
     };
 
-    // Attach event listener
+    // Attach event listeners
     const passkeyButton = document.getElementById('passkey-button');
     if (passkeyButton) {
-        passkeyButton.addEventListener('click', handlePasskeyLogin);
+        passkeyButton.addEventListener('click', showPasskeyForm);
+    }
+
+    const backButton = document.getElementById('back-to-regular-login');
+    if (backButton) {
+        backButton.addEventListener('click', showRegularForm);
+    }
+
+    const passkeySubmitButton = document.getElementById('passkey-submit-button');
+    if (passkeySubmitButton) {
+        passkeySubmitButton.addEventListener('click', handlePasskeyLogin);
+    }
+
+    // Allow Enter key to submit passkey form
+    const passkeyEmailInput = document.getElementById('passkey-email');
+    if (passkeyEmailInput) {
+        passkeyEmailInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handlePasskeyLogin();
+            }
+        });
     }
 })();

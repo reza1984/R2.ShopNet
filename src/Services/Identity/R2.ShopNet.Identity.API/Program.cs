@@ -45,8 +45,18 @@ try
     // Add services to the container
     builder.Services.AddHealthChecks();
     builder.Services.AddControllers();
-    builder.Services.AddControllersWithViews();  // Add MVC for authorization UI
-    builder.Services.AddRazorPages();             // Add Razor Pages for login UI
+
+    // Add MVC and Razor Pages with runtime compilation for development hot reload
+    var mvcBuilder = builder.Services.AddControllersWithViews();
+    var razorPagesBuilder = builder.Services.AddRazorPages();
+
+    // Enable Razor Runtime Compilation for hot reload in development
+    if (builder.Environment.IsDevelopment())
+    {
+        mvcBuilder.AddRazorRuntimeCompilation();
+        razorPagesBuilder.AddRazorRuntimeCompilation();
+    }
+
     builder.Services.AddEndpointsApiExplorer();
 
     // Add Redis distributed cache for passkey challenge storage

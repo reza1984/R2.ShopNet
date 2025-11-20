@@ -105,6 +105,7 @@ var identityService = builder.AddProject<Projects.R2_ShopNet_Identity_API>("iden
     // .WithReference(rabbitmq)
     .WithEnvironment("Consul__KeyValue__Address", consul.GetEndpoint("http"));  // Use localhost since Identity Service runs outside Docker
 
+
 // Catalog Service
 // launchSettings.json:
 //   - http: http://localhost:5004
@@ -153,6 +154,7 @@ var adminPortal = builder.AddJavaScriptApp("admin-portal", "../../Web/R2.ShopNet
 // launchSettings.json:
 //   - https: https://localhost:5007
 // Uses OpenID Connect with Authorization Code Flow + PKCE for authentication
+// Hot reload is automatically enabled when running through Aspire in Development mode
 var blazorPortal = builder.AddProject<Projects.R2_ShopNet_Web_Portal>("blazor-portal", "https")
     .WaitFor(identityService)
     .WaitFor(gateway)

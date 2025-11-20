@@ -1,0 +1,14 @@
+{
+  "name": "r2.shop-net.web.portal",
+  "version": "1.0.0",
+  "scripts": {
+    "build:css": "npx @tailwindcss/cli -i ./Styles/app.css -o ./wwwroot/css/app.css --minify",
+    "watch:css": "npx @tailwindcss/cli -i ./Styles/app.css -o ./wwwroot/css/app.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.11",
+    "@tailwindcss/postcss": "^4.1.11",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.11"
+  }
+}

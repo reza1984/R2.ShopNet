@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System.IdentityModel.Tokens.Jwt;
 using R2.ShopNet.Web.Portal.Components;
+using R2.ShopNet.Web.Portal.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+// Add sidebar service
+builder.Services.AddScoped<SidebarService>();
+builder.Services.AddScoped<ThemeService>();
 
 // Configure authentication
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;

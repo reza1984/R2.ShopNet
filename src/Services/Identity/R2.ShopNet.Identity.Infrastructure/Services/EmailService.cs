@@ -82,7 +82,10 @@ public class EmailService : IEmailService
     {
         var encodedToken = HttpUtility.UrlEncode(resetToken);
         var encodedEmail = HttpUtility.UrlEncode(email);
-        var resetLink = $"{resetUrl}?token={encodedToken}&email={encodedEmail}";
+
+        // Check if resetUrl already contains query parameters
+        var separator = resetUrl.Contains('?') ? "&" : "?";
+        var resetLink = $"{resetUrl}{separator}token={encodedToken}&email={encodedEmail}";
 
         var subject = "Reset Your Password - ShopNet";
         var body = GetPasswordResetEmailTemplate(email, resetLink);

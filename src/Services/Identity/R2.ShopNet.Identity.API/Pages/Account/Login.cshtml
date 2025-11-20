@@ -2,291 +2,163 @@
 @model LoginModel
 @{
     ViewData["Title"] = "Sign In";
+    Layout = "~/Pages/Shared/_AuthLayout.cshtml";
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - R2.ShopNet</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<div>
+    <div class="mb-5 sm:mb-8">
+        <h1 id="login-title" class="mb-2 font-semibold text-gray-800 dark:text-white/90 text-title-sm sm:text-title-md">
+            Sign In
+        </h1>
+        <p id="login-subtitle" class="text-sm text-gray-500 dark:text-gray-400">
+            Enter your email and password to sign in!
+        </p>
+    </div>
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .login-container {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 420px;
-            padding: 48px 40px;
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .logo h1 {
-            color: #667eea;
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .logo p {
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-        }
-
-        label {
-            display: block;
-            color: #374151;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 15px;
-            transition: all 0.2s;
-        }
-
-        input[type="email"]:focus,
-        input[type="password"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        input[type="checkbox"] {
-            margin-right: 8px;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .checkbox-group label {
-            margin: 0;
-            font-size: 14px;
-            color: #6b7280;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .btn-passkey {
-            width: 100%;
-            padding: 14px;
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 16px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-passkey:hover {
-            background: #f3f4f6;
-        }
-
-        .divider {
-            text-align: center;
-            margin: 24px 0;
-            position: relative;
-        }
-
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #e5e7eb;
-        }
-
-        .divider span {
-            background: white;
-            padding: 0 16px;
-            color: #6b7280;
-            font-size: 14px;
-            position: relative;
-        }
-
-        .error-message {
-            background: #fee2e2;
-            border: 1px solid #fecaca;
-            color: #991b1b;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            font-size: 14px;
-        }
-
-        .validation-summary {
-            background: #fee2e2;
-            border: 1px solid #fecaca;
-            color: #991b1b;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            font-size: 14px;
-        }
-
-        .validation-summary ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-
-        .passkey-icon {
-            width: 20px;
-            height: 20px;
-        }
-
-        #loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .spinner {
-            border: 3px solid #f3f4f6;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @@keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <div class="login-container">
-        <div class="logo">
-            <h1>R2.ShopNet</h1>
-            <p>Sign in to your account</p>
+    <!-- Error Message -->
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div
+            class="p-4 mb-6 text-sm text-red-800 bg-red-100 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400">
+            @Model.ErrorMessage
         </div>
+    }
 
-        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    <div asp-validation-summary="ModelOnly"
+        class="p-4 mb-6 text-sm text-red-800 bg-red-100 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400">
+    </div>
+
+    <!-- Regular Login Container -->
+    <div id="regular-login-container">
+        <!-- Passkey Button -->
+        @if (Model.ShowPasskeyOption)
         {
-            <div class="error-message">
-                @Model.ErrorMessage
+            <button type="button" id="passkey-button"
+                class="inline-flex items-center justify-center w-full gap-2 py-3 text-sm font-medium text-gray-700 bg-white border-2 border-gray-200 rounded-xl hover:border-primary transition-all duration-200 dark:bg-white/5 dark:border-gray-800 dark:text-gray-300 dark:hover:border-primary">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+                </svg>
+                Sign in with Passkey
+            </button>
+
+            <!-- Divider -->
+            <div class="relative py-3 sm:py-5">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-200 dark:border-gray-800"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="p-2 text-gray-400 bg-white dark:bg-gray-900 sm:px-5 sm:py-2">
+                        Or
+                    </span>
+                </div>
             </div>
         }
+    </div>
 
-        <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+    <!-- Passkey Login Form (Hidden by default) -->
+    <div id="passkey-login-container" style="display: none;">
 
-        <div id="login-form">
-            <form method="post">
-                <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
 
-                <div class="form-group">
-                    <label asp-for="Input.Email">Email</label>
-                    <input asp-for="Input.Email" type="email" autocomplete="username" />
-                    <span asp-validation-for="Input.Email" class="text-danger"></span>
-                </div>
+        <div class="space-y-6">
+            <div>
+                <label for="passkey-email" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Email <span class="text-error-500">*</span>
+                </label>
+                <input type="email" id="passkey-email" placeholder="info@gmail.com" autocomplete="username"
+                    class="w-full px-4 py-3 text-sm text-gray-800 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors duration-200 dark:bg-white/5 dark:border-gray-800 dark:text-white/90 dark:placeholder:text-gray-500" />
+                <span id="passkey-email-error" class="block mt-1 text-sm text-error-600 dark:text-error-400"></span>
+            </div> 
 
-                <div class="form-group">
-                    <label asp-for="Input.Password">Password</label>
-                    <input asp-for="Input.Password" type="password" autocomplete="current-password" />
-                    <span asp-validation-for="Input.Password" class="text-danger"></span>
-                </div>
-
-                <div class="checkbox-group">
-                    <input asp-for="Input.RememberMe" type="checkbox" />
-                    <label asp-for="Input.RememberMe">Remember me</label>
-                </div>
-
-                <button type="submit" class="btn-primary">Sign In</button>
-            </form>
-
-            @if (Model.ShowPasskeyOption)
-            {
-                <div class="divider">
-                    <span>OR</span>
-                </div>
-
-                <button type="button" id="passkey-button" class="btn-passkey">
-                    <svg class="passkey-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                    </svg>
-                    Sign in with Passkey
-                </button>
-            }
-        </div>
-
-        <div id="loading">
-            <div class="spinner"></div>
-            <p style="margin-top: 16px; color: #6b7280;">Authenticating...</p>
+            <button type="button" id="passkey-submit-button"
+                class="w-full py-3 px-6 text-sm font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-xl transition-all duration-200">
+                Continue with Passkey
+            </button>
+            <button type="button" id="back-to-regular-login"
+                class="inline-flex items-center gap-2 mb-6 text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to regular login   
+            </button>
         </div>
     </div>
 
+    <!-- Form -->
+
+    <form method="post" id="login-form">
+        <input class="hidden" type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+        <div class="space-y-6">
+            <div>
+                <label asp-for="Input.Email" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Email <span class="text-error-500">*</span>
+                </label>
+                <input asp-for="Input.Email" type="email" placeholder="info@gmail.com" autocomplete="username"
+                    class="w-full px-4 py-3 text-sm text-gray-800 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors duration-200 dark:bg-white/5 dark:border-gray-800 dark:text-white/90 dark:placeholder:text-gray-500" />
+                <span asp-validation-for="Input.Email" class="block mt-1 text-sm text-error-600 dark:text-error-400"></span>
+            </div>
+
+            <div>
+                <label asp-for="Input.Password" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Password <span class="text-error-500">*</span>
+                </label>
+                <div class="relative">
+                    <input asp-for="Input.Password" type="password" id="password-input" placeholder="Enter your password"
+                        autocomplete="current-password"
+                        class="w-full px-4 py-3 text-sm text-gray-800 border-2 border-gray-200 rounded-xl focus:border-primary focus:outline-none transition-colors duration-200 pr-12 dark:bg-white/5 dark:border-gray-800 dark:text-white/90 dark:placeholder:text-gray-500" />
+                    <button type="button" onclick="togglePassword()"
+                        class="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2 text-gray-500 dark:text-gray-400">
+                        <svg id="eye-off" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                        <svg id="eye-on" class="w-5 h-5" style="display: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+                </div>
+                <span asp-validation-for="Input.Password" class="block mt-1 text-sm text-error-600 dark:text-error-400"></span>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <input asp-for="Input.RememberMe" type="checkbox"
+                        class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary dark:border-gray-700 dark:bg-white/5" />
+                    <label asp-for="Input.RememberMe" class="text-sm text-gray-700 dark:text-gray-300">Keep me logged in</label>
+                </div>
+                <a asp-page="./ForgotPassword" asp-route-returnUrl="@Model.ReturnUrl" class="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300">Forgot password?</a>
+            </div>
+
+            <button type="submit"
+                class="w-full py-3 px-6 text-sm font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-xl transition-all duration-200">
+                Sign in
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('password-input');
+            const eyeOff = document.getElementById('eye-off');
+            const eyeOn = document.getElementById('eye-on');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeOff.style.display = 'none';
+                eyeOn.style.display = 'block';
+            } else {
+                input.type = 'password';
+                eyeOff.style.display = 'block';
+                eyeOn.style.display = 'none';
+            }
+        }
+    </script>
+
     <script src="~/js/passkey-login.js"></script>
 
-    @section Scripts {
-        <partial name="_ValidationScriptsPartial" />
-    }
-</body>
-</html>
+    <partial name="_ValidationScriptsPartial" />
+}

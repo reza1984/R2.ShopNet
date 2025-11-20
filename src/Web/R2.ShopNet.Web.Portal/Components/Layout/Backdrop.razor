@@ -1,0 +1,25 @@
+@inject SidebarService SidebarService
+@implements IDisposable
+
+@if (SidebarService.IsMobileOpen)
+{
+    <div class="fixed inset-0 z-40 bg-gray-900/50 lg:hidden"
+         @onclick="CloseSidebar"></div>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        SidebarService.OnChange += StateHasChanged;
+    }
+
+    private void CloseSidebar()
+    {
+        SidebarService.SetMobileOpen(false);
+    }
+
+    public void Dispose()
+    {
+        SidebarService.OnChange -= StateHasChanged;
+    }
+}
