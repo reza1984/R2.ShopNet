@@ -1,6 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ProductService, Product } from '../product.service';
 import { ButtonComponent } from '../../../components/forms/button/button.component';
 import { IconComponent } from '../../../components/icon/icon.component';
@@ -12,8 +12,8 @@ import { ConfirmationModalComponent } from '../../../components/ui/confirmation-
   selector: 'app-product-list',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterModule,
+    NgClass,
+    RouterLink,
     ButtonComponent,
     IconComponent,
     AlertComponent,
@@ -22,7 +22,7 @@ import { ConfirmationModalComponent } from '../../../components/ui/confirmation-
   ],
   templateUrl: './product-list.component.html'
 })
-export class ProductListComponent implements OnInit {
+export class ProductListComponent {
   private productService = inject(ProductService);
 
   products = signal<Product[]>([]);
@@ -52,7 +52,7 @@ export class ProductListComponent implements OnInit {
     { value: 'Discontinued', label: 'Discontinued' }
   ];
 
-  ngOnInit(): void {
+  constructor() {
     this.loadProducts();
   }
 

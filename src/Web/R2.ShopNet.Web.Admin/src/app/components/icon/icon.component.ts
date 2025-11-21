@@ -1,12 +1,10 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
 type IconStyle = 'material' | 'symbols-outlined' | 'symbols-rounded' | 'symbols-sharp';
 
 @Component({
   selector: 'app-icon',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <span 
       [class]="iconClass"

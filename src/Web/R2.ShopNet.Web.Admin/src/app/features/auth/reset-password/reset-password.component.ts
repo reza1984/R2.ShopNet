@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
@@ -22,13 +22,17 @@ import { IconComponent } from '../../../components/icon/icon.component';
   ],
   templateUrl: './reset-password.component.html'
 })
-export class ResetPasswordComponent implements OnInit {
+export class ResetPasswordComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
 
-  resetPasswordForm!: FormGroup;
+  resetPasswordForm: FormGroup = this.fb.group({
+    newPassword: ['', [Validators.required, Validators.minLength(8)]],
+    confirmPassword: ['', [Validators.required]]
+  }, { validators: this.passwordMatchValidator });
+
   showPassword = false;
   showConfirmPassword = false;
   isLoading = signal(false);
@@ -38,7 +42,7 @@ export class ResetPasswordComponent implements OnInit {
   private token: string = '';
   private email: string = '';
 
-  ngOnInit(): void {
+  constructor() {
     // Get token and email from query parameters
     this.route.queryParams.subscribe(params => {
       this.token = params['token'] || '';
@@ -48,11 +52,6 @@ export class ResetPasswordComponent implements OnInit {
         this.errorMessage.set('Invalid password reset link. Please request a new one.');
       }
     });
-
-    this.resetPasswordForm = this.fb.group({
-      newPassword: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
   }
 
   passwordMatchValidator(form: FormGroup) {

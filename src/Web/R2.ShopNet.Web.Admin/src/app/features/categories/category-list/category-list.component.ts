@@ -1,7 +1,6 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CategoryService, Category } from '../category.service';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { ButtonComponent } from '../../../components/forms/button/button.component';
 import { IconComponent } from '../../../components/icon/icon.component';
 import { AlertComponent } from '../../../components/ui/alert/alert.component';
@@ -9,17 +8,17 @@ import { ConfirmationModalComponent } from '../../../components/ui/confirmation-
 
 @Component({
 	selector: 'app-category-list',
+	standalone: true,
 	templateUrl: './category-list.component.html',
 	imports: [
-		CommonModule,
-		RouterModule,
+		RouterLink,
 		ButtonComponent,
 		IconComponent,
 		AlertComponent,
 		ConfirmationModalComponent
 	]
 })
-export class CategoryListComponent implements OnInit {
+export class CategoryListComponent {
 	categories = signal<Category[]>([]);
 	totalCount = signal(0);
 	pageNumber = signal(1);
@@ -38,9 +37,7 @@ export class CategoryListComponent implements OnInit {
 	// Expose Math to template
 	Math = Math;
 
-	constructor(private categoryService: CategoryService) {}
-
-	ngOnInit(): void {
+	constructor(private categoryService: CategoryService) {
 		this.loadCategories();
 	}
 

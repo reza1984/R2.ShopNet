@@ -1,7 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { UserService } from '../../../core/services/user.service';
 import { User } from '../../../core/models/user.model';
 import { IconComponent } from '../../../components/icon/icon.component';
@@ -11,16 +11,16 @@ import { ConfirmationModalComponent } from '../../../components/ui/confirmation-
   selector: 'app-user-list',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterModule,
+    DatePipe,
     FormsModule,
+    RouterLink,
     IconComponent,
     ConfirmationModalComponent
   ],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss']
 })
-export class UserListComponent implements OnInit {
+export class UserListComponent  {
   protected readonly Math = Math;
   
   searchTerm = '';
@@ -32,11 +32,10 @@ export class UserListComponent implements OnInit {
   showBulkDeleteConfirmation = signal(false);
   userToDelete = signal<User | null>(null);
 
-  constructor(public userService: UserService) {}
+  constructor(public userService: UserService) {
+    this.loadUsers();}
 
-  ngOnInit(): void {
-    this.loadUsers();
-  }
+  
 
   loadUsers(): void {
     this.userService.getUsers(

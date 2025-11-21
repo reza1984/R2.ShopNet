@@ -1,6 +1,6 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { NgClass } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 import { PasskeyService } from '../../../core/services/passkey.service';
@@ -11,7 +11,7 @@ import { environment } from '../../../../environments/environment.development';
 @Component({
   selector: 'app-security-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, ConfirmationModalComponent],
+  imports: [NgClass, ReactiveFormsModule, FormsModule, ConfirmationModalComponent],
   templateUrl: './security-settings.component.html'
 })
 export class SecuritySettingsComponent implements OnInit {
@@ -282,6 +282,5 @@ export class SecuritySettingsComponent implements OnInit {
       day: 'numeric'
     });
   }
-
 
 }

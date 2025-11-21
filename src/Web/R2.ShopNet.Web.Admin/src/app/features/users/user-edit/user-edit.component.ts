@@ -1,5 +1,4 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserService } from '../../../core/services/user.service';
@@ -9,7 +8,6 @@ import { User } from '../../../core/models/user.model';
   selector: 'app-user-edit',
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     ReactiveFormsModule
   ],

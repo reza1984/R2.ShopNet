@@ -1,5 +1,4 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
@@ -7,7 +6,7 @@ import { UserService } from '../../../core/services/user.service';
 @Component({
   selector: 'app-profile-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ ReactiveFormsModule],
   templateUrl: './profile-settings.component.html'
 })
 export class ProfileSettingsComponent implements OnInit {

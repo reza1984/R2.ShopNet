@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
@@ -25,36 +25,25 @@ import { IconComponent } from '../../../components/icon/icon.component';
   ],
   templateUrl: './login.component.html'
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
   private authService = inject(AuthService);
   private passkeyService = inject(PasskeyService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
 
-  loginForm!: FormGroup;
+  loginForm: FormGroup = this.fb.group({
+    email: ['admin@shopnet.com', [Validators.required, Validators.email]],
+    password: ['Admin@123', [Validators.required, Validators.minLength(6)]],
+    rememberMe: [false]
+  });
+
   showPassword = false;
   isLoading = signal(false);
   isPasskeyLoading = signal(false);
   errorMessage = signal<string | null>(null);
-  isPasskeySupported = signal(false);
-  returnUrl: string = '/dashboard';
-
-  ngOnInit(): void {
-
-    // Initialize reactive form
-    this.loginForm = this.fb.group({
-      email: ['admin@shopnet.com', [Validators.required, Validators.email]],
-      password: ['Admin@123', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
-    });
-
-    // Get the returnUrl from query params, default to /dashboard
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
-
-    // Check if passkey is supported
-    this.isPasskeySupported.set(this.passkeyService.isWebAuthnSupported());
-  }
+  isPasskeySupported = signal(this.passkeyService.isWebAuthnSupported());
+  returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;

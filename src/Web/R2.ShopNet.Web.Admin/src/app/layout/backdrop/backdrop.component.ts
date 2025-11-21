@@ -1,13 +1,11 @@
 import { Component } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { SidebarService } from '../../core/services/sidebar.service';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-backdrop',
   standalone: true,
-  imports: [
-    CommonModule,
-  ],
+  imports: [AsyncPipe],
   templateUrl: './backdrop.component.html',
 })
 export class BackdropComponent {

@@ -1,10 +1,8 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
 @Component({
   selector: 'app-support',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './support.component.html'
 })
 export class SupportComponent {

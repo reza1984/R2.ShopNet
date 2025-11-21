@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from "@angular/router";
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterOutlet],
   template: `
 <router-outlet></router-outlet>
   `

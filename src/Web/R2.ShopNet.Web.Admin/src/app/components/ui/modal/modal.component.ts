@@ -1,27 +1,27 @@
-import { CommonModule } from '@angular/common';
 import {
   Component,
   Input,
   Output,
   EventEmitter,
   ElementRef,
-  OnInit,
   OnDestroy,
   OnChanges,
   HostListener
 } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { IconComponent } from '../../icon/icon.component';
 
 @Component({
   selector: 'app-modal',
+  standalone: true,
   imports: [
-    CommonModule,
+    NgClass,
     IconComponent,
   ],
   templateUrl: './modal.component.html',
   styles: ``
 })
-export class ModalComponent implements OnInit, OnDestroy, OnChanges {
+export class ModalComponent implements OnDestroy, OnChanges {
 
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
@@ -29,12 +29,8 @@ export class ModalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() showCloseButton = true;
   @Input() isFullscreen = false;
 
-  constructor(private el: ElementRef) {}
-
-  ngOnInit() {
-    if (this.isOpen) {
-      document.body.style.overflow = 'hidden';
-    }
+  constructor(private el: ElementRef) {
+    // Initial overflow handling is done in ngOnChanges
   }
 
   ngOnDestroy() {

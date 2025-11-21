@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Input, Output, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-input-field',
   standalone: true,
-  imports: [CommonModule],
+  imports: [NgClass],
   template: `
     <div class="relative">
       <input

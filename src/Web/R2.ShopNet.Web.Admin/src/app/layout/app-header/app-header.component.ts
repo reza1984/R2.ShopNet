@@ -1,10 +1,8 @@
 import { Component, ElementRef, ViewChild, PLATFORM_ID, inject, computed } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { AsyncPipe, isPlatformBrowser, NgClass } from '@angular/common';
 import { SidebarService } from '../../core/services/sidebar.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 import { UserDropdownComponent } from './user-dropdown/user-dropdown.component';
 import { IconComponent } from '../../components/icon/icon.component';
 
@@ -12,8 +10,8 @@ import { IconComponent } from '../../components/icon/icon.component';
   selector: 'app-header',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterModule,
+    AsyncPipe,
+    NgClass,
     IconComponent,
     UserDropdownComponent,
   ],

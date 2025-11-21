@@ -1,7 +1,7 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { AsyncPipe, isPlatformBrowser, NgClass, NgStyle } from '@angular/common';
 import { Component, ElementRef, QueryList, ViewChildren, ChangeDetectorRef, PLATFORM_ID, inject } from '@angular/core';
 import { SidebarService } from '../../core/services/sidebar.service';
-import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { IconComponent } from '../../components/icon/icon.component';
 
@@ -17,8 +17,11 @@ type NavItem = {
   selector: 'app-sidebar',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterModule,
+    AsyncPipe,
+    NgClass,
+    NgStyle,
+    RouterLink,
+    RouterLinkActive,
     IconComponent,
   ],
   templateUrl: './app-sidebar.component.html',
