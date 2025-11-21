@@ -1,6 +1,9 @@
-@inject IJSRuntime JS
-@inject SidebarService SidebarService
-@inject ThemeService ThemeService
+@using R2.ShopNet.Web.Portal.Services
+@using R2.ShopNet.Web.Portal.Services.JsInterop
+@inject ISidebarService SidebarService
+@inject IThemeService ThemeService
+@inject IThemeJsInterop ThemeJsInterop
+@inject IWindowJsInterop WindowJsInterop
 @implements IDisposable
 
 <header class="sticky top-0 flex w-full bg-white border-gray-200 z-99999 dark:border-gray-800 dark:bg-gray-900 xl:border-b">
@@ -56,7 +59,7 @@
                 <button @onclick="ToggleTheme"
                         class="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:h-11 lg:w-11"
                         aria-label="Toggle Theme">
-                    @if (ThemeService.CurrentTheme == ThemeService.Theme.Light)
+                    @if (ThemeService.CurrentTheme == ThemeMode.Light)
                     {
                         <Icon Name="dark_mode" Size="20" />
                     }
@@ -95,43 +98,32 @@
         try
         {
             // Detect system preference first (always)
-            var systemPrefersDark = await JS.InvokeAsync<bool>("eval", "window.matchMedia('(prefers-color-scheme: dark)').matches");
-            ThemeService.SystemPreference = systemPrefersDark ? ThemeService.Theme.Dark : ThemeService.Theme.Light;
+            var systemPrefersDark = await ThemeJsInterop.GetSystemPrefersDarkModeAsync();
+            ThemeService.SystemPreference = systemPrefersDark ? ThemeMode.Dark : ThemeMode.Light;
 
             // Check if user has a saved preference
-            var savedTheme = await JS.InvokeAsync<string?>("eval", "localStorage.getItem('theme')");
+            var savedTheme = await ThemeJsInterop.GetSavedThemeAsync();
 
             if (!string.IsNullOrEmpty(savedTheme))
             {
                 // Use saved preference (manual override)
-                ThemeService.SetTheme(savedTheme == "dark" ? ThemeService.Theme.Dark : ThemeService.Theme.Light);
+                ThemeService.SetTheme(savedTheme == "dark" ? ThemeMode.Dark : ThemeMode.Light);
                 await ApplyTheme();
             }
             else
             {
                 // Use system preference
-                ThemeService.SetTheme(systemPrefersDark ? ThemeService.Theme.Dark : ThemeService.Theme.Light);
+                ThemeService.SetTheme(systemPrefersDark ? ThemeMode.Dark : ThemeMode.Light);
                 await ApplyTheme();
 
                 // Listen for system theme changes (only auto-switch if no manual preference)
-                await JS.InvokeVoidAsync("eval", @"
-                    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                        if (!localStorage.getItem('theme')) {
-                            const newTheme = e.matches ? 'dark' : 'light';
-                            if (newTheme === 'dark') {
-                                document.documentElement.classList.add('dark');
-                            } else {
-                                document.documentElement.classList.remove('dark');
-                            }
-                        }
-                    });
-                ");
+                await ThemeJsInterop.ListenForSystemThemeChangesAsync();
             }
         }
         catch
         {
             // Fallback to light theme if JS fails
-            ThemeService.SetTheme(ThemeService.Theme.Light);
+            ThemeService.SetTheme(ThemeMode.Light);
         }
     }
 
@@ -140,39 +132,23 @@
     /// </summary>
     private async Task ResetToSystemPreference()
     {
-        try
-        {
-            await JS.InvokeVoidAsync("eval", "localStorage.removeItem('theme')");
-            ThemeService.ResetToSystemPreference();
-            await ApplyTheme();
-        }
-        catch
-        {
-            // Ignore JS errors
-        }
+        await ThemeJsInterop.RemoveThemeAsync();
+        ThemeService.ResetToSystemPreference();
+        await ApplyTheme();
     }
 
     private async Task HandleToggle()
     {
-        try
-        {
-            // Check if we're on desktop (xl breakpoint = 1280px)
-            var windowWidth = await JS.InvokeAsync<int>("eval", "window.innerWidth");
+        var windowWidth = await WindowJsInterop.GetWindowWidthAsync();
 
-            if (windowWidth >= 1280)
-            {
-                // Desktop: toggle expanded state
-                SidebarService.ToggleExpanded();
-            }
-            else
-            {
-                // Mobile: toggle mobile open state
-                SidebarService.ToggleMobileOpen();
-            }
-        }
-        catch
+        if (windowWidth >= 1280)
         {
-            // Fallback: toggle mobile open
+            // Desktop: toggle expanded state
+            SidebarService.ToggleExpanded();
+        }
+        else
+        {
+            // Mobile: toggle mobile open state
             SidebarService.ToggleMobileOpen();
         }
     }
@@ -190,25 +166,16 @@
 
     private async Task ApplyTheme()
     {
-        try
-        {
-            var themeString = ThemeService.GetThemeString();
-            await JS.InvokeVoidAsync("eval", $"localStorage.setItem('theme', '{themeString}')");
+        var themeString = ThemeService.GetThemeString();
+        await ThemeJsInterop.SaveThemeAsync(themeString);
 
-            if (ThemeService.CurrentTheme == ThemeService.Theme.Dark)
-            {
-                await JS.InvokeVoidAsync("eval", "document.documentElement.classList.add('dark')");
-                await JS.InvokeVoidAsync("eval", "document.body.classList.add('dark:bg-gray-900')");
-            }
-            else
-            {
-                await JS.InvokeVoidAsync("eval", "document.documentElement.classList.remove('dark')");
-                await JS.InvokeVoidAsync("eval", "document.body.classList.remove('dark:bg-gray-900')");
-            }
-        }
-        catch
+        if (ThemeService.CurrentTheme == ThemeMode.Dark)
         {
-            // Ignore JS errors during pre-rendering
+            await ThemeJsInterop.ApplyDarkModeAsync();
+        }
+        else
+        {
+            await ThemeJsInterop.RemoveDarkModeAsync();
         }
     }
 

@@ -1,4 +1,5 @@
-@inject SidebarService SidebarService
+@using R2.ShopNet.Web.Portal.Services
+@inject ISidebarService SidebarService
 @implements IDisposable
 
 @if (SidebarService.IsMobileOpen)

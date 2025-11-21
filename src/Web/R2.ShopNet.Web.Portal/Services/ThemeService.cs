@@ -4,20 +4,20 @@ namespace R2.ShopNet.Web.Portal.Services;
 /// Service for managing application theme (light/dark mode)
 /// Supports system preference detection and manual user override
 /// </summary>
-public class ThemeService
+public class ThemeService : IThemeService
 {
-    public enum Theme
-    {
-        Light,
-        Dark
-    }
-
-    private Theme _currentTheme = Theme.Light;
-    private Theme? _systemPreference;
+    private readonly ILogger<ThemeService> _logger;
+    private ThemeMode _currentTheme = ThemeMode.Light;
+    private ThemeMode? _systemPreference;
 
     public event Action? OnChange;
 
-    public Theme CurrentTheme
+    public ThemeService(ILogger<ThemeService> logger)
+    {
+        _logger = logger;
+    }
+
+    public ThemeMode CurrentTheme
     {
         get => _currentTheme;
         private set
@@ -25,6 +25,7 @@ public class ThemeService
             if (_currentTheme != value)
             {
                 _currentTheme = value;
+                _logger.LogDebug("Theme changed to {Theme}", value);
                 NotifyStateChanged();
             }
         }
@@ -33,16 +34,16 @@ public class ThemeService
     /// <summary>
     /// The detected system theme preference
     /// </summary>
-    public Theme? SystemPreference
+    public ThemeMode? SystemPreference
     {
         get => _systemPreference;
-        set => _systemPreference = value; 
+        set => _systemPreference = value;
     }
 
     /// <summary>
     /// Sets the theme
     /// </summary>
-    public void SetTheme(Theme theme)
+    public void SetTheme(ThemeMode theme)
     {
         CurrentTheme = theme;
     }
@@ -52,7 +53,7 @@ public class ThemeService
     /// </summary>
     public void ToggleTheme()
     {
-        CurrentTheme = CurrentTheme == Theme.Light ? Theme.Dark : Theme.Light;
+        CurrentTheme = CurrentTheme == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light;
     }
 
     /// <summary>
@@ -60,15 +61,15 @@ public class ThemeService
     /// </summary>
     public string GetThemeString()
     {
-        return CurrentTheme == Theme.Light ? "light" : "dark";
+        return CurrentTheme == ThemeMode.Light ? "light" : "dark";
     }
 
     /// <summary>
     /// Gets the system preference as a theme enum
     /// </summary>
-    public Theme GetSystemPreference()
+    public ThemeMode GetSystemPreference()
     {
-        return SystemPreference ?? Theme.Light;
+        return SystemPreference ?? ThemeMode.Light;
     }
 
     /// <summary>

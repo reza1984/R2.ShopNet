@@ -1,5 +1,8 @@
+@using R2.ShopNet.Web.Portal.Models.Navigation
+@using R2.ShopNet.Web.Portal.Services
 @inject NavigationManager NavigationManager
-@inject SidebarService SidebarService
+@inject ISidebarService SidebarService
+@inject NavigationConfiguration NavigationConfig
 @implements IDisposable
 
 <aside class="@SidebarClasses"
@@ -37,7 +40,7 @@
                         }
                     </h2>
                     <ul class="flex flex-col gap-1">
-                        @foreach (var (item, index) in NavItems.Select((item, i) => (item, i)))
+                        @foreach (var (item, index) in NavigationConfig.MainMenu.Select((item, i) => (item, i)))
                         {
                             <li>
                                 @if (item.SubItems != null && item.SubItems.Any())
@@ -114,7 +117,7 @@
                         }
                     </h2>
                     <ul class="flex flex-col gap-1">
-                        @foreach (var (item, index) in OthersItems.Select((item, i) => (item, i)))
+                        @foreach (var (item, index) in NavigationConfig.OthersMenu.Select((item, i) => (item, i)))
                         {
                             <li>
                                 @if (item.SubItems != null && item.SubItems.Any())
@@ -192,75 +195,6 @@
 
     private string CurrentPath => new Uri(NavigationManager.Uri).AbsolutePath;
 
-    public class NavItem
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Icon { get; set; } = string.Empty;
-        public string? Path { get; set; }
-        public bool IsNew { get; set; }
-        public List<SubNavItem>? SubItems { get; set; }
-    }
-
-    public class SubNavItem
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Path { get; set; } = string.Empty;
-        public bool IsNew { get; set; }
-    }
-
-    private List<NavItem> NavItems = new()
-    {
-        new() { Icon = "dashboard", Name = "Dashboard", Path = "/dashboard" },
-        new()
-        {
-            Icon = "person",
-            Name = "Users",
-            SubItems = new()
-            {
-                new() { Name = "All Users", Path = "/users" },
-                new() { Name = "Roles & Permissions", Path = "/users/roles" }
-            }
-        },
-        new()
-        {
-            Icon = "category",
-            Name = "Catalog",
-            SubItems = new()
-            {
-                new() { Name = "Products", Path = "/catalog/products" },
-                new() { Name = "Categories", Path = "/catalog/categories" },
-                new() { Name = "Inventory", Path = "/catalog/inventory" }
-            }
-        },
-        new()
-        {
-            Icon = "shopping_bag",
-            Name = "Orders",
-            SubItems = new()
-            {
-                new() { Name = "All Orders", Path = "/orders" },
-                new() { Name = "Pending", Path = "/orders/pending" },
-                new() { Name = "Completed", Path = "/orders/completed" }
-            }
-        },
-        new() { Icon = "calendar_month", Name = "Reports", Path = "/reports" }
-    };
-
-    private List<NavItem> OthersItems = new()
-    {
-        new() { Icon = "analytics", Name = "Analytics", Path = "/analytics" },
-        new()
-        {
-            Icon = "settings",
-            Name = "Settings",
-            SubItems = new()
-            {
-                new() { Name = "General", Path = "/settings" },
-                new() { Name = "Configuration", Path = "/settings/configuration" }
-            }
-        }
-    };
-
     private string SidebarClasses
     {
         get
@@ -288,8 +222,8 @@
     {
         var currentPath = CurrentPath;
 
-        CheckAndOpenSubmenu(NavItems, "main", currentPath);
-        CheckAndOpenSubmenu(OthersItems, "others", currentPath);
+        CheckAndOpenSubmenu(NavigationConfig.MainMenu, "main", currentPath);
+        CheckAndOpenSubmenu(NavigationConfig.OthersMenu, "others", currentPath);
     }
 
     private void CheckAndOpenSubmenu(List<NavItem> items, string prefix, string currentPath)
