@@ -1,4 +1,4 @@
-namespace R2.ShopNet.Identity.Application.Commands.ResetPassword;
+namespace R2.ShopNet.Identity.Application.Commands;
 
 /// <summary>
 /// Response for reset password request.

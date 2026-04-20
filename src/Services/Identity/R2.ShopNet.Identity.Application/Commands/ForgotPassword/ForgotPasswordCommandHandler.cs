@@ -8,7 +8,7 @@ using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Identity.Application.Services;
 using R2.ShopNet.Identity.Domain.Entities;
 
-namespace R2.ShopNet.Identity.Application.Commands.ForgotPassword;
+namespace R2.ShopNet.Identity.Application.Commands;
 
 /// <summary>
 /// Handler for forgot password command using ASP.NET Core Identity.

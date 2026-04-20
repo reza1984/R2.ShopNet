@@ -4,7 +4,7 @@ using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Identity.Domain.Entities;
 
-namespace R2.ShopNet.Identity.Application.Commands.ActivateUser;
+namespace R2.ShopNet.Identity.Application.Commands;
 
 /// <summary>
 /// Handler for activating a user account.

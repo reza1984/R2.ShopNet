@@ -1,4 +1,4 @@
-namespace R2.ShopNet.Identity.Application.Commands.ForgotPassword;
+namespace R2.ShopNet.Identity.Application.Commands;
 
 /// <summary>
 /// Response for forgot password request.

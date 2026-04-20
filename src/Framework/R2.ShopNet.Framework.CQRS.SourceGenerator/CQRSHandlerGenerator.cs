@@ -13,9 +13,6 @@ namespace R2.ShopNet.Framework.CQRS.SourceGenerator;
 public class CQRSHandlerGenerator : IIncrementalGenerator
 {
     private const string GenerateHandlerAttributeName = "R2.ShopNet.Framework.CQRS.Attributes.GenerateHandlerAttribute";
-    private const string CommandHandlerInterfaceName = "R2.ShopNet.Framework.CQRS.ICommandHandler";
-    private const string QueryHandlerInterfaceName = "R2.ShopNet.Framework.CQRS.IQueryHandler";
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // Don't generate the attribute - it exists as a concrete class in the CQRS framework
@@ -81,13 +78,76 @@ public class CQRSHandlerGenerator : IIncrementalGenerator
             return null;
 
         var lifetime = GetLifetime(classSymbol);
+        var requiredNamespaces = GetRequiredNamespaces(classSymbol, handlerInterface);
 
         return new HandlerInfo(
-            ClassName: classSymbol.ToDisplayString(),
-            InterfaceName: handlerInterface.ToDisplayString(),
+            ClassName: classSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+            InterfaceName: handlerInterface.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
             Namespace: classSymbol.ContainingNamespace.ToDisplayString(),
+            RequiredNamespaces: requiredNamespaces,
             Lifetime: lifetime,
             Type: handlerType.Value);
+    }
+
+    private static ImmutableArray<string> GetRequiredNamespaces(
+        INamedTypeSymbol classSymbol,
+        INamedTypeSymbol handlerInterface)
+    {
+        var namespaces = new HashSet<string>(StringComparer.Ordinal);
+
+        AddNamespacesFromType(classSymbol, namespaces);
+        AddNamespacesFromType(handlerInterface, namespaces);
+
+        return namespaces
+            .Where(n => !string.IsNullOrWhiteSpace(n))
+            .OrderBy(n => n, StringComparer.Ordinal)
+            .ToImmutableArray();
+    }
+
+    private static void AddNamespacesFromType(ITypeSymbol? typeSymbol, HashSet<string> namespaces)
+    {
+        if (typeSymbol is null)
+            return;
+
+        switch (typeSymbol)
+        {
+            case INamedTypeSymbol namedType:
+                AddNamespace(namedType.ContainingNamespace, namespaces);
+
+                foreach (var typeArgument in namedType.TypeArguments)
+                {
+                    AddNamespacesFromType(typeArgument, namespaces);
+                }
+                break;
+
+            case IArrayTypeSymbol arrayType:
+                AddNamespacesFromType(arrayType.ElementType, namespaces);
+                break;
+
+            case IPointerTypeSymbol pointerType:
+                AddNamespacesFromType(pointerType.PointedAtType, namespaces);
+                break;
+
+            case IFunctionPointerTypeSymbol functionPointerType:
+                AddNamespacesFromType(functionPointerType.Signature.ReturnType, namespaces);
+                foreach (var parameter in functionPointerType.Signature.Parameters)
+                {
+                    AddNamespacesFromType(parameter.Type, namespaces);
+                }
+                break;
+        }
+    }
+
+    private static void AddNamespace(INamespaceSymbol? namespaceSymbol, HashSet<string> namespaces)
+    {
+        if (namespaceSymbol is null || namespaceSymbol.IsGlobalNamespace)
+            return;
+
+        var namespaceName = namespaceSymbol.ToDisplayString();
+        if (!string.IsNullOrWhiteSpace(namespaceName))
+        {
+            namespaces.Add(namespaceName);
+        }
     }
 
     private static string GetLifetime(INamedTypeSymbol classSymbol)
@@ -133,11 +193,13 @@ public class CQRSHandlerGenerator : IIncrementalGenerator
         sb.AppendLine("#nullable enable");
         sb.AppendLine();
         sb.AppendLine("using Microsoft.Extensions.DependencyInjection;");
-        sb.AppendLine("using R2.ShopNet.Framework.CQRS;");
         sb.AppendLine();
 
         // Add namespaces for handlers
-        var namespaces = handlers.Select(h => h.Namespace).Distinct().OrderBy(n => n);
+        var namespaces = handlers
+            .SelectMany(h => h.RequiredNamespaces)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(n => n, StringComparer.Ordinal);
         foreach (var ns in namespaces)
         {
             sb.AppendLine($"using {ns};");
@@ -248,6 +310,7 @@ namespace R2.ShopNet.Framework.CQRS.Attributes
         string ClassName,
         string InterfaceName,
         string Namespace,
+        ImmutableArray<string> RequiredNamespaces,
         string Lifetime,
         HandlerType Type);
 

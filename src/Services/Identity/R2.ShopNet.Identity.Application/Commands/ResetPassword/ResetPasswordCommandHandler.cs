@@ -5,7 +5,7 @@ using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Identity.Domain.Entities;
 
-namespace R2.ShopNet.Identity.Application.Commands.ResetPassword;
+namespace R2.ShopNet.Identity.Application.Commands;
 
 /// <summary>
 /// Handler for reset password command using ASP.NET Core Identity.

@@ -202,7 +202,8 @@ try
     // Register CQRS Handlers automatically using reflection (similar to MediatR)
     // This scans the Application assembly at startup and registers all command/query handlers
     // For long-running services like this, reflection-based registration is recommended
-    builder.Services.AddCQRSHandlersFromAssemblyContaining<LoginUserCommandHandler>();  
+    // builder.Services.AddCQRSHandlersFromAssemblyContaining<LoginUserCommandHandler>();
+    builder.Services.AddGeneratedCQRSHandlers();  
 
     // Register Event Publisher (placeholder for now)
     builder.Services.AddSingleton<IEventPublisher, InMemoryEventPublisher>();

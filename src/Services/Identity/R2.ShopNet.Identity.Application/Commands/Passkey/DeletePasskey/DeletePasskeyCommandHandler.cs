@@ -3,7 +3,7 @@ using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Identity.Application.Interfaces;
 
-namespace R2.ShopNet.Identity.Application.Commands.Passkey.DeletePasskey;
+namespace R2.ShopNet.Identity.Application.Commands.Passkey;
 
 public class DeletePasskeyCommandHandler : ICommandHandler<DeletePasskeyCommand, Result<bool>>
 {

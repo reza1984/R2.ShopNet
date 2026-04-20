@@ -1,7 +1,7 @@
 using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 
-namespace R2.ShopNet.Identity.Application.Commands.ActivateUser;
+namespace R2.ShopNet.Identity.Application.Commands;
 
 /// <summary>
 /// Command to activate a user account.

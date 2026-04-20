@@ -59,7 +59,7 @@ public static class LoggingConfiguration
                     theme: AnsiConsoleTheme.Code,
                     outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{Application}] {Message:lj} {Properties:j}{NewLine}{Exception}")
                 .CreateLogger();
-        });
+        }, writeToProviders: true);
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public static class LoggingConfiguration
                     theme: AnsiConsoleTheme.Code,
                     outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{Application}] {Message:lj} {Properties:j}{NewLine}{Exception}");
             }
-        });
+        }, writeToProviders: true);
     }
 
     /// <summary>

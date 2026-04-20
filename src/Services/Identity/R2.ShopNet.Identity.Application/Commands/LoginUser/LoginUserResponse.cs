@@ -1,4 +1,4 @@
-namespace R2.ShopNet.Identity.Application.Commands.LoginUser;
+namespace R2.ShopNet.Identity.Application.Commands;
 
 /// <summary>
 /// Response for successful user login.

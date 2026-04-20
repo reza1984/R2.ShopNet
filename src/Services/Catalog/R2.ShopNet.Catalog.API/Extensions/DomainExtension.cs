@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using R2.ShopNet.Catalog.Application.Commands;
-using R2.ShopNet.Framework.CQRS.DependencyInjection;
+using R2.ShopNet.Framework.CQRS.Generated;
 
 namespace R2.ShopNet.Catalog.API.Extensions
 {
@@ -8,7 +7,7 @@ namespace R2.ShopNet.Catalog.API.Extensions
     {
         public static IServiceCollection AddCatalogDomain(this IServiceCollection services)
         {
-            services.AddCQRSHandlersFromAssemblyContaining<CreateProductCommandHandler>();
+            services.AddGeneratedCQRSHandlers();
             return services;
         }
     }

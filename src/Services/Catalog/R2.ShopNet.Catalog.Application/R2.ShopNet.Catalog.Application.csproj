@@ -10,5 +10,6 @@
     <ProjectReference Include="../../../Framework/R2.ShopNet.Framework.CQRS/R2.ShopNet.Framework.CQRS.csproj" />
     <ProjectReference Include="../../../Framework/R2.ShopNet.Framework.Events/R2.ShopNet.Framework.Events.csproj" />
     <ProjectReference Include="../../../Framework/R2.ShopNet.Framework.Persistence/R2.ShopNet.Framework.Persistence.csproj" />
+    <ProjectReference Include="../../../Framework/R2.ShopNet.Framework.CQRS.SourceGenerator/R2.ShopNet.Framework.CQRS.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>

@@ -6,7 +6,7 @@ using R2.ShopNet.Framework.Events;
 using R2.ShopNet.Identity.Domain.Entities;
 using R2.ShopNet.Identity.Domain.Events;
 
-namespace R2.ShopNet.Identity.Application.Commands.RegisterUser;
+namespace R2.ShopNet.Identity.Application.Commands;
 
 /// <summary>
 /// Handler for user registration command using ASP.NET Core Identity.

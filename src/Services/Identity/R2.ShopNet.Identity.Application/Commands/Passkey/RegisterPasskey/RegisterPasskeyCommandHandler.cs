@@ -3,7 +3,7 @@ using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Identity.Application.Interfaces;
 
-namespace R2.ShopNet.Identity.Application.Commands.Passkey.RegisterPasskey;
+namespace R2.ShopNet.Identity.Application.Commands;
 
 public class RegisterPasskeyCommandHandler : ICommandHandler<RegisterPasskeyCommand, Result<Guid>>
 {

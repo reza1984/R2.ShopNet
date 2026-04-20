@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-namespace R2.ShopNet.Identity.Application.DTOs.Passkey;
+namespace R2.ShopNet.Identity.Application.DTOs;
 
 public class PasskeyAuthenticationOptions
 {

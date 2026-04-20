@@ -2,7 +2,7 @@ using R2.ShopNet.Framework.Common;
 using R2.ShopNet.Framework.CQRS;
 using R2.ShopNet.Identity.Application.DTOs.Passkey;
 
-namespace R2.ShopNet.Identity.Application.Commands.Passkey.RegisterPasskey;
+namespace R2.ShopNet.Identity.Application.Commands;
 
 public record RegisterPasskeyCommand(
     Guid UserId,

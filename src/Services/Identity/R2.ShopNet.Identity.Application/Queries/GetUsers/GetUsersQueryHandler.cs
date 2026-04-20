@@ -6,7 +6,7 @@ using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Identity.Application.DTOs;
 using R2.ShopNet.Identity.Domain.Entities;
 
-namespace R2.ShopNet.Identity.Application.Queries.GetUsers;
+namespace R2.ShopNet.Identity.Application.Queries;
 
 /// <summary>
 /// Handler for getting paginated list of users.

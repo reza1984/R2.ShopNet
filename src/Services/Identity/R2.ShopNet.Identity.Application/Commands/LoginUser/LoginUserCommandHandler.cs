@@ -5,7 +5,7 @@ using R2.ShopNet.Framework.CQRS.Attributes;
 using R2.ShopNet.Identity.Application.Services;
 using R2.ShopNet.Identity.Domain.Entities;
 
-namespace R2.ShopNet.Identity.Application.Commands.LoginUser;
+namespace R2.ShopNet.Identity.Application.Commands;
 
 /// <summary>
 /// Handler for user login command using ASP.NET Core Identity.
